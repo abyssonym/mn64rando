@@ -1,0 +1,1 @@
+MN64_JP             9704b99f5f86879c0482d7223257dcef    tables_list.txt

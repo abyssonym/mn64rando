@@ -1,0 +1,160 @@
+0x007F:
+  name:       Fire
+
+0x0080:
+  name:       Smoke Cloud
+
+0x0081:
+  name:       Ryo (Drops down)
+
+0x0082:
+  name:       Giant Ryo (unused)
+
+0x0083:
+  name:       Giant Ryo (Drops down, unused)
+
+0x0085:
+  name:       Gold Dango
+
+0x0086:
+  name:       Mr. Elly Fant
+
+0x0087:
+  name:       Mr. Arrow
+
+0x0088:
+  name:       Silver Doll
+
+0x0089:
+  name:       Gold Doll
+
+0x008B:
+  name:       Sign
+  message:
+    index:      [10,11]
+
+0x008C:
+  name:       Exit
+  dest_room:
+    index:      [4,5]
+
+0x008E:
+  name:       Death plane (determines out of bounds)
+
+0x008F:
+  name:       Dango
+
+0x0091:
+  name:       Life Up
+
+0x00CB:
+  name:       Ghost Robot
+
+0x00FA:
+  name:       Robot Bee
+
+0x00FB:
+  name:       Small Pink Robot
+
+0x00FC:
+  name:       Small Pink Robot
+
+0x00FE:
+  name:       Green Robot
+
+0x00FF:
+  name:       Big Swatting Robot
+
+0x0100:
+  name:       Jumping robot
+
+0x0103:
+  name:       Scarecrow Bot
+
+0x010A:
+  name:       Big Swatting Robot Red
+
+0x0108:
+  name:       Jet Robot
+
+0x0109:
+  name:       Yellow Robot
+
+0x010B:
+  name:       Shrinking Robot
+
+0x010C:
+  name:       Sword Robot
+
+0x0130:
+  name:       Drum robot
+
+0x0134:
+  name:       Dango Stick Wipers
+
+0x0141:
+  name:       Ninja
+
+0x0149:
+  name:       Dango Stick Wipers (Spawners)
+
+0x0192:
+  name:       Pot
+  num_spawn:
+    index:      [4,5]
+  spawn_id:
+    index:      11
+    0x81:       Ryo
+    0x8f:       Dango
+
+0x0193:
+  name:       Key
+  enemies:
+    index:      5
+  key_type:
+    index:      6
+    0:          Silver
+    1:          Gold
+    2:          Diamond
+
+0x0196:
+  name:       Star Block
+
+0x0197:
+  name:       Falling Board With Chain
+
+0x0198:
+  name:       Spike Chain
+
+0x01F7:
+  name:       Turtle Pad
+
+0x01FC:
+  name:       Elevator (Oedo)
+
+0x02CD:
+  name:       Gatekeeper with lantern
+
+0x0287:
+  name:       Water
+
+0x0302:
+  name:       Inn Keeper
+
+0x0305:
+  name:       Inn Keeper
+
+0x0307:
+  name:       Inn Keeper
+
+0x0308:
+  name:       Fixed camera actor
+
+0x030F:
+  name:       Dancin
+
+0x0322:
+  name:       Ladder
+
+0x0323:
+  name:       Congo
