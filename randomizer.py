@@ -13,6 +13,7 @@ from time import time, gmtime
 from itertools import combinations
 from os import path
 from traceback import format_exc
+import re
 import yaml
 
 from decompress_mn64 import decompress_from_file
@@ -51,37 +52,96 @@ class MapMetaObject(TableObject):
         entity_structures = yaml.load(f.read(),
                                       Loader=yaml.SafeLoader)
 
-    class Entity:
-        def __init__(self, data, parent):
+    class EntityMixin:
+        DICT_MATCHER = re.compile('{[^}]*}')
+
+        def __init__(self, data, parent, index=None):
             assert len(data) == self.DATA_LENGTH
             self.parent = parent
-            self.index = len(self.parent.entities)
+            if index is None:
+                if self.parent.entities:
+                    self.index = max(e.index for e in self.parent.entities) + 1
+                else:
+                    self.index = 0
+            else:
+                self.index = index
             self.data = data
             self.old_data = data
             self.validate_data()
 
         def __repr__(self):
-            return self.hexify()
+            details = self.details
+            if details is not None:
+                s = '{0}  @ {1}'.format(self.hexify(), self.details)
+            else:
+                s = self.hexify()
+            if self.comment:
+                s = f'  # {self.comment}\n{s}'
+            return s
 
         @property
         def is_null(self):
             return set(self.data) == {0}
 
+        @property
+        def comment(self):
+            return None
+
         def hexify(self):
-            return f'{self.index:0>2x}: {hexify(self.data)}'
+            return f'{self.index:0>3x}: {hexify(self.data)}'
 
         def validate_data(self):
             return
 
-    class EntityA(Entity):
-        DATA_LENGTH = 0x10
-
-        def __repr__(self):
-            details = self.details
-            if details is not None:
-                return '{0}  # {1}'.format(self.hexify(), self.details)
+        def get_property_indexes(self, property_name):
+            data = self.structure[property_name]
+            index = data['index']
+            if isinstance(index, int):
+                start = index
+                finish = index + 1
             else:
-                return self.hexify()
+                start, finish = index
+                finish += 1
+            assert finish > start
+            return start, finish
+
+        def get_property_value(self, property_name):
+            start, finish = self.get_property_indexes(property_name)
+            value = int.from_bytes(self.data[start:finish],
+                                   byteorder='big')
+            return value
+
+        def set_property(self, property_name, value):
+            data = self.structure[property_name]
+            start, finish = self.get_property_indexes(property_name)
+            if isinstance(value, str):
+                if '-' in value:
+                    value = value.split('-')[0]
+                value = int(value, 0x10)
+            value_length = finish - start
+            value = value.to_bytes(length=value_length, byteorder='big')
+            data = self.data[:start] + value + self.data[finish:]
+            assert len(data) == len(self.data)
+            self.data = data
+
+        def import_details(self, details):
+            dict_matches = self.DICT_MATCHER.findall(details)
+            for match in dict_matches:
+                details = details.replace(match, '')
+                assert match[0] == '{'
+                assert match[-1] == '}'
+                match = match[1:-1]
+                properties = match.split(',')
+                for prop in properties:
+                    key, value = prop.split(':')
+                    self.set_property(key, value)
+            assert '{' not in details and '}' not in details
+            details = details.strip()
+            if details:
+                self.set_main_actor(details)
+
+    class EntityDefinition(EntityMixin):
+        DATA_LENGTH = 0x10
 
         @property
         def actor_id(self):
@@ -103,16 +163,8 @@ class MapMetaObject(TableObject):
                 if property_name == 'name':
                     continue
 
-                index = data['index']
-                if isinstance(index, int):
-                    start = index
-                    finish = index + 1
-                else:
-                    start, finish = index
-                    finish += 1
-                assert finish > start
-                value = int.from_bytes(self.data[start:finish],
-                                       byteorder='big')
+                start, finish = self.get_property_indexes(property_name)
+                value = self.get_property_value(property_name)
                 pretty_value = ('{0:0>%sx}' % ((finish-start)*2)).format(value)
                 if value in data:
                     pretty_value = f'{pretty_value}-{data[value]}'
@@ -125,19 +177,121 @@ class MapMetaObject(TableObject):
             else:
                 return self.structure['name']
 
+        def set_main_actor(self, name):
+            for actor_id, data in MapMetaObject.entity_structures.items():
+                if data['name'] == name:
+                    actor_id = actor_id.to_bytes(length=2, byteorder='big')
+                    data = actor_id + self.data[2:]
+                    assert len(data) == len(self.data)
+                    self.data = data
+                    break
+            else:
+                raise Exception('Could not find actor "%s".' % name)
+
         def validate_data(self):
             return
             assert self.data[:2] != b'\x00\x00'
             assert self.data[1] != 0
 
-    class EntityB(Entity):
+    class EntityInstance(EntityMixin):
         DATA_LENGTH = 0x14
+
+        structure = {'definition_index':    {'index': (0xe, 0xf)},
+                     'x':                   {'index': (0x0, 0x1)},
+                     'z':                   {'index': (0x2, 0x3)},
+                     'y':                   {'index': (0x4, 0x5)},
+                     }
+
+        @property
+        def definition_index(self):
+            return self.get_property_value('definition_index')
+
+        @property
+        def x(self):
+            return self.get_property_value('x')
+
+        @property
+        def z(self):
+            return self.get_property_value('z')
+
+        @property
+        def y(self):
+            return self.get_property_value('y')
+
+        @property
+        def definition(self):
+            if self.is_null:
+                return None
+            if self in self.parent.entities[-2:]:
+                return None
+            if self.definition_index >= len(self.parent.entities):
+                return None
+            definition = self.parent.entities[self.definition_index]
+            if isinstance(definition, MapMetaObject.EntityDefinition):
+                return definition
+            return None
+
+        @property
+        def details(self):
+            if self.is_null:
+                return None
+            if not self.definition:
+                return None
+            details = []
+            for key in ['x', 'z', 'y']:
+                value = f'{getattr(self, key):0>4x}'
+                details.append(f'{key}:{value}')
+            details = '{%s}' % ','.join(details)
+            return f'{self.definition_index:0>3x} {details}'
+
+        @property
+        def comment(self):
+            if not self.definition:
+                return
+            return self.definition.details
 
         def validate_data(self):
             #assert self.data[0xf] & 0xf == 0
             return
             assert self.data[-4:] == b'\x00\x00\x00\x00'
             assert self.data[1] == 0
+
+        def set_main_actor(self, name):
+            self.set_property('definition_index', int(name, 0x10))
+
+    @classmethod
+    def import_from_file(self, filename):
+        mmo = None
+        with open(filename) as f:
+            for line in f:
+                if '#' in line:
+                    line = line.split('#')[0]
+                line = line.strip()
+                if not line:
+                    continue
+                while '  ' in line:
+                    line = line.replace('  ', ' ')
+                if line.startswith('ROOM '):
+                    if ':' in line:
+                        line = line.split(':')[0]
+                    room_index = int(line[5:], 0x10)
+                    mmo = MapMetaObject.get(room_index)
+                    continue
+                if line.startswith('LEFTOVER'):
+                    mmo.leftover_data = b''
+                    continue
+                if ':' in line:
+                    mmo.import_line(line)
+                    continue
+                line = bytes([int(v, 0x10) for v in line.split()])
+                mmo.leftover_data += line
+
+    def __repr__(self):
+        header = (f'ROOM {self.index:0>3X}: {self.pointer:0>5x} -> '
+                  f'{self.reference_pointer:0>8x}')
+        s = header + '\n' + self.hexify()
+        s = s.replace('\n', '\n  ')
+        return s.strip()
 
     @property
     def data_pointer(self):
@@ -154,13 +308,6 @@ class MapMetaObject(TableObject):
         self._cached_decompressed = data
         return self.get_decompressed()
 
-    def __repr__(self):
-        header = (f'ROOM {self.index:0>3X}: {self.pointer:0>5x} -> '
-                  f'{self.reference_pointer:0>8x}')
-        s = header + '\n' + self.hexify()
-        s = s.replace('\n', '\n  ')
-        return s.strip()
-
     def get_entities(self):
         self.entities = []
         self.leftover_data = None
@@ -168,13 +315,13 @@ class MapMetaObject(TableObject):
         if data is None:
             return None
 
-        entity_type = self.EntityA
+        entity_type = self.EntityDefinition
         while True:
             if set(data) <= {0}:
                 break
 
             if len(data) > 0xc and data[0xc] == 0x08:
-                entity_type = self.EntityB
+                entity_type = self.EntityInstance
 
             segment_length = entity_type.DATA_LENGTH
             while len(data) < segment_length:
@@ -182,13 +329,13 @@ class MapMetaObject(TableObject):
             segment, data = data[:segment_length], data[segment_length:]
             entity = entity_type(segment, self)
 
-            if entity_type is self.EntityA and entity.is_null:
+            if entity_type is self.EntityDefinition and entity.is_null:
                 data = segment + data
-                entity_type = self.EntityB
+                entity_type = self.EntityInstance
                 continue
 
             self.entities.append(entity)
-            #if entity_type is self.EntityB and entity.is_null:
+            #if entity_type is self.EntityInstance and entity.is_null:
             #    break
 
         self.leftover_data = data
@@ -196,28 +343,50 @@ class MapMetaObject(TableObject):
         return self.entities
 
     def hexify(self):
-        if not hasattr(self, 'entities'):
-            self.get_entities()
-
         s = '\n'.join([str(e) for e in self.entities])
         if self.leftover_data:
             leftover = pretty_hexify(self.leftover_data).replace('\n', '\n  ')
             s = f'{s}\nLEFTOVER ({len(self.leftover_data)}):\n  {leftover}'
         return s
 
-    def get_exit_candidates(self):
-        data = self.get_decompressed()
-        if data is None:
-            return None
-        exits = []
-        while data:
-            segment, data = data[:0x10], data[0x10:]
-            if len(segment) < 0x10:
+    def import_line(self, line):
+        if '#' in line:
+            line = line.split('#')[0]
+        if '@' in line:
+            line, details = line.split('@', 1)
+            details = details.strip()
+        else:
+            details = None
+
+        line = line.strip()
+        if not line:
+            return
+
+        assert ':' in line
+        index, line = line.split(':')
+        line = line.strip()
+        index = int(index, 0x10)
+        for e in list(self.entities):
+            if e.index == index:
+                self.entities.remove(e)
+
+        new_data = bytes([int(v,0x10) for v in line.split()])
+        for entity_type in (self.EntityDefinition,
+                            self.EntityInstance):
+            if len(new_data) == entity_type.DATA_LENGTH:
                 break
-            if segment[1] == 0x8c:
-                exit_number = int.from_bytes(segment[4:6], byteorder='big')
-                exits.append(exit_number)
-        return exits
+        else:
+            raise Exception('Improper import data length.')
+
+        new_entity = entity_type(new_data, self, index)
+        if details is not None:
+            new_entity.import_details(details)
+        self.entities.append(new_entity)
+        self.entities = sorted(self.entities, key=lambda e: e.index)
+
+    def preprocess(self):
+        if 0x336 <= self.index <= 0x482:
+            self.get_entities()
 
 
 if __name__ == '__main__':
@@ -273,6 +442,8 @@ if __name__ == '__main__':
                 continue
             print(mmo)
             print()
+            #e = mmo.entities[5]
+            #e.import_line(str(e))
         #old_pointer = 0
         #for mmo in MapMetaObject.every:
         #    if mmo.data_pointer < old_pointer:
@@ -280,6 +451,10 @@ if __name__ == '__main__':
         #    old_pointer = mmo.data_pointer
         #MapMetaObject.get(608).get_decompressed()
         #MapMetaObject.get(0x1d1).get_decompressed()
+
+        print('IMPORTING')
+        MapMetaObject.import_from_file('to_import.txt')
+        print(MapMetaObject.get(0x40b))
 
         #if 'import' in get_activated_codes():
         #    import_all(ALL_OBJECTS)

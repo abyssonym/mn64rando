@@ -39,7 +39,7 @@
     index:      [4,5]
 
 0x008E:
-  name:       Death plane (determines out of bounds)
+  name:       Death plane (out of bounds)
 
 0x008F:
   name:       Dango
