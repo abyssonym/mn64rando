@@ -54,10 +54,10 @@
   name:       Robot Bee
 
 0x00FB:
-  name:       Small Pink Robot
+  name:       Small Pink Robot FB
 
 0x00FC:
-  name:       Small Pink Robot
+  name:       Small Pink Robot FC
 
 0x00FE:
   name:       Green Robot
@@ -139,13 +139,13 @@
   name:       Water
 
 0x0302:
-  name:       Inn Keeper
+  name:       Inn Keeper 302
 
 0x0305:
-  name:       Inn Keeper
+  name:       Inn Keeper 305
 
 0x0307:
-  name:       Inn Keeper
+  name:       Inn Keeper 307
 
 0x0308:
   name:       Fixed camera actor

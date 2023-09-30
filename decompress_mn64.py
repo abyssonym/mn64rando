@@ -137,11 +137,10 @@ def decompress_from_file(source_file, offset,
     source_file.seek(offset)
     null = source_file.read(2)
     assert null == b'\x00\x00'
-    length = int.from_bytes(source_file.read(2), byteorder='little') - 4
-    #print(f'SOURCE DATA LENGTH: {length}')
+    length = int.from_bytes(source_file.read(2), byteorder='big') - 4
     source_data = source_file.read(length)
 
-    source_data = flip_words(source_data)
+    #source_data = flip_words(source_data)
     if verify:
         initialize_temp()
         with open(TMP_INFILE, 'r+b') as f:
@@ -154,7 +153,7 @@ def decompress_from_file(source_file, offset,
         assert decomp == verify_data
     else:
         decomp = decompress(source_data, validation_data)
-    return decomp
+    return decomp, (offset, source_file.tell())
 
 
 def recompress(decomp, verify=None):
@@ -346,6 +345,13 @@ def recompress(decomp, verify=None):
         assert verify_data == recomp
 
     assert decompress(recomp[4:], validation_data=decomp) == decomp
+    return recomp
+
+
+def recompress_and_flip(decomp):
+    recomp = recompress(decomp)
+    flipped = flip_words(recomp)
+    return flipped
 
 
 if __name__ == '__main__':
@@ -359,7 +365,7 @@ if __name__ == '__main__':
 
     print('TESTING DECOMPRESSION')
     with open(source_file, 'r+b') as f:
-        decomp = decompress_from_file(f, offset, validation_data)
+        decomp, _ = decompress_from_file(f, offset, validation_data)
     print('TESTING RECOMPRESSION')
     recomp = recompress(decomp)
 

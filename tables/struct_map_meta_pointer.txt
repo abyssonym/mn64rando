@@ -1,1 +1,1 @@
-reference_pointer,4
+reference_pointer_be,4,str

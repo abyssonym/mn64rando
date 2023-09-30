@@ -16,7 +16,7 @@ from traceback import format_exc
 import re
 import yaml
 
-from decompress_mn64 import decompress_from_file
+from decompress_mn64 import decompress_from_file, recompress
 
 
 VERSION = "0"
@@ -51,6 +51,13 @@ class MapMetaObject(TableObject):
     with open(ENTITY_STRUCTURES_FILENAME) as f:
         entity_structures = yaml.load(f.read(),
                                       Loader=yaml.SafeLoader)
+
+    structure_names = set()
+    for index, structure in entity_structures.items():
+        name = structure['name']
+        if name in structure_names:
+            raise Exception(f'Duplicate structure name: {name}')
+        structure_names.add(name)
 
     class EntityMixin:
         DICT_MATCHER = re.compile('{[^}]*}')
@@ -204,7 +211,7 @@ class MapMetaObject(TableObject):
 
         @property
         def definition_index(self):
-            return self.get_property_value('definition_index')
+            return self.get_property_value('definition_index') >> 4
 
         @property
         def x(self):
@@ -257,7 +264,8 @@ class MapMetaObject(TableObject):
             assert self.data[1] == 0
 
         def set_main_actor(self, name):
-            self.set_property('definition_index', int(name, 0x10))
+            self.set_property('definition_index', int(name, 0x10) << 4)
+            assert self.definition_index == int(name, 0x10)
 
     @classmethod
     def import_from_file(self, filename):
@@ -286,6 +294,46 @@ class MapMetaObject(TableObject):
                 line = bytes([int(v, 0x10) for v in line.split()])
                 mmo.leftover_data += line
 
+    @classmethod
+    def consolidate_free_space(self):
+        free_space = sorted(MapMetaObject.free_space)
+        while True:
+            terminate_done = True
+            for (a1, b1) in list(free_space):
+                if not terminate_done:
+                    break
+                for (a2, b2) in list(free_space):
+                    if (a1, b1) == (a2, b2):
+                        continue
+                    if a1 <= a2 <= b1 or a1 <= b2 <= b1:
+                        free_space.remove((a1, b1))
+                        free_space.remove((a2, b2))
+                        new_pair = (min(a1, a2), max(b1, b2))
+                        free_space.append(new_pair)
+                        terminate_done = False
+                        break
+            if terminate_done:
+                break
+        MapMetaObject.free_space = sorted(free_space)
+
+    @classmethod
+    def allocate(self, length):
+        length += 3
+        candidates = [(a, b) for (a, b) in self.free_space if b-a >= length]
+        assert candidates
+        candidates = sorted(candidates, key=lambda x: (x[1]-x[0], x))
+        (start, finish) = candidates[0]
+        MapMetaObject.free_space.remove((start, finish))
+        new_start = start+length
+        if length != 0:
+            assert start < new_start <= finish
+        if new_start < finish:
+            MapMetaObject.free_space.append((new_start, finish))
+            MapMetaObject.free_space = sorted(MapMetaObject.free_space)
+        while start % 4:
+            start += 1
+        return start
+
     def __repr__(self):
         header = (f'ROOM {self.index:0>3X}: {self.pointer:0>5x} -> '
                   f'{self.reference_pointer:0>8x}')
@@ -297,18 +345,49 @@ class MapMetaObject(TableObject):
     def data_pointer(self):
         return self.reference_pointer & 0x7fffffff
 
+    @property
+    def data(self):
+        data = b''
+        for e in self.entities:
+            data += e.data
+        if self.leftover_data is not None:
+            data += self.leftover_data
+        return data
+
+    @property
+    def data_has_changed(self):
+        if not hasattr(self, '_cached_decompressed'):
+            return False
+        old_data = self._cached_decompressed
+        data = self.data
+        while len(data) < len(old_data):
+            data += b'\x00'
+        while len(old_data) < len(data):
+            old_data += b'\x00'
+        return data != old_data
+
+    @property
+    def is_room_series(self):
+        #return 0x58f10 <= self.pointer <= 0x5945f
+        return 0x58f2c <= self.pointer <= 0x5945f
+
     def get_decompressed(self):
         if hasattr(self, '_cached_decompressed'):
             return self._cached_decompressed
         f = get_open_file(get_outfile())
         try:
-            data = decompress_from_file(f, self.data_pointer)
+            data, (start, finish) = decompress_from_file(f, self.data_pointer)
+            self._deallocation_start = start
+            self._deallocation_finish = finish
         except:
             data = None
         self._cached_decompressed = data
         return self.get_decompressed()
 
     def get_entities(self):
+        if hasattr(self, 'entities'):
+            return self.entities
+
         self.entities = []
         self.leftover_data = None
         data = self.get_decompressed()
@@ -384,9 +463,74 @@ class MapMetaObject(TableObject):
         self.entities.append(new_entity)
         self.entities = sorted(self.entities, key=lambda e: e.index)
 
+    def deallocate(self):
+        raise Exception('Deallocated data cannot be used. '
+                        'Pointers must be in ascending order.')
+        start = self._deallocation_start
+        finish = self._deallocation_finish
+        for mmo in MapMetaObject.every:
+            if start < mmo.data_pointer < finish:
+                finish = mmo.data_pointer
+        if finish <= start:
+            return
+        MapMetaObject.free_space.append((start, finish))
+        self.consolidate_free_space()
+
+    def get_unmodified_compressed(self):
+        try:
+            start = self._deallocation_start
+            finish = self._deallocation_finish
+        except AttributeError:
+            start = self.reference_pointer & 0x7fffffff
+            finish = self.get(self.index+1).reference_pointer & 0x7fffffff
+            assert finish > start
+        f = get_open_file(get_outfile())
+        f.seek(start)
+        return f.read(finish-start)
+
+    def compress_and_write(self):
+        if self.data_has_changed:
+            recomp = recompress(self.data)
+        else:
+            recomp = self.get_unmodified_compressed()
+        while len(recomp) % 4:
+            recomp += b'\x00'
+        recomp += b'\x00\x00\x00\x00'
+        #self.deallocate()
+        address = self.allocate(len(recomp))
+        f = get_open_file(get_outfile())
+        f.seek(address)
+        f.write(recomp)
+        new_pointer = (self.reference_pointer & 0x80000000) | address
+        self.reference_pointer = new_pointer
+        self.relocated = True
+
     def preprocess(self):
-        if 0x336 <= self.index <= 0x482:
+        if not hasattr(MapMetaObject, 'free_space'):
+            MapMetaObject.free_space = [(addresses.free_space_start,
+                                         addresses.free_space_end)]
+
+        self.reference_pointer = int.from_bytes(
+            self.reference_pointer_be, byteorder='big')
+        self.old_data['reference_pointer'] = self.reference_pointer
+
+        if self.is_room_series:
             self.get_entities()
+            assert not self.data_has_changed
+            assert self.entities
+
+    def cleanup(self):
+        #if self.data_has_changed:
+        if self.is_room_series:
+            self.compress_and_write()
+            # for whatever reason, pointers must be in ascending order
+            assert self.relocated
+            assert not hasattr(self.get(self.index+1), 'relocated')
+            previous = self.get(self.index-1)
+            if hasattr(previous, 'relocated'):
+                assert previous.reference_pointer <= self.reference_pointer
+        self.reference_pointer_be = self.reference_pointer.to_bytes(
+            length=4, byteorder='big')
 
 
 if __name__ == '__main__':
@@ -401,7 +545,7 @@ if __name__ == '__main__':
         codes = {
         }
 
-        run_interface(ALL_OBJECTS, snes=False, codes=codes,
+        run_interface(ALL_OBJECTS, snes=False, n64=True, codes=codes,
                       custom_degree=False, custom_difficulty=False)
 
         #if 'export' in get_activated_codes():
@@ -410,51 +554,21 @@ if __name__ == '__main__':
         for code in sorted(get_activated_codes()):
             print('Code "%s" activated.' % code)
 
-        #MapMetaObject.get(0x40b).get_decompressed()
         '''
         for mmo in MapMetaObject.every:
-            try:
-                mmo.get_decompressed()
-                print('PASS', hex(mmo.index), hex(mmo.data_pointer))
-            except:
-                print('FAIL', hex(mmo.index), hex(mmo.data_pointer))
-        for mmo in MapMetaObject.every:
-            data = mmo.get_decompressed()
-            if data is None:
-                continue
-            if len(data) < 0x22:
-                continue
-            if data[0x21] == 0x8c:
-                print(hex(mmo.index), True)
-            else:
-                print(hex(mmo.index), False)
-        for mmo in MapMetaObject.every:
-            exits = mmo.get_exit_candidates()
-            if exits:
-                print(hex(mmo.index), [hex(x) for x in exits])
-        mmo = MapMetaObject.get(0x408)
-        print(mmo)
-        entities = mmo.get_entities()
-        import pdb; pdb.set_trace()
-        '''
-        for mmo in MapMetaObject.every:
-            if not (0x336 <= mmo.index <= 0x482):
+            if not mmo.is_room_series:
                 continue
             print(mmo)
             print()
-            #e = mmo.entities[5]
-            #e.import_line(str(e))
-        #old_pointer = 0
-        #for mmo in MapMetaObject.every:
-        #    if mmo.data_pointer < old_pointer:
-        #        print(hex(mmo.index), hex(mmo.data_pointer))
-        #    old_pointer = mmo.data_pointer
-        #MapMetaObject.get(608).get_decompressed()
-        #MapMetaObject.get(0x1d1).get_decompressed()
-
+        exit(0)
+        '''
         print('IMPORTING')
         MapMetaObject.import_from_file('to_import.txt')
-        print(MapMetaObject.get(0x40b))
+        for mmo in MapMetaObject.every:
+            if mmo.data_has_changed:
+                print(mmo)
+
+        #print(MapMetaObject.get(0x40b))
 
         #if 'import' in get_activated_codes():
         #    import_all(ALL_OBJECTS)

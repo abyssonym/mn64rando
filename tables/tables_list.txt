@@ -1,3 +1,4 @@
-MapMetaObject           struct_map_meta_pointer.txt     58256   1312
+MapMetaObject           struct_map_meta_pointer.txt     58258   1312
 $free_space_start           fa0000
 $free_space_end             ffffff
+.patch                      patch_no_checksum.txt
