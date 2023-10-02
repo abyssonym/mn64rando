@@ -43,7 +43,20 @@ def pretty_hexify(s, newlines=True):
         while line:
             word, line = line[:4], line[4:]
             word = hexify(word).split(' ')
-            word = f'{word[0]}{word[1]} {word[2]}{word[3]}'
+            if len(word) >= 2:
+                a = f'{word[0]}{word[1]}'
+            else:
+                a = word[0]
+            if len(word) >= 4:
+                b = f'{word[2]}{word[3]}'
+            elif len(word) > 2:
+                b = word[2:3][0]
+            else:
+                b = None
+            if a and b:
+                word = f'{a} {b}'
+            else:
+                word = a
             line_result.append(word)
         result.append(' '.join(line_result))
     if newlines:
@@ -437,7 +450,8 @@ class MapMetaObject(TableObject):
 
     @property
     def is_room_series(self):
-        return 0x58f10 <= self.pointer <= 0x59463
+        # do NOT overwrite 59460
+        return 0x58f10 <= self.pointer <= 0x5945f
 
     @property
     def is_room(self):
@@ -668,7 +682,7 @@ if __name__ == '__main__':
             print('EXPORTING')
             with open('to_import.txt', 'w+') as f:
                 for mmo in MapMetaObject.sorted_rooms:
-                    f.write(str(mmo) + '\n')
+                    f.write(str(mmo) + '\n\n')
 
         if 'import' in get_activated_codes():
             print('IMPORTING')
