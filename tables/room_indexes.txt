@@ -1,0 +1,336 @@
+000 335 Oedo Castle Tile Room
+001 336 Alternate Oedo Castle Tile Room (Unused)
+002 337 Oedo Castle Entrance
+003 338 Oedo Castle Swatting Robot Silver Key Room
+004 339
+005 33a Oedo Castle Chain Pipe Fork
+006 33b Oedo Castle Congo's Feet
+007 33c Oedo Castle Chain Pipe Key Room
+008 33d Oedo Castle Swatting Robot Gold Key Room
+009 33e Oedo Castle Turtle Pad Room
+00a 33f
+00b 340
+00c 341
+00d 342
+00e 343
+00f 344
+010 345
+011 346
+012 347
+013 348 Alternate Oedo Castle Gold Key Room (Unused)
+014 349
+015 34a
+016 34b
+017 34c Alternate Congo Boss Battle Room (Unused)
+018 34d
+019 34e
+01a 34f
+01b 350
+01c 351 Alternate Oedo Castle Final Room (Unused)
+01d 352
+01e 353
+01f 354
+020 355
+021 356
+022 357
+023 358
+024 359
+025 35a
+026 35b
+027 35c
+028 35d
+029 360
+02a 361
+030 362
+031 363
+032 364
+033 365
+034 366
+035 367
+036 368
+037 369
+038 36a
+039 36b
+03a 36c
+03b 36d
+03c 36e
+03d 36f
+03e 370
+03f 371
+040 372
+041 373
+042 374
+043 375
+044 376
+045 377
+046 378
+047 379
+048 37a
+049 37b
+04a 37c
+055 35e Alternate Oedo Castle 1st Elevator Room (Unused)
+056 37d
+057 35f
+05a 37e
+05b 37f
+05c 380
+05d 381
+05e 382
+05f 383
+060 384
+061 385
+062 386
+063 387
+064 388
+065 389
+066 38a
+067 38b
+068 38c
+069 38d
+06a 38e
+06b 38f
+06c 390
+06d 391
+06e 392
+06f 393
+070 394
+071 395
+072 396
+073 397
+074 398
+075 399
+076 39a
+077 39b
+078 39c
+079 39d
+081 39e
+082 39f
+083 3a0
+084 3a1 Unknown Submarine Room (Unused)
+085 3a2
+086 3a3
+087 3a4
+088 3a5 Alternate Submarine Red Ramen Corridor (Unused)
+089 3a6
+08a 3a7
+08b 3a8
+08c 3a9
+08d 3aa
+08e 3ab
+08f 3ac
+090 3ad
+091 3ae
+092 3af
+093 3b0
+094 3b1
+095 3b2
+096 3b3
+097 3b4
+098 3b5
+099 3b6
+09a 3b7
+09b 3b8
+09c 3b9
+09d 3ba
+09e 3bb
+0a9 3bc
+0aa 3bd
+0ab 3be
+0ac 3bf
+0ad 3c0
+0ae 3c1
+0af 3c2
+0b0 3c3
+0b1 3c4
+0b2 3c5
+0b3 3c6
+0b4 3c7
+0b5 3c8
+0b6 3c9
+0b7 3ca
+0b8 3cb
+0b9 3cc
+0ba 3cd
+0bb 3ce
+0bc 3cf
+0bd 3d0
+0be 3d1
+0bf 3d2
+0c0 3d3
+0c1 3d4
+0c2 3d5
+#0c6 3d6 Kai Highway
+12c 3d6 Kai Highway
+12d 3d7 Mt. Fuji
+12e 3d8 Mt. Fuji Interior (Base)
+12f 3d9 Mt. Fuji Interior (Summit)
+130 3da Musashi
+131 3db Musashi-Iga Tunnel
+132 3dc Iga
+133 3dd
+134 3de
+135 3df
+136 3e0
+137 3e1
+138 3e2
+139 3e3
+13a 3e4
+13b 3e5
+13c 3e6
+13d 3e7
+13e 3e8
+13f 3e9
+140 3ea
+141 3eb
+142 3ec
+143 3ed
+144 3ee
+145 3ef
+146 3f3
+147 3f4
+148 3f5
+149 3f6
+14a 3f7
+14b 3f8
+14c 3f9
+14d 3fa
+14e 3fb
+14f 3fc Tunnel to Festival Temple Castle
+150 3fd
+151 3fe
+152 3ff
+153 400
+154 401
+155 402
+156 403
+157 404
+158 405
+159 406
+15a 3f0
+15b 3f1
+15c 3f2
+#15d 407
+15e 407 Bridge to Musashi
+15f 408 Oedo Town (West)
+160 409 Oedo Town (North)
+161 40a Oedo Town (South)
+162 40b Bridge to Oedo Castle
+163 40c Oedo Town (Northwest)
+164 40d Path to Oedo Castle (Chain Pipe)
+165 40e Stairway to Oedo Castle
+166 40f Outside Oedo Castle
+167 410 Zazen Town Entrance
+168 411 Zazen Town Entrance Hallway
+169 412 Zazen Town
+16a 413
+16b 414
+16c 415
+16d 41a
+16e 41b
+16f 41c
+170 41d
+171 41e
+172 41f
+173 420
+174 421
+175 422
+176 423
+177 424
+178 425
+179 426
+17a 427
+17b 428
+17c 429
+17d 42a
+17e 42b
+17f 416
+180 42c
+181 417
+182 42d
+183 418
+184 42e
+185 42f
+186 419
+191 430
+192 431
+193 432
+194 433
+195 434
+196 435
+197 436
+198 437
+199 438
+19a 439
+19b 43a
+19c 43b
+19d 43c
+19e 43d
+19f 43e
+1a0 43f
+1a1 440
+1a2 441
+1a3 442
+1a4 443
+1a5 444
+1a6 445
+1a7 446 Plasma (Oedo)
+1a8 447 Plasma?
+1a9 448 Plasma?
+1aa 449 Plasma?
+1ab 44a Plasma?
+1ac 44b
+1ad 44c
+1ae 44d
+1af 44e
+1b0 44f
+1b1 450 Kai Highway Teahouse
+1b2 451
+1b3 452
+1b4 453
+1b5 454
+1b6 455
+1b7 456
+1b8 457
+1b9 458
+1ba 459
+1bb 45a
+1bc 45b
+1bd 45c
+1be 45d
+1bf 45e
+1c0 45f
+1c1 460 South Oedo House (Old Woman)
+1c2 461 South Oedo House (Young Woman)
+1c3 462 South Oedo House (Man)
+1c4 463 South Oedo House (Empty)
+1c5 464 South Oedo House (Man)
+1c6 465
+1c7 466
+1c8 467
+1c9 468
+1ca 469
+1cb 46a
+1cc 46b
+1cd 46c
+1ce 46d
+1cf 46e
+1d0 46f
+1d1 470 Goemon's House
+1d2 471 Mt. Fuji Pipe Salesman's House
+#1d3 335
+1d3 472
+1d4 473
+1d5 474
+1d6 475
+1d7 476
+1d8 477
+1d9 478
+1da 479
+1db 47a
+1dc 47b
+1dd 47c
+1de 47d
+1df 47e
+1e1 47f
+1e2 480
+1e3 481

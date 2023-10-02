@@ -8,10 +8,13 @@
   name:       Ryo (Drops down)
 
 0x0082:
-  name:       Giant Ryo (unused)
+  name:       Giant Ryo
 
 0x0083:
   name:       Giant Ryo (Drops down, unused)
+
+0x0084:
+  name:       Dango?
 
 0x0085:
   name:       Gold Dango
@@ -37,6 +40,12 @@
   name:       Exit
   dest_room:
     index:      [4,5]
+  dest_x:
+    index:      [6,7]
+  dest_z:
+    index:      [8,9]
+  dest_y:
+    index:      [10,11]
 
 0x008E:
   name:       Death plane (out of bounds)
@@ -98,6 +107,9 @@
 0x0149:
   name:       Dango Stick Wipers (Spawners)
 
+0x0190:
+  name:       Flying Tile
+
 0x0192:
   name:       Pot
   num_spawn:
@@ -116,6 +128,8 @@
     0:          Silver
     1:          Gold
     2:          Diamond
+  key_index:
+    index:      [8,9]
 
 0x0196:
   name:       Star Block
@@ -132,11 +146,89 @@
 0x01FC:
   name:       Elevator (Oedo)
 
-0x02CD:
-  name:       Gatekeeper with lantern
+0x023e:
+  name:       Locked Door?
+  zone:
+    index:      4
+    0:          Oedo Castle
+    1:          Ghost Toys 1
+    2:          Ghost Toys 2
+    3:          Festival Temple
+    4:          Gourmet Submarine 1
+    5:          Unknown
+    6:          Musical Castle 1
+    7:          Musical Castle 2
+    8:          Gourmet Submarine 2
+  key_type:
+    index:      5
+    0:          Diamond?
+    1:          Gold?
+    2:          Silver?
+  lock_index:
+    index:      [8,9]
+  accept_key:
+    index:      [10,11]
+
+0x0241:
+  name:       Swing Door
+  graphic:
+    index:      4
+
+0x024D:
+  name:       Sliding Door
+  graphic:
+    index:      4
 
 0x0287:
   name:       Water
+
+0x02BE:
+  name:       Old Man
+  message:
+    index:      [10,11]
+
+0x02BF:
+  name:       Boy
+  message:
+    index:      [10,11]
+
+0x02C1:
+  name:       Girl
+  message:
+    index:      [10,11]
+
+0x02C5:
+  name:       Hiker
+  message:
+    index:      [10,11]
+
+0x02C8:
+  name:       Red Woman
+  message:
+    index:      [10,11]
+
+0x02CD:
+  name:       Gatekeeper with lantern
+
+0x02C7:
+  name:       Blue Man
+  message:
+    index:      [10,11]
+
+0x02CE:
+  name:       Young Woman
+  message:
+    index:      [10,11]
+
+0x02D0:
+  name:       Guard
+  message:
+    index:      [10,11]
+
+0x02FD:
+  name:       Old Woman
+  message:
+    index:      [10,11]
 
 0x0302:
   name:       Inn Keeper 302
@@ -158,3 +250,6 @@
 
 0x0323:
   name:       Congo
+
+0x0330:
+  name:       Glowing IN sign?
