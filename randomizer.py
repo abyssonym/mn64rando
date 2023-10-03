@@ -130,6 +130,14 @@ class MapMetaObject(TableObject):
             return set(self.data) == {0}
 
         @property
+        def signature(self):
+            parent_index = f'{self.parent.warp_index:0>3x}'
+            name = self.name.strip()
+            if '#' in name:
+                name = name.split('#')[0].strip()
+            return f'{parent_index}-{name}'
+
+        @property
         def details(self):
             if self.is_null or self.is_footer or self.name is None:
                 return None
@@ -186,6 +194,9 @@ class MapMetaObject(TableObject):
             return value
 
         def set_property(self, property_name, value):
+            if self.structure is None or property_name not in self.structure:
+                raise Exception(f'Entity {self.signature} has no '
+                                f'"{property_name}" property.')
             data = self.structure[property_name]
             start, finish = self.get_property_indexes(property_name)
             if isinstance(value, str):
@@ -222,8 +233,8 @@ class MapMetaObject(TableObject):
         @property
         def name(self):
             if self.structure is None:
-                return None
-            actor_id = f'{self.actor_id:0>4x}'
+                return f'{self.actor_id:0>3x}'
+            actor_id = f'{self.actor_id:0>3x}'
             result = f'{actor_id:24}# {self.structure["name"]}'
             if self.comment:
                 result = f'{result} {self.comment}'
@@ -238,6 +249,8 @@ class MapMetaObject(TableObject):
         @property
         def comment(self):
             if self.structure and 'dest_room' in self.structure:
+                if self.get_property_value('misc') == 0:
+                    return '(no destination)'
                 dest_room = self.get_property_value('dest_room')
                 if dest_room in MapMetaObject.warp_names:
                     dest_name = MapMetaObject.warp_names[dest_room]
@@ -289,8 +302,7 @@ class MapMetaObject(TableObject):
                 while '  ' in comment:
                     comment = comment.replace('  ', ' ').strip()
                 return f'{self.definition_index:0>3x}  # {comment}'
-            else:
-                return f'{self.definition_index:0>3x}'
+            return f'{self.definition_index:0>3x}'
 
         @property
         def definition(self):
@@ -309,6 +321,8 @@ class MapMetaObject(TableObject):
         def comment(self):
             if not self.definition:
                 return
+            if not self.definition.name:
+                return f'{self.definition.actor_id:0>3x}'
             return self.definition.name
 
         @property
@@ -525,11 +539,19 @@ class MapMetaObject(TableObject):
         return self.entities
 
     def hexify(self):
-        s = '\n'.join([str(e) for e in self.entities])
+        definitions = self.definitions
+        instances = [e for e in self.entities if e not in definitions]
+        s = '# DEFINITIONS\n'
+        s += '\n'.join(map(str, definitions))
+        s += '\n\n# INSTANCES\n'
+        s += '\n'.join(map(str, instances))
+        s += '\n\n'
         if self.leftover_data:
             leftover = pretty_hexify(self.leftover_data).replace('\n', '\n  ')
             s = f'{s}\nLEFTOVER ({len(self.leftover_data)}):\n  {leftover}'
-        return s
+        while '\n\n\n' in s:
+            s = s.replace('\n\n\n', '\n\n')
+        return s.strip()
 
     def import_line(self, line):
         if '#' in line:
@@ -612,7 +634,7 @@ class MapMetaObject(TableObject):
         definitions = self.definitions
         if len(definitions) > self.definition_limit:
             raise Exception(f'Room {self.index:0>3x}: Number of entity types '
-                            f'cannot exceed {self.definition_limit}.')
+                            f'must equal {self.definition_limit}.')
         try:
             assert self.entities[:len(definitions)] == definitions
             assert all(e.index == i for (i, e) in enumerate(definitions))

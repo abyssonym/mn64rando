@@ -1,42 +1,62 @@
-0x007F:
+0x07F:
   name:       Fire
 
-0x0080:
+0x080:
   name:       Smoke Cloud
 
-0x0081:
+0x081:
   name:       Ryo (Drops down)
 
-0x0082:
+0x082:
   name:       Giant Ryo
 
-0x0083:
+0x083:
   name:       Giant Ryo (Drops down, unused)
 
-0x0084:
+0x084:
   name:       Dango?
 
-0x0085:
+0x085:
   name:       Gold Dango
 
-0x0086:
+0x086:
   name:       Mr. Elly Fant
 
-0x0087:
+0x087:
   name:       Mr. Arrow
 
-0x0088:
+0x088:
   name:       Silver Doll
 
-0x0089:
+0x089:
   name:       Gold Doll
 
-0x008B:
+0x08A:
+  name:       Shop Wares
+  item_type:
+    index:      11
+    00:         Surprise Pack / Sombrero
+    01:         Metal Helmet / Chanpon Noodles
+    02:         Gold Helmet
+    03:         Straw Raincoat / Orange
+    04:         Metal Armor
+    05:         Gold Armor / Noodles
+    06:         Rice Ball / Rice Crackers
+    07:         Plum Rice Ball / Fresh Bonito
+    0x08:       Fish Rice Ball / Sauced Dumplings
+    0x09:       Apple
+    0x0a:       Hot Tofu
+    0x0b:       Bowl of Noodles
+    0x0d:       Kiritanpo
+    0x0e:       Sponge Cake
+    0x10:       Round Radish
+
+0x08B:
   name:       Sign
   message:
     index:      [10,11]
 
-0x008C:
+0x08C:
   name:       Exit
   dest_room:
     index:      [4,5]
@@ -46,71 +66,115 @@
     index:      [8,9]
   dest_y:
     index:      [10,11]
+  misc:
+    index:      [14,15]
 
-0x008E:
+0x08E:
   name:       Death plane (out of bounds)
 
-0x008F:
+0x08F:
   name:       Dango
 
-0x0091:
-  name:       Life Up
+0x091:
+  name:       Surprise Pack (Extra Life)
 
-0x00CB:
+0x0CB:
   name:       Ghost Robot
 
-0x00FA:
+0x0FA:
   name:       Robot Bee
 
-0x00FB:
+0x0FB:
   name:       Small Pink Robot FB
 
-0x00FC:
+0x0FC:
   name:       Small Pink Robot FC
 
-0x00FE:
-  name:       Green Robot
+0x0FD:
+  name:       Green Robot FD
 
-0x00FF:
+0x0FE:
+  name:       Green Robot FE
+
+0x0FF:
   name:       Big Swatting Robot
 
-0x0100:
-  name:       Jumping robot
+0x100:
+  name:       Blue Robot
 
-0x0103:
+0x103:
   name:       Scarecrow Bot
 
-0x010A:
+0x106:
+  name:       Spinning Kite
+
+0x107:
+  name:       Bamboo Shooter
+
+0x10A:
   name:       Big Swatting Robot Red
 
-0x0108:
+0x108:
   name:       Jet Robot
 
-0x0109:
+0x109:
   name:       Yellow Robot
 
-0x010B:
+0x10B:
   name:       Shrinking Robot
 
-0x010C:
+0x10C:
   name:       Sword Robot
 
-0x0130:
+0x12C:
+  name:       Small Cannon
+
+0x12D:
+  name:       Flying Lion Head
+
+0x130:
   name:       Drum robot
 
-0x0134:
+0x131:
+  name:       Triangle Robot
+
+0x132:
+  name:       Bouncing Darumanyo
+
+0x133:
+  name:       Paper Ghost
+
+0x134:
   name:       Dango Stick Wipers
 
-0x0141:
+0x13a:
+  name:       Tank
+
+0x13d:
+  name:       Samurai
+
+0x134:
+  name:       Hammer Thrower
+
+0x140:
+  name:       Fire Stalker
+
+0x141:
   name:       Ninja
 
-0x0149:
+0x144:
+  name:       Burrowing Robot
+
+0x145:
+  name:       Kite
+
+0x149:
   name:       Dango Stick Wipers (Spawners)
 
-0x0190:
+0x190:
   name:       Flying Tile
 
-0x0192:
+0x192:
   name:       Pot
   num_spawn:
     index:      [4,5]
@@ -119,35 +183,50 @@
     0x81:       Ryo
     0x8f:       Dango
 
-0x0193:
+0x193:
   name:       Key
   enemies:
-    index:      5
+    index:      4
   key_type:
-    index:      6
+    index:      5
     0:          Silver
     1:          Gold
     2:          Diamond
   key_index:
     index:      [8,9]
 
-0x0196:
+0x195:
+  name:       Ghost Toys Torch?
+
+0x196:
   name:       Star Block
 
-0x0197:
+0x197:
   name:       Falling Board With Chain
 
-0x0198:
+0x198:
   name:       Spike Chain
 
-0x01F7:
+0x1A6:
+  name:       Fox Mask
+
+0x1F7:
   name:       Turtle Pad
 
-0x01FC:
-  name:       Elevator (Oedo)
+0x1FC:
+  name:       Elevator
 
-0x023e:
-  name:       Locked Door?
+0x23a:
+  name:       Double Sliding Door 23a
+
+0x23a:
+  name:       Double Sliding Door 23b
+
+0x23c:
+  name:       Double Sliding Door 23c
+
+0x23e:
+  name:       Locked Door
   zone:
     index:      4
     0:          Oedo Castle
@@ -161,95 +240,206 @@
     8:          Gourmet Submarine 2
   key_type:
     index:      5
-    0:          Diamond?
-    1:          Gold?
-    2:          Silver?
+    0:          Diamond
+    1:          Gold
+    2:          Silver
+    3:          Special
   lock_index:
     index:      [8,9]
   accept_key:
     index:      [10,11]
 
-0x0241:
+0x241:
   name:       Swing Door
   graphic:
     index:      4
 
-0x024D:
-  name:       Sliding Door
+0x242:
+  name:       Swing Door (Short)
   graphic:
     index:      4
 
-0x0287:
+0x245:
+  name:       Metal Box?
+
+0x24D:
+  name:       Sliding Door 24d
+  graphic:
+    index:      4
+
+0x255:
+  name:       Oedo Castle Emperor Event Trigger
+
+0x256:
+  name:       Sliding Door 256
+
+0x287:
   name:       Water
 
-0x02BE:
+0x2BD:
+  name:       Dog
+  message:
+    index:      [10,11]
+
+0x2BE:
   name:       Old Man
   message:
     index:      [10,11]
 
-0x02BF:
+0x2BF:
   name:       Boy
   message:
     index:      [10,11]
 
-0x02C1:
+0x2C0:
+  name:       Purple Woman
+  message:
+    index:      [10,11]
+
+0x2C1:
   name:       Girl
   message:
     index:      [10,11]
 
-0x02C5:
+0x2C2:
+  name:       Happy Brown Man
+  pathing:
+    index:      [6,7]
+  message:
+    index:      [10,11]
+
+0x2C4:
+  name:       Thief
+  message:
+    index:      [10,11]
+
+0x2C5:
   name:       Hiker
   message:
     index:      [10,11]
 
-0x02C8:
-  name:       Red Woman
+0x2C6:
+  name:       Middle Aged Brown Man
   message:
     index:      [10,11]
+  hidden:
+    index:      15
+    0:          No
+    1:          Yes
 
-0x02CD:
-  name:       Gatekeeper with lantern
-
-0x02C7:
+0x2C7:
   name:       Blue Man
   message:
     index:      [10,11]
 
-0x02CE:
+0x2C8:
+  name:       Red Woman
+  pathing:
+    index:      [6,7]
+  message:
+    index:      [10,11]
+
+0x2C9:
+  name:       Running Man
+  pathing:
+    index:      [6,7]
+  message:
+    index:      [10,11]
+
+0x2CA:
+  name:       Farmer
+  pathing:
+    index:      [6,7]
+  message:
+    index:      [10,11]
+
+0x2CB:
+  name:       Ronin
+  pathing:
+    index:      [6,7]
+  message:
+    index:      [10,11]
+
+0x2CC:
+  name:       Guard
+  pathing:
+    index:      [6,7]
+  message:
+    index:      [10,11]
+
+0x2CD:
+  name:       Gatekeeper with lantern
+
+0x2CE:
   name:       Young Woman
   message:
     index:      [10,11]
 
-0x02D0:
-  name:       Guard
+0x2D0:
+  name:       Guard (Gatekeeper)
   message:
     index:      [10,11]
 
-0x02FD:
+0x2F5:
+  name:       Plasma Backup Dancer
+
+0x2F8:
+  name:       Drunk
+  message:
+    index:      [10,11]
+
+0x2FC:
+  name:       Shopkeeper
+  message:
+    index:      [10,11]
+
+0x2FD:
   name:       Old Woman
   message:
     index:      [10,11]
 
-0x0302:
+0x302:
   name:       Inn Keeper 302
 
-0x0305:
+0x305:
   name:       Inn Keeper 305
 
-0x0307:
+0x306:
+  name:       Plasma
+
+0x307:
   name:       Inn Keeper 307
 
-0x0308:
-  name:       Fixed camera actor
+0x308:
+  name:       Fixed Camera Actor
 
-0x030F:
+0x30F:
   name:       Dancin
 
-0x0322:
+0x31d:
+  name:       Automatic Message
+  message:
+    index:      [10,11]
+
+0x31e:
+  name:       Omitsu
+  message:
+    index:      [10,11]
+
+0x31f:
+  name:       Double Cross Sliding Door
+
+0x322:
   name:       Ladder
 
-0x0323:
+0x323:
   name:       Congo
 
-0x0330:
-  name:       Glowing IN sign?
+0x330:
+  name:       Glowing IN Sign?
+
+0x33b:
+  name:       Ladder (Short)?
+
+0x349:
+  name:       Flame
