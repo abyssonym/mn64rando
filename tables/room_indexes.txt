@@ -40,7 +40,6 @@
 027 35c Null (Unused)
 028 35d Fake Warp -> 057 Oedo Castle 2F Emperor's Room
 029 360 Null (Unused)
-#02a 361
 02f 361 Ghost Toys Entrance
 030 362 Ghost Toys 1F Elevator Shogi Room
 031 363 Ghost Toys 1F Crane Room
@@ -49,8 +48,8 @@
 034 366 Ghost Toys 1F Spike Cannon Boat Room
 035 367 Ghost Toys 1F Flower Blooming Key Room
 036 368 Ghost Toys 1F Shogi Cannon Gold Cat Room
-037 369
-038 36a
+037 369 Alternate Ghost Toys 1F Elevator Shogi Room (Unused)
+038 36a Alternate Ghost Toys 1F Elevator Shogi Room (Unused)
 039 36b Ghost Toys 1F Invisible Ghost Room
 03a 36c Ghost Toys 1F Spike Darumanyo Room
 03b 36d Ghost Toys 1F Invisible Ghost Key Room
@@ -160,7 +159,6 @@
 0c0 3d3 Musical Castle 2 B1F Kaleidoscope Room
 0c1 3d4 Musical Castle 2 B1F Gorgeous Stage
 0c2 3d5
-#0c6 3d6 Kai Highway
 12c 3d6 Kai Highway
 12d 3d7 Mt. Fuji
 12e 3d8 Mt. Fuji Interior (Base)
@@ -198,11 +196,11 @@
 14e 3fb Japan Sea - Underwater
 14f 3fc Northeast Tunnel to Festival Village 1
 150 3fd Northeast Tunnel to Festival Village 2
-151 3fe Mutsu
+151 3fe Mutsu - Path to Festival Village
 152 3ff Mutsu - Uzen Tunnel
 153 400 Kanmonkyo Gateway Viewpoint
 154 401 Waterfall of Kegon
-155 402
+155 402 Dragon Fight or Alternate Waterfall of Kegon?
 156 403 Null (Unused)
 157 404
 158 405
@@ -210,7 +208,6 @@
 15a 3f0
 15b 3f1
 15c 3f2 Hagi
-#15d 407
 15e 407 Oedo - Bridge to Musashi
 15f 408 Oedo Town (West)
 160 409 Oedo Town (North)
@@ -250,9 +247,8 @@
 182 42d
 183 418
 184 42e
-#185 42f
 186 419 Zazen Town (North)
-190 42f Oedo - Restaurant?
+190 42f Oedo - Restaurant
 191 430 Zazen - Restaurant
 192 431 Folkypoke - Restaurant
 193 432 Festival Village - Restaurant
@@ -279,14 +275,14 @@
 1a8 447 Zazen - Plasma
 1a9 448 Folkypoke - Plasma
 1aa 449 Festival Village - Plasma
-1ab 44a Plasma?
+1ab 44a Plasma (Unused)
 1ac 44b Null (Unused)
 1ad 44c Oedo Guardhouse
 1ae 44d Zazen Guardhouse
 1af 44e Null (Unused)
 1b0 44f Oedo - Omitsu's Teahouse
 1b1 450 Kai Highway Teahouse
-1b2 451
+1b2 451 Alternate Kii-Awaji Teahouse (Unused)
 1b3 452 Kii-Awaji Teahouse
 1b4 453 Kompira Teahouse
 1b5 454 Iyo Teahouse
@@ -304,7 +300,7 @@
 1c1 460 South Oedo House (Old Woman)
 1c2 461 South Oedo House (Young Woman)
 1c3 462 South Oedo House (Man c3)
-1c4 463 South Oedo House (Muscle Training Gym)
+1c4 463 South Oedo House (Muscle Training Gym, empty?)
 1c5 464 South Oedo House (Man c5)
 1c6 465 Folkypoke House (Boy)
 1c7 466 Folkypoke House (Old Woman)
@@ -315,24 +311,23 @@
 1cc 46b East Festival House (Drunk)
 1cd 46c Northwest Festival House (Old Man)
 1ce 46d Null (Unused)
-1cf 46e
+1cf 46e South Oedo House (Muscle Training Gym, occupied?)
 1d0 46f Sasuke Jetpack Training
 1d1 470 South Oedo - Goemon's House
 1d2 471 Mt. Fuji - Pipe Salesman's House
-#1d3 335
 1d3 472 Kompira Shrine Charm Shop
 1d4 473 Mt. Fear - Witch's House
-1d5 474
-1d6 475
-1d7 476
-1d8 477
-1d9 478
-1da 479
-1db 47a
-1dc 47b
-1dd 47c
-1de 47d
-1df 47e
-1e1 47f
-1e2 480
+1d5 474 Unknown (Unused)
+1d6 475 Unknown (Unused)
+1d7 476 Unknown (Unused)
+1d8 477 Unknown (Unused)
+1d9 478 Unknown (Unused)
+1da 479 Unknown (Unused)
+1db 47a Unknown (Unused)
+1dc 47b Unknown (Unused)
+1dd 47c Unknown (Unused)
+1de 47d Unknown (Unused)
+1df 47e Unknown (Unused)
+1e1 47f Unknown (Unused)
+1e2 480 Unknown (Unused)
 1e3 481

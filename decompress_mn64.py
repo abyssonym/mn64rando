@@ -5,6 +5,16 @@ from subprocess import call
 from os import listdir
 
 
+DEBUG = True
+if DEBUG:
+    logfile = open('decompress_debug.log', 'w+')
+
+
+def log(msg):
+    if DEBUG:
+        logfile.write(str(msg) + '\n')
+
+
 if 'lzkn64' in listdir('.'):
     VERIFY = True
 else:
@@ -31,26 +41,26 @@ def hexify(s):
     return ' '.join(result)
 
 
-def flip_words(s):
-    original_length = len(s)
-    if len(s) % 2:
-        assert s[-1] == 0
-        #s = s[:-1]
-        s += s[-1:]
-        #import pdb; pdb.set_trace()
-    s = b''.join([bytes([b, a]) for (a, b) in zip(s[::2], s[1::2])])
-    s = s[:original_length]
-    return s
-
-
-def decompress_lzkn64(infile, outfile):
-    cmd = ['./lzkn64', '-d', infile, outfile]
+def decompress_lzkn64(data):
+    initialize_temp()
+    with open(TMP_INFILE, 'r+b') as f:
+        f.write(data)
+    cmd = ['./lzkn64', '-d', TMP_INFILE, TMP_OUTFILE]
     call(cmd)
+    with open(TMP_OUTFILE, 'r+b') as f:
+        data = f.read()
+    return data
 
 
-def recompress_lzkn64(infile, outfile):
-    cmd = ['./lzkn64', '-c', infile, outfile]
+def recompress_lzkn64(data):
+    initialize_temp()
+    with open(TMP_INFILE, 'r+b') as f:
+        f.write(data)
+    cmd = ['./lzkn64', '-c', TMP_INFILE, TMP_OUTFILE]
     call(cmd)
+    with open(TMP_OUTFILE, 'r+b') as f:
+        data = f.read()
+    return data
 
 
 def decompress(source_data, validation_data=None):
@@ -135,25 +145,107 @@ def decompress_from_file(source_file, offset,
         verify = VERIFY
 
     source_file.seek(offset)
-    null = source_file.read(2)
-    assert null == b'\x00\x00'
-    length = int.from_bytes(source_file.read(2), byteorder='big') - 4
+    length = int.from_bytes(source_file.read(4), byteorder='big')
+    assert length <= 0xffffff
+    source_file.seek(offset)
     source_data = source_file.read(length)
 
-    #source_data = flip_words(source_data)
     if verify:
-        initialize_temp()
-        with open(TMP_INFILE, 'r+b') as f:
-            f.write((len(source_data)+4).to_bytes(4))
-            f.write(source_data)
-        decompress_lzkn64(TMP_INFILE, TMP_OUTFILE)
-        with open(TMP_OUTFILE, 'r+b') as f:
-            verify_data = f.read()
-        decomp = decompress(source_data, verify_data)
+        verify_data = decompress_lzkn64(source_data)
+        assert verify_data
+        decomp = decompress(source_data[4:], verify_data)
         assert decomp == verify_data
     else:
-        decomp = decompress(source_data, validation_data)
-    return decomp, (offset, source_file.tell())
+        decomp = decompress(source_data[4:], validation_data)
+    return decomp
+
+
+def recomp_match_search1(buffer_position, file_buffer):
+    # original algorithm in Fluvian's implementation
+    WINDOW_SIZE = 0x3ff
+    COPY_SIZE = 0x21
+    sliding_window_match_position = -1
+    sliding_window_match_size = 0
+    sliding_window_maximum_offset = max(0, buffer_position-WINDOW_SIZE)
+    buffer_size = len(file_buffer)
+    sliding_window_maximum_length = min(
+            COPY_SIZE, ((buffer_size-1) - buffer_position))
+
+    # Go backwards in the buffer, is there a matching value?
+    # If yes, search forward and check for more matching values in a loop.
+    # If no, go further back and repeat.
+    for search_position in range(
+            buffer_position-1, sliding_window_maximum_offset-1, -1):
+        matching_sequence_size = 0
+        while (file_buffer[search_position+matching_sequence_size] ==
+                file_buffer[buffer_position+matching_sequence_size]):
+            matching_sequence_size += 1
+            if matching_sequence_size >= sliding_window_maximum_length:
+                break
+        # Once we find a match or a match that is bigger than the match
+        # before it, we save its position and length.
+        if matching_sequence_size > sliding_window_match_size:
+            sliding_window_match_position = search_position
+            sliding_window_match_size = matching_sequence_size
+    return sliding_window_match_position, sliding_window_match_size
+
+def recomp_match_search2(buffer_position, file_buffer, optimize=True):
+    # slightly altered version with same output, optimized for Python
+    WINDOW_SIZE = 0x3ff
+    COPY_SIZE = 0x21
+    sliding_window_match_position = -1
+    sliding_window_match_size = 0
+    sliding_window_maximum_offset = max(0, buffer_position-WINDOW_SIZE)
+    buffer_size = len(file_buffer)
+    sliding_window_maximum_length = min(
+            COPY_SIZE, ((buffer_size-1) - buffer_position))
+
+    available_lookback = \
+            file_buffer[sliding_window_maximum_offset:buffer_position]
+    lookback_length = len(available_lookback)
+    for segment_length in range(sliding_window_maximum_length, 2, -1):
+        segment = file_buffer[buffer_position:buffer_position+segment_length]
+        if optimize:
+            for subsegment_length in range(
+                    min(segment_length, lookback_length), 0, -1):
+                if not segment.startswith(
+                        available_lookback[-subsegment_length:]):
+                    continue
+                subsegment = segment[:subsegment_length]
+                test = subsegment * (int(len(segment) / len(subsegment))+1)
+                if test.startswith(segment):
+                    return buffer_position-subsegment_length, segment_length
+        try:
+            index = available_lookback.index(segment)
+            return (index+sliding_window_maximum_offset), segment_length
+        except ValueError:
+            pass
+    return -1, 0
+
+def recomp_match_search3(buffer_position, file_buffer):
+    # very fast version that sacrifices some compression for speed
+    WINDOW_SIZE = 0x3ff
+    COPY_SIZE = 0x21
+    sliding_window_match_position = -1
+    sliding_window_match_size = 0
+    sliding_window_maximum_offset = max(0, buffer_position-WINDOW_SIZE)
+    buffer_size = len(file_buffer)
+    sliding_window_maximum_length = min(
+            COPY_SIZE, ((buffer_size-1) - buffer_position))
+
+    available_lookback = \
+            file_buffer[sliding_window_maximum_offset:buffer_position]
+    lookback_length = len(available_lookback)
+    best_index = -1
+    best_length = 0
+    for segment_length in range(2, sliding_window_maximum_length+1, 1):
+        segment = file_buffer[buffer_position:buffer_position+segment_length]
+        try:
+            best_index = available_lookback.index(segment)
+            best_length = segment_length
+        except ValueError:
+            break
+    return (best_index+sliding_window_maximum_offset), best_length
 
 
 def recompress(decomp, verify=None):
@@ -171,7 +263,7 @@ def recompress(decomp, verify=None):
     RLE_SIZE = 0x101
 
     file_buffer = decomp
-    buffer_size = len(decomp)
+    buffer_size = len(file_buffer)
     write_buffer = [0] * (buffer_size*2)
 
     buffer_position = 0
@@ -193,22 +285,8 @@ def recompress(decomp, verify=None):
         raw_copy_size = buffer_position - buffer_last_copy_position
         rle_bytes_left = 0
 
-        # Go backwards in the buffer, is there a matching value?
-        # If yes, search forward and check for more matching values in a loop.
-        # If no, go further back and repeat.
-        for search_position in range(
-                buffer_position-1, sliding_window_maximum_offset, -1):
-            matching_sequence_size = 0
-            while (file_buffer[search_position+matching_sequence_size] ==
-                    file_buffer[buffer_position+matching_sequence_size]):
-                matching_sequence_size += 1
-                if matching_sequence_size >= sliding_window_maximum_length:
-                    break
-            # Once we find a match or a match that is bigger than the match
-            # before it, we save its position and length.
-            if matching_sequence_size > sliding_window_match_size:
-                sliding_window_match_position = search_position
-                sliding_window_match_size = matching_sequence_size
+        sliding_window_match_position, sliding_window_match_size = \
+                recomp_match_search3(buffer_position, file_buffer)
 
         # Look one step forward in the buffer, is there a matching value?
         # If yes, search further and check for a repeating value in a loop.
@@ -329,45 +407,32 @@ def recompress(decomp, verify=None):
 
     recomp = bytes(write_buffer[:write_position])
     if verify:
-        initialize_temp()
-        with open(TMP_INFILE, 'r+b') as f:
-            f.write(decomp)
-        recompress_lzkn64(TMP_INFILE, TMP_OUTFILE)
-        with open(TMP_TESTFILE, 'r+b') as f:
-            f.write(recomp)
-        with open(TMP_OUTFILE, 'r+b') as f:
-            verify_data = f.read()
-        for i in range(4, len(verify_data)):
-            if verify_data[4:i] == recomp[4:i]:
-                pass
-            else:
-                break
-        assert verify_data == recomp
+        verify_data = recompress_lzkn64(decomp)
+        a = decompress_lzkn64(verify_data)
+        b = decompress_lzkn64(recomp)
+        assert a == b
 
     assert decompress(recomp[4:], validation_data=decomp) == decomp
     return recomp
 
 
-def recompress_and_flip(decomp):
-    recomp = recompress(decomp)
-    flipped = flip_words(recomp)
-    return flipped
-
-
 if __name__ == '__main__':
     source_file = argv[1]
     offset = int(argv[2], 0x10)
-    validation_file = argv[3]
-    output_file = 'tmp.output.bin'
+    validation_data = None
+    if len(argv) > 3:
+        validation_file = argv[3]
+        with open(validation_file, 'r+b') as f:
+            validation_data = f.read()
 
-    with open(validation_file, 'r+b') as f:
-        validation_data = f.read()
+    output_file = 'tmp.output.bin'
 
     print('TESTING DECOMPRESSION')
     with open(source_file, 'r+b') as f:
-        decomp, _ = decompress_from_file(f, offset, validation_data)
+        decomp = decompress_from_file(f, offset, validation_data)
     print('TESTING RECOMPRESSION')
     recomp = recompress(decomp)
+    print('FINAL LENGTH: %s' % len(recomp))
 
     with open(output_file, 'r+b') as f:
         f.write(decomp)
