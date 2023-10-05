@@ -38,7 +38,7 @@
 025 35a Null (Unused)
 026 35b Null (Unused)
 027 35c Null (Unused)
-028 35d Fake Warp -> 057 Oedo Castle 2F Emperor's Room
+028 35f Oedo Castle Emperor's Room
 029 360 Null (Unused)
 02f 361 Ghost Toys Entrance
 030 362 Ghost Toys 1F Elevator Shogi Room
@@ -67,10 +67,10 @@
 047 379 Null (Unused)
 048 37a Null (Unused)
 049 37b Ghost Toys 2F-3F Elevator / Darumanyo Boss Room
-04a 37c
-055 35e Alternate Oedo Castle 1st Elevator Room (Unused)
-056 37d
-057 35f Oedo Castle Emperor's Room
+054 35d
+055 37c
+056 35e
+059 37d
 05a 37e Festival Temple West Main Entrance
 05b 37f Festival Temple West Gold Cat Dango Room
 05c 380 Festival Temple West Hot Platform Drummer Fox Room
@@ -102,7 +102,7 @@
 076 39a Null (Unused)
 077 39b Null (Unused)
 078 39c Null (Unused)
-079 39d
+080 39d
 081 39e Gourmet Sub 2F Bazooka Room
 082 39f Gourmet Sub 2F Jetpack Crab Gold Key & Double Lock Room
 083 3a0 Gourmet Sub 2F Seahorse / Mini Ebisumaru Crosspath
@@ -158,7 +158,7 @@
 0bf 3d2 Musical Castle 2 B1F Descent
 0c0 3d3 Musical Castle 2 B1F Kaleidoscope Room
 0c1 3d4 Musical Castle 2 B1F Gorgeous Stage
-0c2 3d5
+0c5 3d5
 12c 3d6 Kai Highway
 12d 3d7 Mt. Fuji
 12e 3d8 Mt. Fuji Interior (Base)
@@ -184,7 +184,7 @@
 142 3ec Iyo - Hot Springs
 143 3ed Bizen
 144 3ee Aki - Nagato
-145 3ef Fake Warp -> 15c Hagi
+145 3f2 Hagi
 146 3f3 Akiyoshidai
 147 3f4 Shuhodo Tunnel to Festival Temple
 148 3f5 Izumo
@@ -204,10 +204,10 @@
 156 403 Null (Unused)
 157 404
 158 405
-159 406
+159 3ef
 15a 3f0
 15b 3f1
-15c 3f2 Hagi
+15c 406
 15e 407 Oedo - Bridge to Musashi
 15f 408 Oedo Town (West)
 160 409 Oedo Town (North)
@@ -222,7 +222,7 @@
 169 412 Zazen Town (South)
 16a 413 Zazen - Kappa Pond
 16b 414 Zazen - Waterway
-16c 415 Fake Warp -> 186 Zazen Town (North)
+16c 419 Zazen Town (North)
 16d 41a Zazen - Golden Temple
 16e 41b Zazen - Bridge to Bizen
 16f 41c Zazen - Path to Mt. Nyoigatake
@@ -240,14 +240,14 @@
 17b 428 Festival Village - Festival Square
 17c 429 Festival Village (Northwest)
 17d 42a Festival Village - Hidden Lake Area
-17e 42b
-17f 416
-180 42c
-181 417
-182 42d
-183 418
+17e 415
+17f 42b
+180 416
+181 42c
+182 417
+183 42d
 184 42e
-186 419 Zazen Town (North)
+185 418
 190 42f Oedo - Restaurant
 191 430 Zazen - Restaurant
 192 431 Folkypoke - Restaurant
@@ -327,7 +327,7 @@
 1dc 47b Unknown (Unused)
 1dd 47c Unknown (Unused)
 1de 47d Unknown (Unused)
-1df 47e Unknown (Unused)
+1e0 47e Unknown (Unused)
 1e1 47f Unknown (Unused)
 1e2 480 Unknown (Unused)
 1e3 481
