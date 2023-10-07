@@ -70,7 +70,21 @@ class MapMetaObject(TableObject):
     ENTITY_STRUCTURES_FILENAME = path.join(tblpath, 'entity_structures.yaml')
     ROOM_INDEXES_FILENAME = path.join(tblpath, 'room_indexes.txt')
 
+    '''
+    Using extra free space is complicated.
+    Pointers must ostensibly be in ascending order, because the "next" pointer
+    is used to determine the size of variable length data blocks. However,
+    some data, such as the MAIN_CODE_INDEX, cannot be moved. So, if we want
+    to move some movable data, we have to identify breakpoints where there is
+    a pointer that never gets read, so that the "next" pointer issue never
+    comes up. Two such indexes are:
+        336 - Room 001 - Alternate Oedo Castle Tile Room (unused)
+        46d - Room 1ce - Null (unused, no exits or actors)
+    '''
     MAIN_CODE_INDEX = 0xb
+    ROM_SPLIT_THRESHOLD_LOW = 0x336
+    ROM_SPLIT_THRESHOLD_HI = 0x46d
+
     MAIN_RAM_OFFSET = 0x212090
     POINTER_TABLE_OFFSET = 0x235fe8
 
@@ -117,7 +131,10 @@ class MapMetaObject(TableObject):
                     self.index = 0
             else:
                 for e in self.parent.entities:
-                    assert e.index != index
+                    if e.index == index:
+                        raise Exception(
+                            f'{self.parent.warp_index:0>3x}-{index:0>3x} '
+                            f'is a duplicate entity.')
                 self.index = index
             self.data = data
             self.old_data = data
@@ -254,8 +271,12 @@ class MapMetaObject(TableObject):
             return MapMetaObject.entity_structures[self.actor_id]
 
         @property
+        def is_exit(self):
+            return self.structure and 'dest_room' in self.structure
+
+        @property
         def comment(self):
-            if self.structure and 'dest_room' in self.structure:
+            if self.is_exit:
                 if self.get_property_value('misc') == 0:
                     return '(no destination)'
                 dest_room = self.get_property_value('dest_room')
@@ -317,6 +338,8 @@ class MapMetaObject(TableObject):
                 return None
             if self in self.parent.entities[-2:]:
                 return None
+            if self.definition_index is None:
+                return None
             if self.definition_index >= len(self.parent.entities):
                 return None
             definition = self.parent.entities[self.definition_index]
@@ -341,8 +364,36 @@ class MapMetaObject(TableObject):
                 return True
             return False
 
+        @property
+        def is_exit(self):
+            if self.definition is None:
+                return False
+            return self.definition.is_exit
+
         def set_main_property(self, value):
             self.set_property('definition_index', value << 4)
+
+        def acquire_destination(self, warp_index):
+            assert self.is_exit
+            for mmo in MapMetaObject.sorted_rooms:
+                for e in mmo.instances:
+                    if not e.is_exit:
+                        continue
+                    if not e.definition.get_property_value('dest_room') \
+                            == warp_index:
+                        continue
+                    for p in ['dest_room', 'dest_x', 'dest_y', 'dest_z',
+                              'direction']:
+                        self.definition.set_property(
+                                p, e.definition.get_property_value(p))
+                    break
+                else:
+                    continue
+                break
+
+        def yeet(self):
+            self.data = self.parent.instances[0].data
+            assert self.definition.actor_id == 0x8e
 
     @classproperty
     def sorted_rooms(self):
@@ -516,28 +567,6 @@ class MapMetaObject(TableObject):
                 break
         MapMetaObject.free_space = sorted(free_space)
 
-    def allocate(self, length):
-        for (a, b) in sorted(MapMetaObject.free_space):
-            if a < addresses.free_space_start and self.is_room:
-                continue
-            elif a >= addresses.free_space_start and not self.is_room:
-                continue
-            if b-a >= length:
-                break
-        else:
-            raise Exception('No free space.')
-        start, finish = a, b
-        MapMetaObject.free_space.remove((start, finish))
-        new_start = start+length
-        if length != 0:
-            assert start < new_start <= finish
-        if new_start <= finish:
-            MapMetaObject.free_space.append((new_start, finish))
-            MapMetaObject.free_space = sorted(MapMetaObject.free_space)
-        if self.is_room:
-            assert start >= addresses.free_space_start
-        return start
-
     def __repr__(self):
         if self.warp_index is not None:
             header = f'ROOM {self.warp_index:0>3X}: '
@@ -564,6 +593,10 @@ class MapMetaObject(TableObject):
 
     @property
     def data(self):
+        if hasattr(self, '_data'):
+            if self.is_room:
+                assert self.is_rom_split
+            return self._data
         if self.is_room:
             data = b''
             for e in self.entities:
@@ -573,8 +606,6 @@ class MapMetaObject(TableObject):
             return data
         if self.index == self.MAIN_CODE_INDEX:
             assert hasattr(self, '_data')
-        if hasattr(self, '_data'):
-            return self._data
         return None
 
     @property
@@ -591,7 +622,10 @@ class MapMetaObject(TableObject):
 
     @property
     def is_room(self):
-        return 0x58f2c <= self.pointer <= 0x5945f
+        if 0x335 <= self.index <= 0x481:
+            assert self.warp_index is not None
+            return True
+        return False
 
     @property
     def warp_index(self):
@@ -623,8 +657,28 @@ class MapMetaObject(TableObject):
                 if isinstance(e, self.EntityDefinition)]
 
     @property
+    def instances(self):
+        self.get_entities()
+        return [e for e in self.entities
+                if isinstance(e, self.EntityInstance)]
+
+    @property
     def is_compressed(self):
         return bool(self.reference_pointer & 0x80000000)
+
+    @property
+    def is_old_rom(self):
+        return not self.is_new_rom
+
+    @property
+    def is_new_rom(self):
+        return self.ROM_SPLIT_THRESHOLD_LOW < self.index <= \
+                self.ROM_SPLIT_THRESHOLD_HI
+
+    @property
+    def is_rom_split(self):
+        return self.index in (self.ROM_SPLIT_THRESHOLD_LOW,
+                              self.ROM_SPLIT_THRESHOLD_HI)
 
     def get_compressed(self):
         if hasattr(self, '_cached_compressed'):
@@ -699,7 +753,7 @@ class MapMetaObject(TableObject):
 
     def hexify(self):
         definitions = self.definitions
-        instances = [e for e in self.entities if e not in definitions]
+        instances = self.instances
         s = '# DEFINITIONS\n'
         s += '\n'.join(map(str, definitions))
         s += '\n\n# INSTANCES\n'
@@ -758,6 +812,28 @@ class MapMetaObject(TableObject):
         MapMetaObject.free_space.append((start, finish))
         self.consolidate_free_space()
 
+    def allocate(self, length):
+        for (a, b) in sorted(MapMetaObject.free_space):
+            if a < addresses.free_space_start and self.is_new_rom:
+                continue
+            elif a >= addresses.free_space_start and self.is_old_rom:
+                continue
+            if b-a >= length:
+                break
+        else:
+            raise Exception('No free space.')
+        start, finish = a, b
+        MapMetaObject.free_space.remove((start, finish))
+        new_start = start+length
+        if length != 0:
+            assert start < new_start <= finish
+        if new_start <= finish:
+            MapMetaObject.free_space.append((new_start, finish))
+            MapMetaObject.free_space = sorted(MapMetaObject.free_space)
+        if self.is_new_rom:
+            assert start >= addresses.free_space_start
+        return start
+
     def compress_and_write(self):
         if self.data_has_changed and self.is_compressed:
             data = recompress(self.data)
@@ -782,8 +858,8 @@ class MapMetaObject(TableObject):
         assert self.is_room
         definitions = self.definitions
         if len(definitions) > self.definition_limit:
-            raise Exception(f'Room {self.index:0>3x}: Number of entity types '
-                            f'must equal {self.definition_limit}.')
+            raise Exception(f'Room {self.warp_index:0>3x}: Number of entity '
+                            f'types must equal {self.definition_limit}.')
         try:
             assert self.entities[:len(definitions)] == definitions
             assert all(e.index == i for (i, e) in enumerate(definitions))
@@ -813,6 +889,12 @@ class MapMetaObject(TableObject):
             self.deallocate()
 
     def cleanup(self):
+        if self.is_rom_split:
+            if self.data_has_changed:
+                raise Exception(f'Cannot use file {self.index:0>3x}. '
+                                f'This index is being used as a buffer '
+                                f'between old data and new data.')
+            self._data = b'\x00\x00\x00\x00'
         if self.is_room and self.data_has_changed:
             self.validate_entities()
         if self.index >= self.MAIN_CODE_INDEX:
@@ -825,13 +907,14 @@ class MapMetaObject(TableObject):
                 pass
             if self.index > 0:
                 previous = self.get(self.index-1)
-                if hasattr(previous, 'relocated'):
-                    if self.is_room == previous.is_room:
-                        assert previous.reference_pointer & 0x7fffffff \
-                                <= self.reference_pointer & 0x7fffffff
-        if self.is_room:
+                if not (self.is_rom_split or previous.is_rom_split):
+                    if hasattr(previous, 'relocated'):
+                        if self.is_room == previous.is_room:
+                            assert previous.reference_pointer & 0x7fffffff \
+                                    <= self.reference_pointer & 0x7fffffff
+        if self.is_new_rom:
             assert self.data_pointer >= addresses.free_space_start
-        else:
+        elif self.is_old_rom:
             assert self.data_pointer < addresses.free_space_start
         assert self.old_data['reference_pointer'] & 0x80000000 == \
                 self.reference_pointer & 0x80000000
@@ -848,11 +931,19 @@ class MapMetaObject(TableObject):
         super().full_cleanup()
         # for whatever reason, pointers must be in ascending order
         reference_pointers = [mmo.reference_pointer & 0x7fffffff for
-                              mmo in cls.every if mmo.is_room]
+                              mmo in cls.every if mmo.is_old_rom]
         assert reference_pointers == sorted(reference_pointers)
         reference_pointers = [mmo.reference_pointer & 0x7fffffff for
-                              mmo in cls.every if not mmo.is_room]
+                              mmo in cls.every if not mmo.is_new_rom]
         assert reference_pointers == sorted(reference_pointers)
+        for prev_mmo in cls.every:
+            if prev_mmo.is_rom_split:
+                continue
+            try:
+                next_mmo = cls.get(prev_mmo.index+1)
+            except KeyError:
+                continue
+            assert 0 <= next_mmo.data_pointer-prev_mmo.data_pointer <= 0x7ffff
 
 
 if __name__ == '__main__':
@@ -875,6 +966,13 @@ if __name__ == '__main__':
         for code in sorted(get_activated_codes()):
             print('Code "%s" activated.' % code)
 
+        if 'import' in get_activated_codes():
+            print('IMPORTING')
+            MapMetaObject.import_from_file('to_import.txt')
+            for mmo in MapMetaObject.every:
+                if mmo.is_room and mmo.data_has_changed:
+                    print(mmo)
+
         if 'export' in get_activated_codes():
             print('EXPORTING')
             if DEBUG_MODE:
@@ -889,13 +987,6 @@ if __name__ == '__main__':
             with open('to_import.txt', 'w+') as f:
                 for mmo in MapMetaObject.sorted_rooms:
                     f.write(str(mmo) + '\n\n')
-
-        if 'import' in get_activated_codes():
-            print('IMPORTING')
-            MapMetaObject.import_from_file('to_import.txt')
-            for mmo in MapMetaObject.every:
-                if mmo.data_has_changed:
-                    print(mmo)
 
         #write_seed()
 
