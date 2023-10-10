@@ -24,15 +24,23 @@
 
 0x086:
   name:       Mr. Elly Fant
+  flag:
+    index:    [4, 5]
 
 0x087:
   name:       Mr. Arrow
+  flag:
+    index:    [4, 5]
 
 0x088:
   name:       Silver Doll
+  flag:
+    index:    [4, 5]
 
 0x089:
   name:       Gold Doll
+  flag:
+    index:    [4, 5]
 
 0x08a:
   name:       Shop Wares
@@ -745,6 +753,8 @@
 
 0x321:
   name:       Sliding Door (Ghost Toys)
+  enemies:
+    index:      5
 
 0x322:
   name:       Ladder 322
@@ -781,7 +791,7 @@
   name:       Inaba Battery
 
 0x32e:
-  name:       Hiker (Bizen Bridge)
+  name:       Hiker/Boy (Bizen Bridge)
   pathing:
     index:      [6,7]
   message:
@@ -794,7 +804,7 @@
   name:       Glowing IN Sign
 
 0x331:
-  name:       Unknown 331 (Gourmet Sub)
+  name:       Giant Turbine (Gourmet Sub)
 
 0x332:
   name:       Treadmill (Gourmet Sub)
@@ -957,7 +967,7 @@
   name:       Blooming Flower (Ghost Toys)
 
 0x3d1:
-  name:       Floating Ramen Ingredients (Gourmet Sub)
+  name:       Floating Ingredients (Gourmet Sub)
 
 0x3d2:
   name:       Meatsaw Hammer
@@ -1004,7 +1014,7 @@
   name:       Unknown 3ec (Gourmet Sub)
 
 0x3ef:
-  name:       Unknown 3ef (Gourmet Sub)
+  name:       Spiny Urchin Spawner (Gourmet Sub)
 
 0x3f0:
   name:       Waves Flooring (Musical Castle 1)

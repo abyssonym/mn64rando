@@ -159,7 +159,7 @@ class MapMetaObject(TableObject):
             name = self.name.strip()
             if '#' in name:
                 name = name.split('#')[0].strip()
-            return f'{parent_index}-{name}'
+            return f'{parent_index}-{self.index:0>3x}'
 
         @property
         def details(self):
@@ -211,11 +211,28 @@ class MapMetaObject(TableObject):
             assert finish > start
             return start, finish
 
-        def get_property_value(self, property_name):
+        def get_property_value(self, property_name, old=False):
             start, finish = self.get_property_indexes(property_name)
-            value = int.from_bytes(self.data[start:finish],
-                                   byteorder='big')
+            if old:
+                value = int.from_bytes(self.old_data[start:finish],
+                                       byteorder='big')
+            else:
+                value = int.from_bytes(self.data[start:finish],
+                                       byteorder='big')
             return value
+
+        def get_pretty_value(self, property_name, old=False):
+            value = self.get_property_value(property_name, old)
+            if value in self.structure[property_name]:
+                return self.structure[property_name][value]
+            index = self.structure[property_name]['index']
+            if isinstance(index, int):
+                length = 1
+            else:
+                a, b = index
+                length = (b+1) - a
+            length *= 2
+            return ('{0:0>%sx}' % length).format(value)
 
         def set_property(self, property_name, value):
             if self.structure is None or property_name not in self.structure:
@@ -275,6 +292,38 @@ class MapMetaObject(TableObject):
             return self.structure and 'dest_room' in self.structure
 
         @property
+        def is_lock(self):
+            return self.structure and 'lock_index' in self.structure
+
+        @property
+        def is_key(self):
+            return self.structure and 'key_index' in self.structure
+
+        @property
+        def is_gold_dango(self):
+            return self.actor_id == 0x85
+
+        @property
+        def is_silver_cat(self):
+            return self.actor_id == 0x88
+
+        @property
+        def is_gold_cat(self):
+            return self.actor_id == 0x89
+
+        @property
+        def is_surprise_pack(self):
+            return self.actor_id == 0x91
+
+        @property
+        def is_elly_fant(self):
+            return self.actor_id == 0x86
+
+        @property
+        def is_mr_arrow(self):
+            return self.actor_id == 0x87
+
+        @property
         def comment(self):
             if self.is_exit:
                 if self.get_property_value('misc') == 0:
@@ -332,7 +381,7 @@ class MapMetaObject(TableObject):
                 return f'{self.definition_index:0>3x}  # {comment}'
             return f'{self.definition_index:0>3x}'
 
-        @property
+        @cached_property
         def definition(self):
             if self.is_null or self.is_footer:
                 return None
@@ -370,26 +419,126 @@ class MapMetaObject(TableObject):
                 return False
             return self.definition.is_exit
 
+        @property
+        def is_lock(self):
+            if self.definition is None:
+                return False
+            return self.definition.is_lock
+
+        @property
+        def exit_pair(self):
+            if not self.is_exit:
+                return None
+            coparent = MapMetaObject.get_by_warp_index(
+                self.definition.get_property_value('dest_room', old=True))
+            candidates = coparent.exits
+            candidates = [c for c in candidates
+                          if c.definition.get_property_value('dest_room',
+                                                             old=True)
+                          == self.parent.warp_index]
+            if len(candidates) > 1:
+                candidates = sorted(candidates,
+                                    key=lambda c: self.compare_exit(c))
+            if not candidates:
+                return None
+            return candidates[0]
+
+        @property
+        def lock(self):
+            if not self.is_exit:
+                return None
+            locks = [i for i in self.parent.instances if i.is_lock]
+            if not locks:
+                return None
+            exits = self.parent.exits
+            assert self in exits
+            selections = {}
+            for l in locks:
+                exits = sorted(exits, key=lambda x: x.get_distance(l))
+                x = exits[0]
+                assert x.get_distance(l) == 0
+                if len(exits) > 1:
+                    assert exits[1].get_distance(l) > 0
+                selections[l] = x
+            chosen = [l for l in locks if selections[l] is self]
+            assert len(chosen) < 2
+            if chosen:
+                return chosen[0]
+            return None
+
+        @property
+        def lock_signature(self):
+            if not self.is_lock:
+                return None
+            key_type = self.definition.get_pretty_value('key_type').lower()
+            lock_index = self.definition.get_property_value('lock_index')
+            zone = self.definition.get_property_value('zone')
+            return f'{zone}.{lock_index:0>3x}.{key_type}'
+
+        def get_distance(self, other):
+            assert self.parent is other.parent
+            distances = []
+            for pname in ['x', 'y', 'z']:
+                positions = (self.get_property_value(pname),
+                             other.get_property_value(pname))
+                positions = [(v - 0x10000) if v & 0x8000 else v
+                             for v in positions]
+                diff = abs(positions[0] - positions[1])
+                distances.append(diff)
+            return sum(v**2 for v in distances)
+
+        def compare_exit(self, other):
+            assert self.is_exit and other.is_exit
+            assert self.definition.get_property_value('dest_room', old=True) \
+                    == other.parent.warp_index
+            assert other.definition.get_property_value('dest_room', old=True) \
+                    == self.parent.warp_index
+            distances = []
+            for (a, b) in [(self, other), (other, self)]:
+                for pname in ['x', 'y', 'z']:
+                    dname = 'dest_%s' % pname
+                    positions = (a.get_property_value(pname, old=True),
+                                 b.definition.get_property_value(dname,
+                                                                 old=True))
+                    positions = [(v - 0x10000) if v & 0x8000 else v
+                                 for v in positions]
+                    diff = abs(positions[0] - positions[1])
+                    distances.append(diff)
+            return sum(v**2 for v in distances)
+
         def set_main_property(self, value):
             self.set_property('definition_index', value << 4)
 
-        def acquire_destination(self, warp_index):
+        def acquire_destination(self, warp_index, exit_index=None):
             assert self.is_exit
+            exits = []
             for mmo in MapMetaObject.sorted_rooms:
-                for e in mmo.instances:
-                    if not e.is_exit:
-                        continue
-                    if not e.definition.get_property_value('dest_room') \
-                            == warp_index:
-                        continue
-                    for p in ['dest_room', 'dest_x', 'dest_y', 'dest_z',
-                              'direction']:
-                        self.definition.set_property(
-                                p, e.definition.get_property_value(p))
-                    break
-                else:
-                    continue
-                break
+                exits += [
+                    e for e in mmo.exits if warp_index ==
+                    e.definition.get_property_value('dest_room', old=True)]
+
+            if not exits:
+                return
+
+            def get_height(exit):
+                height = exit.definition.get_property_value('dest_z', old=True)
+                if height & 0x8000:
+                    height = height - 0x10000
+                return height
+
+            if exit_index is None:
+                exits = sorted(exits, key=lambda e: (get_height(e), e.index))
+                chosen = exits[-1]
+            else:
+                mmo = MapMetaObject.get_by_warp_index(warp_index)
+                exit = mmo.entities[exit_index]
+                instance = [e for e in mmo.exits if e.definition is exit][0]
+                chosen = instance.exit_pair
+                assert isinstance(chosen, MapMetaObject.EntityInstance)
+            for p in ['dest_room', 'dest_x', 'dest_y', 'dest_z',
+                      'direction']:
+                self.definition.set_property(
+                        p, chosen.definition.get_property_value(p, old=True))
 
         def yeet(self):
             self.data = self.parent.instances[0].data
@@ -636,6 +785,10 @@ class MapMetaObject(TableObject):
     def room_name(self):
         if self.index in self.room_names:
             return self.room_names[self.index]
+
+    @cached_property
+    def exits(self):
+        return [e for e in self.instances if e.is_exit]
 
     def get_loading_files(self):
         if self.warp_index in self._loading_files:
