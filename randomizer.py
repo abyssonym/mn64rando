@@ -97,12 +97,14 @@ class MapMetaObject(TableObject):
         46d - Room 1ce - Null (unused, no exits or actors)
     '''
     MAIN_CODE_INDEX = 0xb
+    MAX_WARP_INDEX = 0x1e4
+
     ROM_SPLIT_THRESHOLD_LOW = 0x336
     ROM_SPLIT_THRESHOLD_HI = 0x46d
     ROM_SPLIT_THRESHOLDS = (ROM_SPLIT_THRESHOLD_LOW, ROM_SPLIT_THRESHOLD_HI)
 
-    VIRTUAL_RAM_OFFSET = 0x212090       # Location in RAM where file 00b is
-    POINTER_TABLE_OFFSET = 0x235fe8     # Pointers to room metadata
+    VIRTUAL_RAM_OFFSET = 0x212090           # Location in RAM where file 00b is
+    POINTER_TABLE_OFFSET = 0x235fe8         # Pointers to room metadata
 
     LOADING_CODE_HEADER = (
         b'\x27\xBD\xFF\xE8\xAF\xBF\x00\x14\x3C\x04\x80\x23\x0C\x00\x4D\x95'
@@ -126,14 +128,15 @@ class MapMetaObject(TableObject):
     METADATA_LENGTH = 0x1c
     ENTITY_FOOTER_LENGTH = 0x1c
 
-    MAX_WARP_INDEX = 0x1e4
+    ENTITY_FILE_TABLE_OFFSET = 0x22e546     # Associated file for each entity
+    ENTITY_FILES = {}
 
     with open(ENTITY_STRUCTURES_FILENAME) as f:
-        entity_structures = yaml.load(f.read(),
+        ENTITY_STRUCTURES = yaml.load(f.read(),
                                       Loader=yaml.SafeLoader)
 
     structure_names = set()
-    for __index, __structure in entity_structures.items():
+    for __index, __structure in ENTITY_STRUCTURES.items():
         __name = __structure['name']
         if __name in structure_names:
             raise Exception(f'Duplicate structure name: {name}')
@@ -321,9 +324,9 @@ class MapMetaObject(TableObject):
 
         @property
         def structure(self):
-            if self.actor_id not in MapMetaObject.entity_structures:
+            if self.actor_id not in MapMetaObject.ENTITY_STRUCTURES:
                 return None
-            return MapMetaObject.entity_structures[self.actor_id]
+            return MapMetaObject.ENTITY_STRUCTURES[self.actor_id]
 
         @property
         def is_exit(self):
@@ -605,6 +608,10 @@ class MapMetaObject(TableObject):
         routine_start = 0xffffffff
         routine_end = 0
         with BytesIO(main_code._data) as f:
+            f.seek(self.convert_loading_pointer(self.ENTITY_FILE_TABLE_OFFSET))
+            for entity_index in range(0x402):
+                value = int.from_bytes(f.read(2), byteorder='big')
+                self.ENTITY_FILES[entity_index] = value
             for warp_index in range(self.MAX_WARP_INDEX + 1):
                 base_pointer = self.convert_loading_pointer(
                         self.POINTER_TABLE_OFFSET+(warp_index*4))
@@ -685,6 +692,8 @@ class MapMetaObject(TableObject):
                 continue
             assert not mmo.is_rom_split
 
+            if mmo.data_has_changed:
+                mmo.validate_entity_files()
             values = mmo.loading_files
             data_list = b''.join([v.to_bytes(length=2, byteorder='big')
                                   for v in values])
@@ -791,6 +800,15 @@ class MapMetaObject(TableObject):
                     line = line[6:]
                     values = [int(v, 0x10) for v in line.split()]
                     mmo.loading_files = values
+                elif line.startswith('!meta '):
+                    _, attribute, value = line.split()
+                    value = int(value, 0x10)
+                    assert attribute in self.METADATA_STRUCTURE
+                    assert hasattr(mmo, attribute)
+                    if attribute == 'file_index' and mmo.file_index != value:
+                        raise Exception(f'Cannot change file index '
+                                        f'{mmo.file_index:0>3x}.')
+                    setattr(mmo, attribute, value)
                 elif line.startswith('@'):
                     line = line.replace(' ', '')
                     line = line[1:]
@@ -848,14 +866,20 @@ class MapMetaObject(TableObject):
                    f'{self.reference_pointer:0>8x}')
         if self.room_name:
             header += f'  # {self.room_name}'
-        header += '\n# {0:19} {1}'.format('Total Memory Used', self.total_size)
-        for attr in ('file_index', 'instance_offset', 'footer_offset',
-                     'ending_offset', 'loading_pointer',
-                     'unknown_pointer1', 'unknown_pointer2'):
+        header += '\n# {0:23} {1}'.format('Total Memory Used', self.total_size)
+        for attr in ('instance_offset', 'footer_offset',
+                     'ending_offset', 'loading_pointer'):
             a, b = self.METADATA_STRUCTURE[attr]
             length = (b-a)*2
             value = ('{0:0>%sx}' % length).format(getattr(self, attr))
-            header += f'\n# {attr:19} {value}'
+            header += f'\n# {attr:23} {value}'
+
+        for attr in ('file_index', 'unknown_pointer1', 'unknown_pointer2'):
+            a, b = self.METADATA_STRUCTURE[attr]
+            length = (b-a)*2
+            value = ('{0:0>%sx}' % length).format(getattr(self, attr))
+            header += f'\n!meta {attr:19} {value}'
+
         if self.loading_files:
             loading_files = ' '.join([f'{v:0>3x}' for v in self.loading_files])
             header += f'\n!load {loading_files}'
@@ -1155,8 +1179,30 @@ class MapMetaObject(TableObject):
         except AssertionError:
             raise Exception(f'Room {self.index:0>3x}: Entity definitions must '
                              'be in order at the start.')
+
+        if not self.instances[-1].is_null:
+            print(f'Warning: Room {self.index:0>3x} requires a null '
+                  f'instance before footer; adding automatically.')
+            self.entities.append(self.EntityInstance(
+                b'\x00' * self.EntityInstance.DATA_LENGTH, self))
+
         for e in self.entities:
             e.validate_data()
+
+    def validate_entity_files(self):
+        for e in self.instances:
+            if e.is_null:
+                continue
+            actor_id = e.definition.actor_id
+            if actor_id not in self.ENTITY_FILES:
+                continue
+            file_index = self.ENTITY_FILES[actor_id]
+            if file_index == 0:
+                continue
+            if file_index not in self.loading_files:
+                print(f'Warning: Entity {e.definition.signature} requires '
+                      f'file {file_index:0>3x}; adding automatically.')
+                self.loading_files.append(file_index)
 
     def preprocess(self):
         self.get_compressed()
@@ -1260,20 +1306,19 @@ if __name__ == '__main__':
             print('Code "%s" activated.' % code)
 
         if 'import' in get_activated_codes():
-            print('IMPORTING')
             if 'MN64_IMPORT' in environ:
                 filename = environ['MN64_IMPORT']
             else:
                 filename = input('Import from filename: ')
             if not filename.strip():
                 filename = f'{get_sourcefile()}.import.txt'
+            print(f'IMPORTING from {filename}')
             MapMetaObject.import_from_file(filename)
             for mmo in MapMetaObject.every:
                 if mmo.is_room and mmo.data_has_changed:
                     print('Updated:', str(mmo).split('\n')[0])
 
         if 'export' in get_activated_codes():
-            print('EXPORTING')
             if DEBUG_MODE:
                 try:
                     mkdir('export')
@@ -1287,6 +1332,7 @@ if __name__ == '__main__':
                 filename = environ['MN64_EXPORT']
             else:
                 filename = f'{get_outfile()}.export.txt'
+            print(f'EXPORTING to {filename}')
             with open(filename, 'w+') as f:
                 for mmo in MapMetaObject.sorted_rooms:
                     f.write(str(mmo) + '\n\n')
