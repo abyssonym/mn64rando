@@ -41,6 +41,37 @@ def hexify(s):
     return ' '.join(result)
 
 
+def checksum(outfile):
+    # checksum algorithm ported from n64crc.c by Sterbenz & Parasyte & spinout
+    mask = 0xffffffff
+
+    def rol(i, b):
+        return ((i << b) | (i >> (32-b))) & mask
+
+    seed = 0xF8CA4DDC
+    t1 = t2 = t3 = t4 = t5 = t6 = seed
+    outfile.seek(0x1000)
+    for i in range(0x1000, 0x101000, 4):
+        assert i == outfile.tell()
+        d = int.from_bytes(outfile.read(4), byteorder='big')
+        if (t6 + d) & mask < t6:
+            t4 = (t4 + 1) & mask
+        t6 = (t6 + d) & mask
+        t3 ^= d
+        r = rol(d, (d & 0x1f))
+        t5 = (t5 + r) & mask
+        if t2 > d:
+            t2 ^= r
+        else:
+            t2 ^= (t6 ^ d)
+        t1 = (t1 + (t5 ^ d)) & mask
+    crc1 = (t6 ^ t4 ^ t3)
+    crc2 = (t5 ^ t2 ^ t1)
+    data = ((crc1 << 32) | crc2).to_bytes(length=8, byteorder='big')
+    outfile.seek(0x10)
+    outfile.write(data)
+
+
 def decompress_lzkn64(data):
     initialize_temp()
     with open(TMP_INFILE, 'r+b') as f:

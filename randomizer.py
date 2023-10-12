@@ -18,7 +18,8 @@ from traceback import format_exc
 import re
 import yaml
 
-from decompress_mn64 import decompress_from_file, recompress
+from decompress_mn64 import (
+    checksum, decompress_from_file, decompress, recompress)
 
 
 VERSION = "0"
@@ -66,6 +67,19 @@ def pretty_hexify(s, newlines=True):
         return ' '.join(result)
 
 
+class MetaSizeObject(TableObject):
+    def get_metasize(self):
+        return int.from_bytes(self.metasize_str, byteorder='big')
+
+    def set_metasize(self, value):
+        self.metasize_str = value.to_bytes(length=2, byteorder='big')
+
+    def del_metasize(self):
+        raise NotImplementedError
+
+    metasize = property(get_metasize, set_metasize, del_metasize)
+
+
 class MapMetaObject(TableObject):
     ENTITY_STRUCTURES_FILENAME = path.join(tblpath, 'entity_structures.yaml')
     ROOM_INDEXES_FILENAME = path.join(tblpath, 'room_indexes.txt')
@@ -84,39 +98,61 @@ class MapMetaObject(TableObject):
     MAIN_CODE_INDEX = 0xb
     ROM_SPLIT_THRESHOLD_LOW = 0x336
     ROM_SPLIT_THRESHOLD_HI = 0x46d
+    ROM_SPLIT_THRESHOLDS = (ROM_SPLIT_THRESHOLD_LOW, ROM_SPLIT_THRESHOLD_HI)
 
-    MAIN_RAM_OFFSET = 0x212090
-    POINTER_TABLE_OFFSET = 0x235fe8
+    VIRTUAL_RAM_OFFSET = 0x212090       # Location in RAM where file 00b is
+    POINTER_TABLE_OFFSET = 0x235fe8     # Pointers to room metadata
+
+    LOADING_CODE_HEADER = (
+        b'\x27\xBD\xFF\xE8\xAF\xBF\x00\x14\x3C\x04\x80\x23\x0C\x00\x4D\x95'
+        b'\x24\x84')
+    LOADING_CODE_FOOTER = \
+        b'\x8F\xBF\x00\x14\x27\xBD\x00\x18\x03\xE0\x00\x08\x00\x00\x00\x00'
+
+    METADATA_STRUCTURE = {
+            'unknown_pointer1': (0x00, 0x04),
+            'unknown_pointer2': (0x04, 0x08),
+            'meta_eight1':      (0x08, 0x0a),
+            'instance_offset':  (0x0a, 0x0c),
+            'meta_eight2':      (0x0c, 0x0e),
+            'ending_offset':    (0x0e, 0x10),
+            'meta_eight3':      (0x10, 0x12),
+            'footer_offset':    (0x12, 0x14),
+            'file_index':       (0x14, 0x16),
+            'meta_null':        (0x16, 0x18),
+            'loading_pointer':  (0x18, 0x1c),
+        }
+    METADATA_LENGTH = 0x1c
+    ENTITY_FOOTER_LENGTH = 0x1c
+
+    MAX_WARP_INDEX = 0x1e4
 
     with open(ENTITY_STRUCTURES_FILENAME) as f:
         entity_structures = yaml.load(f.read(),
                                       Loader=yaml.SafeLoader)
 
     structure_names = set()
-    for index, structure in entity_structures.items():
-        name = structure['name']
-        if name in structure_names:
+    for __index, __structure in entity_structures.items():
+        __name = __structure['name']
+        if __name in structure_names:
             raise Exception(f'Duplicate structure name: {name}')
-        structure_names.add(name)
+        structure_names.add(__name)
 
     room_names = {}
     warp_names = {}
-    warp_indexes = {}
-    for line in read_lines_nocomment(ROOM_INDEXES_FILENAME):
+    for __line in read_lines_nocomment(ROOM_INDEXES_FILENAME):
         try:
-            warp_index, data_index, name = line.split(' ', 2)
+            __warp_index, __data_index, __name = __line.split(' ', 2)
         except ValueError:
-            warp_index, data_index = line.split(' ')
-            name = None
-        warp_index = int(warp_index, 0x10)
-        data_index = int(data_index, 0x10)
-        assert data_index not in warp_indexes
-        assert data_index not in room_names
-        assert warp_index not in warp_names
-        warp_indexes[data_index] = warp_index
-        if name is not None:
-            room_names[data_index] = name
-            warp_names[warp_index] = name
+            __warp_index, __data_index = __line.split(' ')
+            __name = None
+        __warp_index = int(__warp_index, 0x10)
+        __data_index = int(__data_index, 0x10)
+        assert __data_index not in room_names
+        assert __warp_index not in warp_names
+        if __name is not None:
+            room_names[__data_index] = __name
+            warp_names[__warp_index] = __name
 
     class EntityMixin:
         DICT_MATCHER = re.compile('{[^}]*}')
@@ -163,7 +199,7 @@ class MapMetaObject(TableObject):
 
         @property
         def details(self):
-            if self.is_null or self.is_footer or self.name is None:
+            if self.is_null:
                 return None
             if not self.structure:
                 return None
@@ -194,7 +230,8 @@ class MapMetaObject(TableObject):
             if isinstance(self, MapMetaObject.EntityDefinition):
                 return f'{self.index:0>3x}: {data}'
             else:
-                return f'---: {data}'
+                index = self.parent.instances.index(self)
+                return f'+{index:0>2x}: {data}'
 
         def validate_data(self):
             return
@@ -337,10 +374,6 @@ class MapMetaObject(TableObject):
                     return (f'to unknown: {parent_index:0>3x} '
                             f'-> {dest_room:0>3x}')
 
-        @property
-        def is_footer(self):
-            return False
-
         def set_main_property(self, value):
             actor_id = value.to_bytes(length=2, byteorder='big')
             data = actor_id + self.data[2:]
@@ -383,9 +416,7 @@ class MapMetaObject(TableObject):
 
         @cached_property
         def definition(self):
-            if self.is_null or self.is_footer:
-                return None
-            if self in self.parent.entities[-2:]:
+            if self.is_null:
                 return None
             if self.definition_index is None:
                 return None
@@ -403,15 +434,6 @@ class MapMetaObject(TableObject):
             if not self.definition.name:
                 return f'{self.definition.actor_id:0>3x}'
             return self.definition.name
-
-        @property
-        def is_footer(self):
-            if len(self.parent.entities) < 3:
-                return True
-            if (self in self.parent.entities[-2:]
-                    and self.parent.entities[-3].is_null):
-                return True
-            return False
 
         @property
         def is_exit(self):
@@ -507,6 +529,8 @@ class MapMetaObject(TableObject):
             return sum(v**2 for v in distances)
 
         def set_main_property(self, value):
+            if 'definition' in self._property_cache:
+                del(self._property_cache['definition'])
             self.set_property('definition_index', value << 4)
 
         def acquire_destination(self, warp_index, exit_index=None):
@@ -544,47 +568,84 @@ class MapMetaObject(TableObject):
             self.data = self.parent.instances[0].data
             assert self.definition.actor_id == 0x8e
 
+        def validate_data(self):
+            if self.is_null:
+                return
+            if self.definition is None:
+                raise Exception(f'Instance {self.parent.warp_index:0>3x}-'
+                                f'{self.definition_index:0>3x} is undefined.')
+            assert self.definition.index == self.definition_index
+
     @classproperty
     def sorted_rooms(self):
         return sorted(
-            (mmo for mmo in self.every if mmo.warp_index is not None),
+            (mmo for mmo in self.every if mmo.is_room),
             key=lambda x: x.warp_index)
 
     @classmethod
     def convert_loading_pointer(self, pointer):
         if isinstance(pointer, bytes):
             pointer = int.from_bytes(pointer, byteorder='big')
-        if pointer >= self.MAIN_RAM_OFFSET:
+        if pointer >= self.VIRTUAL_RAM_OFFSET:
             pointer &= 0x7fffffff
-            pointer -= self.MAIN_RAM_OFFSET
-            assert pointer < self.MAIN_RAM_OFFSET
+            pointer -= self.VIRTUAL_RAM_OFFSET
+            assert 0 <= pointer < self.VIRTUAL_RAM_OFFSET
             return pointer
         else:
-            return pointer + self.MAIN_RAM_OFFSET
+            assert (pointer + self.VIRTUAL_RAM_OFFSET) <= 0xffffff
+            return pointer + self.VIRTUAL_RAM_OFFSET
 
     @classmethod
     def read_loading_files(self):
         main_code = self.get(self.MAIN_CODE_INDEX)
         main_code._data = main_code.get_decompressed()
-        loading_files = {}
-        loading_file_pointers = {}
         data_start = 0xffffffff
         data_end = 0
+        routine_start = 0xffffffff
+        routine_end = 0
         with BytesIO(main_code._data) as f:
-            for warp_index in range(0x1e5):
-                loading_files[warp_index] = []
+            for warp_index in range(self.MAX_WARP_INDEX + 1):
                 base_pointer = self.convert_loading_pointer(
                         self.POINTER_TABLE_OFFSET+(warp_index*4))
                 f.seek(base_pointer)
                 pointer = int.from_bytes(f.read(4), byteorder='big')
                 if pointer == 0:
                     continue
-                assert (pointer & 0x7fffffff) > self.MAIN_RAM_OFFSET
-                f.seek(self.convert_loading_pointer(pointer) + 0x18)
-                f.seek(self.convert_loading_pointer(f.read(4)) + 0x12)
-                assert warp_index not in loading_file_pointers
-                loading_file_pointers[warp_index] = f.tell()
-                offset = int.from_bytes(f.read(2), byteorder='big')
+                f.seek(self.convert_loading_pointer(pointer))
+                metadata = f.read(self.METADATA_LENGTH)
+                mmo_index = int.from_bytes(metadata[0x14:0x16]) - 1
+                if mmo_index < 0:
+                    assert set(metadata[4:-4]) == {0}
+                    continue
+
+                mmo = MapMetaObject.get(mmo_index)
+                if mmo.is_rom_split:
+                    continue
+                mmo.warp_index = warp_index
+                max_length = 0
+                for (attribute, (a, b)) in self.METADATA_STRUCTURE.items():
+                    assert a < b
+                    max_length = max(max_length, b)
+                    value = int.from_bytes(metadata[a:b], byteorder='big')
+                    setattr(mmo, attribute, value)
+                assert max_length == len(metadata) == self.METADATA_LENGTH
+                assert mmo.meta_eight1 == 0x800
+                assert mmo.meta_eight2 == 0x800
+                assert mmo.meta_eight3 == 0x800
+                assert mmo.meta_null == 0
+                assert mmo.file_index == mmo.index + 1
+                assert mmo.ending_offset == \
+                    mmo.footer_offset + self.ENTITY_FOOTER_LENGTH
+
+                f.seek(self.convert_loading_pointer(mmo.loading_pointer))
+                routine_start = min(routine_start, f.tell())
+                routine = f.read(0x24)
+                routine_end = max(routine_end, f.tell())
+                assert routine.startswith(self.LOADING_CODE_HEADER)
+                assert routine.endswith(self.LOADING_CODE_FOOTER)
+                assert len(routine) == len(
+                    self.LOADING_CODE_HEADER + self.LOADING_CODE_FOOTER) + 2
+                offset = int.from_bytes(routine[0x12:0x14], byteorder='big')
                 f.seek(self.convert_loading_pointer(0x230000 | offset))
                 data_start = min(data_start, f.tell())
                 warp_loads = []
@@ -592,33 +653,38 @@ class MapMetaObject(TableObject):
                     value = int.from_bytes(f.read(2), byteorder='big')
                     if value == 0:
                         break
-                    value = value - 1
                     warp_loads.append(value)
+                mmo.loading_files = warp_loads
                 data_end = max(data_end, f.tell())
-                loading_files[warp_index] = warp_loads
 
-        MapMetaObject._loading_files = loading_files
-        MapMetaObject.loading_file_pointers = loading_file_pointers
         MapMetaObject.loading_data_start = data_start
         MapMetaObject.loading_data_end = data_end
+        MapMetaObject.loading_routine_start = routine_start
+        MapMetaObject.loading_routine_end = routine_end
+        return
 
     @classmethod
     def write_loading_files(self):
         main_code = self.get(self.MAIN_CODE_INDEX)
-        sorted_indexes = sorted(
-            self._loading_files,
-            key=lambda k: (-len(self._loading_files[k]), k))
         data_start = MapMetaObject.loading_data_start
         data_end = MapMetaObject.loading_data_end
+        routine_start = MapMetaObject.loading_routine_start
+        routine_end = MapMetaObject.loading_routine_end
         f = BytesIO(main_code.data)
         f.seek(data_start)
         f.write(b'\x00' * (data_end-data_start))
+        f.seek(routine_start)
+        f.write(b'\x00' * (routine_end-routine_start))
         data_buffer = b''
-        for warp_index in sorted_indexes:
-            if warp_index not in MapMetaObject.loading_file_pointers:
+        routine_buffer = b''
+
+        for warp_index in range(self.MAX_WARP_INDEX + 1):
+            mmo = MapMetaObject.get_by_warp_index(warp_index)
+            if mmo is None:
                 continue
-            values = MapMetaObject._loading_files[warp_index]
-            values = [v+1 for v in values]
+            assert not mmo.is_rom_split
+
+            values = mmo.loading_files
             data_list = b''.join([v.to_bytes(length=2, byteorder='big')
                                   for v in values])
             data_list += b'\x00\x00'
@@ -633,21 +699,65 @@ class MapMetaObject(TableObject):
                 data_buffer += data_list
             assert index % 4 == 0
             list_pointer = self.convert_loading_pointer(data_start+index)
-            pointer_pointer = MapMetaObject.loading_file_pointers[warp_index]
-            f.seek(pointer_pointer)
-            f.write((list_pointer & 0xffff).to_bytes(length=2,
-                                                     byteorder='big'))
-        assert len(data_buffer) < data_end - data_start
+            offset = (list_pointer & 0xffff).to_bytes(length=2,
+                                                      byteorder='big')
+            routine = (self.LOADING_CODE_HEADER + offset
+                       + self.LOADING_CODE_FOOTER)
+            if routine in routine_buffer:
+                routine_offset = routine_buffer.index(routine)
+            else:
+                routine_offset = len(routine_buffer)
+                routine_buffer += routine
+            assert routine_offset % 4 == 0
+            loading_pointer = self.convert_loading_pointer(routine_start +
+                                                           routine_offset)
+            mmo.loading_pointer = loading_pointer | 0x80000000
+
+            mmo.instance_offset = (
+                len(mmo.definitions) * mmo.EntityDefinition.DATA_LENGTH)
+            mmo.footer_offset = mmo.instance_offset + (
+                len(mmo.instances) * mmo.EntityInstance.DATA_LENGTH)
+            mmo.ending_offset = mmo.footer_offset + self.ENTITY_FOOTER_LENGTH
+
+            metadata_length = max(max(self.METADATA_STRUCTURE.values()))
+            assert metadata_length == self.METADATA_LENGTH
+            metadata = b'\x00' * metadata_length
+            for (attribute, (a, b)) in self.METADATA_STRUCTURE.items():
+                length = b-a
+                value = getattr(mmo, attribute)
+                value = value.to_bytes(length=length, byteorder='big')
+                metadata = metadata[:a] + value + metadata[b:]
+
+            base_pointer = self.convert_loading_pointer(
+                    self.POINTER_TABLE_OFFSET+(warp_index*4))
+            f.seek(base_pointer)
+            pointer = int.from_bytes(f.read(4), byteorder='big')
+            assert pointer > 0
+            f.seek(self.convert_loading_pointer(pointer))
+            f.write(metadata)
+
+        try:
+            assert len(data_buffer) < data_end - data_start
+            assert len(routine_buffer) < routine_end - routine_start
+        except AssertionError:
+            print('WARNING: Loading metadata exceeds expected space.')
         f.seek(data_start)
         f.write(data_buffer)
+        f.seek(routine_start)
+        f.write(routine_buffer)
         f.seek(0)
         main_code._data = f.read()
         f.close()
 
     @classmethod
     def get_by_warp_index(self, index):
-        return [mmo for mmo in MapMetaObject.every
-                if mmo.warp_index == index][0]
+        choices = [mmo for mmo in MapMetaObject.every
+                   if hasattr(mmo, 'warp_index')
+                   and mmo.warp_index == index]
+        if not choices:
+            return None
+        assert len(choices) == 1
+        return choices[0]
 
     @classmethod
     def import_from_file(self, filename):
@@ -667,12 +777,14 @@ class MapMetaObject(TableObject):
                         line = line.split(':')[0]
                     room_index = int(line[5:], 0x10)
                     mmo = MapMetaObject.get_by_warp_index(room_index)
+                    if mmo.is_rom_split:
+                        raise Exception(f'Cannot use Room {room_index:0>3x}. '
+                                        f'The index is being used as a buffer '
+                                        f'between old data and new data.')
                     assert mmo.entities is not None
                     mmo.entities = []
                     previous_entity = None
-                    mmo.leftover_data = b''
-                elif line.startswith('LEFTOVER'):
-                    previous_entity = None
+                    mmo.footer = b''
                     mmo.leftover_data = b''
                 elif line.startswith('!load '):
                     line = line[6:]
@@ -688,11 +800,21 @@ class MapMetaObject(TableObject):
                                                      int(value, 0x10))
                     else:
                         previous_entity.set_main_property(int(line, 0x10))
+                    assert not mmo.footer
+                    assert not mmo.leftover_data
                 elif ':' in line:
                     previous_entity = mmo.import_line(line)
+                    assert not mmo.footer
+                    assert not mmo.leftover_data
                 else:
-                    line = bytes([int(v, 0x10) for v in line.split()])
-                    mmo.leftover_data += line
+                    line = [int(v, 0x10).to_bytes(length=2, byteorder='big')
+                            for v in line.split()]
+                    line = b''.join(line)
+                    if mmo.footer:
+                        mmo.leftover_data += line
+                    else:
+                        mmo.footer += line
+                    assert len(mmo.footer) == self.ENTITY_FOOTER_LENGTH
 
     @classmethod
     def consolidate_free_space(self):
@@ -725,11 +847,21 @@ class MapMetaObject(TableObject):
                    f'{self.reference_pointer:0>8x}')
         if self.room_name:
             header += f'  # {self.room_name}'
+        header += '\n# {0:19} {1}'.format('Total Memory Used', self.total_size)
+        for attr in ('file_index', 'instance_offset', 'footer_offset',
+                     'ending_offset', 'loading_pointer',
+                     'unknown_pointer1', 'unknown_pointer2'):
+            a, b = self.METADATA_STRUCTURE[attr]
+            length = (b-a)*2
+            value = ('{0:0>%sx}' % length).format(getattr(self, attr))
+            header += f'\n# {attr:19} {value}'
         if self.loading_files:
             loading_files = ' '.join([f'{v:0>3x}' for v in self.loading_files])
             header += f'\n!load {loading_files}'
-        s = header + '\n' + self.hexify()
+        s = header + '\n\n' + self.hexify()
         s = s.replace('\n', '\n  ')
+        while ' \n' in s:
+            s = s.replace(' \n', '\n')
         return s.strip()
 
     @property
@@ -741,17 +873,24 @@ class MapMetaObject(TableObject):
         return self.reference_pointer & 0x7fffffff
 
     @property
+    def metasize(self):
+        return MetaSizeObject.get(self.index)
+
+    @property
+    def total_size(self):
+        return sum([MetaSizeObject.get(index-1).metasize
+                    for index in self.loading_files])
+
+    @property
     def data(self):
         if hasattr(self, '_data'):
-            if self.is_room:
-                assert self.is_rom_split
             return self._data
         if self.is_room:
             data = b''
             for e in self.entities:
                 data += e.data
-            if self.leftover_data is not None:
-                data += self.leftover_data
+            data += self.footer
+            data += self.leftover_data
             return data
         if self.index == self.MAIN_CODE_INDEX:
             assert hasattr(self, '_data')
@@ -759,6 +898,8 @@ class MapMetaObject(TableObject):
 
     @property
     def data_has_changed(self):
+        if self.is_rom_split:
+            return False
         if self.data is None:
             return False
         old_data = self._cached_decompressed
@@ -771,15 +912,12 @@ class MapMetaObject(TableObject):
 
     @property
     def is_room(self):
+        if self.is_rom_split:
+            return False
         if 0x335 <= self.index <= 0x481:
             assert self.warp_index is not None
             return True
         return False
-
-    @property
-    def warp_index(self):
-        if self.index in self.warp_indexes:
-            return self.warp_indexes[self.index]
 
     @property
     def room_name(self):
@@ -789,19 +927,6 @@ class MapMetaObject(TableObject):
     @cached_property
     def exits(self):
         return [e for e in self.instances if e.is_exit]
-
-    def get_loading_files(self):
-        if self.warp_index in self._loading_files:
-            return self._loading_files[self.warp_index]
-
-    def set_loading_files(self, loading_files):
-        self._loading_files[self.warp_index] = loading_files
-
-    def del_loading_files(self):
-        self._loading_files[self.warp_index] = []
-
-    loading_files = property(get_loading_files, set_loading_files,
-                             del_loading_files)
 
     @property
     def definitions(self):
@@ -830,8 +955,7 @@ class MapMetaObject(TableObject):
 
     @property
     def is_rom_split(self):
-        return self.index in (self.ROM_SPLIT_THRESHOLD_LOW,
-                              self.ROM_SPLIT_THRESHOLD_HI)
+        return self.index in self.ROM_SPLIT_THRESHOLDS
 
     def get_compressed(self):
         if hasattr(self, '_cached_compressed'):
@@ -840,6 +964,9 @@ class MapMetaObject(TableObject):
         try:
             finish = self.get(self.index+1).data_pointer
         except KeyError:
+            finish = start
+        if finish < start:
+            assert self.is_rom_split
             finish = start
         f = get_open_file(get_outfile())
         f.seek(start)
@@ -858,6 +985,8 @@ class MapMetaObject(TableObject):
         else:
             data = self.get_compressed()
         self._cached_decompressed = data
+        if self.is_room:
+            assert len(self._cached_decompressed) == self.metasize.metasize
         return self.get_decompressed()
 
     def write_decompressed_to_file(self, filename):
@@ -867,41 +996,40 @@ class MapMetaObject(TableObject):
             f.write(self.get_decompressed())
 
     def get_entities(self):
+        assert not self.is_rom_split
         assert self.is_room
-
         if hasattr(self, 'entities'):
             return self.entities
 
         self.entities = []
+        self.footer = None
         self.leftover_data = None
         data = self.get_decompressed()
         if data is None:
             return None
 
-        entity_type = self.EntityDefinition
-        while True:
-            if set(data) <= {0}:
-                break
+        definition_segment = data[:self.instance_offset]
+        instance_segment = data[self.instance_offset:self.footer_offset]
+        footer = data[self.footer_offset:self.ending_offset]
+        leftover = data[self.ending_offset:]
+        assert len(data) >= self.ending_offset
 
-            if len(data) > 0xc and data[0xc] == 0x08:
-                entity_type = self.EntityInstance
-
-            segment_length = entity_type.DATA_LENGTH
-            while len(data) < segment_length:
-                data += b'\x00'
-            segment, data = data[:segment_length], data[segment_length:]
-            entity = entity_type(segment, self)
-
-            if entity_type is self.EntityDefinition and entity.is_null:
-                data = segment + data
-                entity_type = self.EntityInstance
-                continue
-
+        while definition_segment:
+            entity = self.EntityDefinition(
+                definition_segment[:self.EntityDefinition.DATA_LENGTH], self)
+            definition_segment = \
+                definition_segment[self.EntityDefinition.DATA_LENGTH:]
             self.entities.append(entity)
 
-        self.leftover_data = data
-        assert set(self.leftover_data) <= {0}
-        self.definition_limit = len(self.definitions)
+        while instance_segment:
+            entity = self.EntityInstance(
+                instance_segment[:self.EntityInstance.DATA_LENGTH], self)
+            instance_segment = \
+                instance_segment[self.EntityInstance.DATA_LENGTH:]
+            self.entities.append(entity)
+
+        self.footer = footer
+        self.leftover_data = leftover
         return self.entities
 
     def hexify(self):
@@ -911,10 +1039,11 @@ class MapMetaObject(TableObject):
         s += '\n'.join(map(str, definitions))
         s += '\n\n# INSTANCES\n'
         s += '\n'.join(map(str, instances))
-        s += '\n\n'
-        if self.leftover_data:
-            leftover = pretty_hexify(self.leftover_data).replace('\n', '\n  ')
-            s = f'{s}\nLEFTOVER ({len(self.leftover_data)}):\n  {leftover}'
+        s += '\n\n# FOOTER\n'
+        s += pretty_hexify(self.footer).replace('\n', ' ') + '\n'
+        if set(self.leftover_data) > {0} or True:
+            s += f'\n\n# LEFTOVER ({len(self.leftover_data)})\n'
+            s += pretty_hexify(self.leftover_data) + '\n'
         while '\n\n\n' in s:
             s = s.replace('\n\n\n', '\n\n')
         return s.strip()
@@ -931,7 +1060,7 @@ class MapMetaObject(TableObject):
         assert ':' in line
         line = line.replace(' ', '').strip()
         index, line = line.split(':')
-        if set(index) == {'-'}:
+        if index[0] == '+':
             index = None
         else:
             index = int(index, 0x10)
@@ -988,6 +1117,13 @@ class MapMetaObject(TableObject):
         return start
 
     def compress_and_write(self):
+        if self.data_has_changed and self.is_room:
+            old_length = self.metasize.metasize
+            assert old_length == len(self._cached_decompressed)
+            new_length = len(self.data)
+            while new_length % 0x4:
+                new_length += 1
+            self.metasize.metasize = new_length
         if self.data_has_changed and self.is_compressed:
             data = recompress(self.data)
         elif self.data_has_changed:
@@ -999,6 +1135,8 @@ class MapMetaObject(TableObject):
         data += b'\x00\x00\x00\x00'
         while len(data) % 0x10:
             data += b'\x00'
+        if self.is_rom_split:
+            data = b''
         address = self.allocate(len(data))
         f = get_open_file(get_outfile())
         f.seek(address)
@@ -1010,23 +1148,18 @@ class MapMetaObject(TableObject):
     def validate_entities(self):
         assert self.is_room
         definitions = self.definitions
-        if len(definitions) > self.definition_limit:
-            raise Exception(f'Room {self.warp_index:0>3x}: Number of entity '
-                            f'types must equal {self.definition_limit}.')
         try:
             assert self.entities[:len(definitions)] == definitions
             assert all(e.index == i for (i, e) in enumerate(definitions))
         except AssertionError:
             raise Exception(f'Room {self.index:0>3x}: Entity definitions must '
                              'be in order at the start.')
+        for e in self.entities:
+            e.validate_data()
 
     def preprocess(self):
-        if not hasattr(MapMetaObject, 'free_space'):
-            MapMetaObject.free_space = [(addresses.free_space_start,
-                                         addresses.free_space_end)]
-
         self.get_compressed()
-        if self.index > 0:
+        if self.index > 0 and not self.get(self.index-1).is_rom_split:
             assert self.data_pointer >= self.get(self.index-1).data_pointer
 
         if self.is_room:
@@ -1034,20 +1167,11 @@ class MapMetaObject(TableObject):
             assert not self.data_has_changed
             assert self.entities
 
-        if self.index == self.MAIN_CODE_INDEX:
-            self.read_loading_files()
-
     def preclean(self):
         if self.index >= self.MAIN_CODE_INDEX:
             self.deallocate()
 
     def cleanup(self):
-        if self.is_rom_split:
-            if self.data_has_changed:
-                raise Exception(f'Cannot use file {self.index:0>3x}. '
-                                f'This index is being used as a buffer '
-                                f'between old data and new data.')
-            self._data = b'\x00\x00\x00\x00'
         if self.is_room and self.data_has_changed:
             self.validate_entities()
         if self.index >= self.MAIN_CODE_INDEX:
@@ -1078,9 +1202,24 @@ class MapMetaObject(TableObject):
                     self.old_data['reference_pointer_be']
 
     @classmethod
+    def preprocess_all(cls):
+        MapMetaObject.free_space = [(addresses.free_space_start,
+                                     addresses.free_space_end)]
+        for mmo in MapMetaObject.every:
+            mmo.warp_index = None
+        cls.read_loading_files()
+        super().preprocess_all()
+
+    @classmethod
     def full_cleanup(cls):
+        (a, b) = min(cls.free_space)
+        if b < addresses.expected_data_end:
+            print(f'WARNING: Reallocating expected available space up to '
+                  f'{addresses.expected_data_end:x}.')
+            cls.free_space.append((a, addresses.expected_data_end))
+            cls.consolidate_free_space()
+        cls.write_loading_files()  # must do this before cleaning/writing 00b
         print('Recompressing data; this may take some time.')
-        cls.write_loading_files()
         super().full_cleanup()
         # for whatever reason, pointers must be in ascending order
         reference_pointers = [mmo.reference_pointer & 0x7fffffff for
@@ -1124,7 +1263,7 @@ if __name__ == '__main__':
             MapMetaObject.import_from_file('to_import.txt')
             for mmo in MapMetaObject.every:
                 if mmo.is_room and mmo.data_has_changed:
-                    print(mmo)
+                    print(str(mmo).split('\n')[0])
 
         if 'export' in get_activated_codes():
             print('EXPORTING')
@@ -1144,6 +1283,7 @@ if __name__ == '__main__':
         #write_seed()
 
         clean_and_write(ALL_OBJECTS)
+        checksum(get_open_file(get_outfile()))
         finish_interface()
 
     except Exception:

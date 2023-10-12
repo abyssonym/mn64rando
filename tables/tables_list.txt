@@ -1,4 +1,6 @@
 MapMetaObject           struct_map_meta_pointer.txt     58258   1312
+MetaSizeObject          struct_meta_size.txt            5594c   1312
+$expected_data_end          f9e8a4
 $free_space_start           fa0000
 $free_space_end             ffffff
-.patch                      patch_no_checksum.txt
+#.patch                      patch_no_checksum.txt

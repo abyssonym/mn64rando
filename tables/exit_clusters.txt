@@ -922,8 +922,8 @@
 
 # 14E Japan Sea - Underwater
 14e-002=14e-002 mermaid
-14e-002=>14e-003 mermaid
-14e-002=>14e-005 mermaid
+14e-002=>14e-003 mermaid&!thaisamba
+14e-002=>14e-005 mermaid&!thaisamba
 14e-009=14e-002 mermaid                 # cat
 14e-00b=14e-002 mermaid                 # pack
 14e-00a=14e-002 mermaid                 # dango
