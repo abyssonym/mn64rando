@@ -7,13 +7,14 @@ from randomtools.utils import (
     utilrandom as random)
 from randomtools.interface import (
     get_outfile, get_seed, get_flags, get_activated_codes, activate_code,
-    run_interface, rewrite_snes_meta, clean_and_write, finish_interface)
+    run_interface, rewrite_snes_meta, clean_and_write, finish_interface,
+    get_sourcefile)
 
 from collections import Counter, defaultdict
 from time import time, gmtime
 from io import BytesIO
 from itertools import combinations
-from os import path, mkdir
+from os import path, mkdir, environ
 from traceback import format_exc
 import re
 import yaml
@@ -1260,10 +1261,16 @@ if __name__ == '__main__':
 
         if 'import' in get_activated_codes():
             print('IMPORTING')
-            MapMetaObject.import_from_file('to_import.txt')
+            if 'MN64_IMPORT' in environ:
+                filename = environ['MN64_IMPORT']
+            else:
+                filename = input('Import from filename: ')
+            if not filename.strip():
+                filename = f'{get_sourcefile()}.import.txt'
+            MapMetaObject.import_from_file(filename)
             for mmo in MapMetaObject.every:
                 if mmo.is_room and mmo.data_has_changed:
-                    print(str(mmo).split('\n')[0])
+                    print('Updated:', str(mmo).split('\n')[0])
 
         if 'export' in get_activated_codes():
             print('EXPORTING')
@@ -1276,7 +1283,11 @@ if __name__ == '__main__':
                     filename = f'{mmo.index:0>3x}.bin'
                     mmo.write_decompressed_to_file(path.join('export',
                                                              filename))
-            with open('to_import.txt', 'w+') as f:
+            if 'MN64_EXPORT' in environ:
+                filename = environ['MN64_EXPORT']
+            else:
+                filename = f'{get_outfile()}.export.txt'
+            with open(filename, 'w+') as f:
                 for mmo in MapMetaObject.sorted_rooms:
                     f.write(str(mmo) + '\n\n')
 
