@@ -21,6 +21,9 @@ else:
     VERIFY = False
 
 
+OPTIMIZE_ZEROES = False
+
+
 TMP_INFILE = 'tmp.in'
 TMP_OUTFILE = 'tmp.out'
 TMP_TESTFILE = 'tmp.test'
@@ -335,6 +338,17 @@ def recompress(decomp, verify=None):
                 forward_window_match_value = matching_sequence_value
                 forward_window_match_size = matching_sequence_size
 
+        zero_window_match_size = 0
+        if OPTIMIZE_ZEROES:
+            while True:
+                i = buffer_position + zero_window_match_size
+                if i >= len(file_buffer):
+                    break
+                if file_buffer[i] != 0:
+                    break
+                zero_window_match_size += 1
+            zero_window_match_size = min(zero_window_match_size, 257)
+
         # Try to pick which mode works best with the current values.
         if sliding_window_match_size >= 3:
             current_mode = MODE_WINDOW_COPY
@@ -353,6 +367,12 @@ def recompress(decomp, verify=None):
                 forward_window_match_value == 0):
             current_mode = MODE_RLE_WRITE_A
             current_submode = MODE_RLE_WRITE_B
+
+        if zero_window_match_size > max(sliding_window_match_size,
+                                        forward_window_match_size):
+            current_mode = MODE_RLE_WRITE_A
+            current_submode = MODE_RLE_WRITE_C
+            forward_window_match_size = zero_window_match_size
 
         # Write a raw copy command when these following conditions are met:
         # The current mode is set and there are raw bytes available to be copied.
@@ -421,6 +441,10 @@ def recompress(decomp, verify=None):
                 write_buffer[write_position] = MODE_RLE_WRITE_B | value
                 write_position += 1
             elif current_submode == MODE_RLE_WRITE_C:
+                if OPTIMIZE_ZEROES:
+                    assert forward_window_match_size == zero_window_match_size
+                window_end = buffer_position + forward_window_match_size
+                assert set(file_buffer[buffer_position:window_end]) == {0}
                 write_buffer[write_position] = MODE_RLE_WRITE_C
                 write_position += 1
                 write_buffer[write_position] = \

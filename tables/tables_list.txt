@@ -1,5 +1,6 @@
-MapMetaObject           struct_map_meta_pointer.txt     58258   1312
 MetaSizeObject          struct_meta_size.txt            5594c   1312
+MapMetaObject           struct_map_meta_pointer.txt     58258   1312
+MapCategoryObject       struct_map_category.txt         5c892   6
 $expected_data_end          f9e8a4
 $free_space_start           fa0000
 $free_space_end             ffffff
