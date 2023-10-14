@@ -8,10 +8,14 @@
   name:       Smoke Cloud
 
 0x081:
-  name:       Ryo (Drops down)
+  name:       Ryo (Drops down, unused)
 
 0x082:
-  name:       Giant Ryo
+  name:       Ryo
+  size:
+    index:    4
+    0x00:     Giant
+    0x01:     Normal
 
 0x083:
   name:       Giant Ryo (Drops down, unused)
@@ -169,6 +173,9 @@
 0x10c:
   name:       Sword Robot
 
+0x10f:
+  name:       Can Can Legs (1x, unused)
+
 0x110:
   name:       Pink Robot 110 (Festival Temple & Hagi)
 
@@ -176,7 +183,7 @@
   name:       Small Cannon
 
 0x12d:
-  name:       Flying Lion Head
+  name:       Flying Dragon Head
 
 0x12e:
   name:       Seahorse
@@ -185,7 +192,7 @@
   name:       Spiny Sea Urchin
 
 0x130:
-  name:       Drum robot
+  name:       Drum Robot
 
 0x131:
   name:       Triangle Robot
@@ -227,13 +234,16 @@
   name:       Ninja
 
 0x142:
-  name:       Unknown Unknown (Room 1e1)
+  name:       Sweets Minigame
 
 0x144:
   name:       Burrowing Robot
 
 0x145:
   name:       Kite
+
+0x146:
+  name:       Drum Robot (Unused)
 
 0x147:
   name:       Bomber Bird
@@ -246,6 +256,9 @@
 
 0x190:
   name:       Flying Tile
+
+0x191:
+  name:       Rolling Boulder (Unused)
 
 0x192:
   name:       Pot
@@ -307,11 +320,23 @@
 0x1aa:
   name:       Jump Rope (Ghost Toys)
 
+0x1ab:
+  name:       Glitchy Spike Chain Spikes (Unused)
+
+0x1ad:
+  name:       Sweets from Sweets Minigame (Unused)
+
+0x1ae:
+  name:       Giant Portrait Casting a Shadow (Unused, sweets minigame?)
+
 0x1b0:
   name:       Mind-Control Robot (Required to not freeze dragonback cutscenes)
 
+0x1b1:
+  name:       Huge Shadow (Unused, sweets minigame?)
+
 0x1b2:
-  name:       Unknown Unknown (Room 1e2)
+  name:       High Jump Minigame
 
 0x1b6:
   name:       Robot Bee Spawner
@@ -326,10 +351,13 @@
   name:       Crane Game Control Panel
 
 0x1bc:
-  name:       Unknown Unknown (Room 1e0)
+  name:       Sudden Impact Minigame
 
 0x1bd:
   name:       Billiard Balls (all of them)
+
+0x1be:
+  name:       Billiard Ball (Unused)
 
 0x1bf:
   name:       Crane Game Fixed POV
@@ -339,6 +367,9 @@
 
 0x1f4:
   name:       Platform (Stationary)
+
+0x1f5:
+  name:       Platform (Stationary, unused)
 
 0x1f7:
   name:       Turtle Pad
@@ -409,6 +440,12 @@
   name:       Swing Door (Short)
   graphic:
     index:      4
+
+0x243:
+  name:       Small Wooden Box (Carryable, unused)
+
+0x244:
+  name:       Large Wooden Box (Pushable, unused)
 
 0x245:
   name:       Metal Box
@@ -513,6 +550,9 @@
   message:
     index:      [10,11]
 
+0x2c3:
+  name:       Happy Brown Man (Glitchy, unused)
+
 0x2c4:
   name:       Thief
   message:
@@ -583,7 +623,7 @@
     index:      [10,11]
 
 0x2cd:
-  name:       Gatekeeper with lantern
+  name:       Gatekeeper with lantern (unused)
 
 0x2ce:
   name:       Young Woman
@@ -625,7 +665,7 @@
     index:      [10,11]
 
 0x2dc:
-  name:       Unknown 2dc (Dummied?)
+  name:       Credits Sequence
 
 0x2ee:
   name:       Unknown (Related to main town maps?)
@@ -659,6 +699,16 @@
   message:
     index:      [10,11]
 
+0x2fa:
+  name:       Kneeling Woman (unused?)
+  message:
+    index:      [10,11]
+
+0x2fb:
+  name:       Kneeling Woman with Fan (from inn)
+  message:
+    index:      [10,11]
+
 0x2fc:
   name:       Shopkeeper
   message:
@@ -673,6 +723,11 @@
 
 0x2fe:
   name:       Tour Guide
+  message:
+    index:      [10,11]
+
+0x2ff:
+  name:       Man in Blue Kimono (unused)
   message:
     index:      [10,11]
 
@@ -715,7 +770,7 @@
   name:       Fixed Camera Actor
 
 0x309:
-  name:       Unknown 309 (Dummied?)
+  name:       Inn Cutscene
 
 0x30a:
   name:       Tourism Center Teleport Machine
@@ -918,6 +973,9 @@
 0x35f:
   name:       Miracle Moon
 
+0x362:
+  name:       Green Robot with Yellow Robot Blaster Box (unused)
+
 0x365:
   name:       Giant Spinning Top (Ghost Toys)
 
@@ -985,7 +1043,7 @@
   name:       Shishi-odoshi
 
 0x3d9:
-  name:       Unknown (Witch's House)
+  name:       Dim Lighting (Witch's House)
 
 0x3da:
   name:       Boulder (Kompira Mountain)

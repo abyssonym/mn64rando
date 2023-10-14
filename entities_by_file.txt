@@ -1,0 +1,433 @@
+FILE 018:
+  079: UNKNOWN/UNUSED
+  07c: UNKNOWN/UNUSED
+  101: UNKNOWN/UNUSED
+  134: Dango Stick Wipers
+  13b: Spiny Sea Urchin (Kii-Awaji)
+  149: Dango Stick Wipers (Spawners)
+  198: Spike Chain
+  1aa: Jump Rope (Ghost Toys)
+  1ab: Glitchy Spike Chain Spikes (Unused)
+  35e: Unknown (Related to Ghost Toys spike floors?)
+  3ca: Spike Floor (Ghost Toys)
+
+FILE 019:
+  07d: UNKNOWN/UNUSED
+  249: The Water (Husband and Wife Rocks)
+
+FILE 01a:
+  085: Gold Dango
+  086: Mr. Elly Fant
+  087: Mr. Arrow
+  088: Silver Doll
+  089: Gold Doll
+  091: Surprise Pack (Extra Life)
+
+FILE 01b:
+  08a: Shop Wares
+  2f1: UNKNOWN/UNUSED
+  2f2: UNKNOWN/UNUSED
+  2f3: UNKNOWN/UNUSED
+  2f5: Plasma Backup Dancer
+  2f6: Chef (Deals contact damage)
+  2f7: Woman at Tourism Center with Rice Ball
+  2f8: Drunk
+  2f9: Sleeping Woman
+  2fa: Kneeling Woman (unused?)
+  2fb: Kneeling Woman with Fan (from inn)
+  2fc: Shopkeeper
+  2fd: Old Woman
+  2fe: Tour Guide
+  2ff: Man in Blue Kimono (unused)
+  300: Priest
+  301: Restaurant Hostess
+  302: Inn Keeper
+  303: UNKNOWN/UNUSED
+  304: Guardhouse Guard
+  305: Mokubei (Pipe maker)
+  306: Plasma
+  307: Gym Trainer
+  308: Fixed Camera Actor
+  30a: Tourism Center Teleport Machine
+  30c: UNKNOWN/UNUSED
+  30d: UNKNOWN/UNUSED
+  313: UNKNOWN/UNUSED
+  31e: Omitsu
+  346: Witch
+  347: Eboshi Priest
+  36d: UNKNOWN/UNUSED
+  3fd: Residence Trough Contents?
+  401: Restaurant Patron or Prop
+
+FILE 01c:
+  08f: Dango 08f
+  192: Pot
+
+FILE 01d:
+  0c8: UNKNOWN/UNUSED
+  0c9: UNKNOWN/UNUSED
+  0cb: Ghost Robot Tsurami
+  0cd: UNKNOWN/UNUSED
+  0ce: Congo Boss Event Trigger
+  0d0: UNKNOWN/UNUSED
+  2d5: UNKNOWN/UNUSED
+  2d7: Oedo Castle Baron Event Trigger
+  323: Congo
+  357: Tsurami Boss Trigger
+  36c: UNKNOWN/UNUSED
+
+FILE 01e:
+  0ca: Congo's Hand
+  196: Star Block
+  197: Crusher
+  19d: Slicer (Musical Castle 1)
+  1b9: Crane Game Crane & Glass
+  1ba: Crane Game Power Switch
+  1bb: Crane Game Control Panel
+  1bf: Crane Game Fixed POV
+  1c1: UNKNOWN/UNUSED
+  1c2: UNKNOWN/UNUSED
+  1f7: Turtle Pad
+  243: Small Wooden Box (Carryable, unused)
+  244: Large Wooden Box (Pushable, unused)
+  245: Metal Box
+  322: Ladder 322
+  324: Expanding Staircase Block
+  326: Retractable Platform
+  32a: Translucent Wall
+  32b: UNKNOWN/UNUSED
+  330: Glowing IN Sign
+  331: Giant Turbine (Gourmet Sub)
+  332: Treadmill (Gourmet Sub)
+  337: UNKNOWN/UNUSED
+  339: Enterable Submarine?
+  33b: Ladder 33b
+  33c: Ladder 33c
+  34a: Rotating Column Elevator
+  354: Sliding Door Pink Robot Spawner
+  356: Giant Kaleidoscope
+  35f: Miracle Moon
+  3b4: Fast Boat (Ghost Toys)
+  3d0: Blooming Flower (Ghost Toys)
+  3d2: Meatsaw Hammer
+  3d3: Wind-Up Camera
+  3d4: Ice Kunai
+  3d5: Yae Bazooka
+  3ec: Unknown 3ec (Gourmet Sub)
+  3ef: Spiny Urchin Spawner (Gourmet Sub)
+
+FILE 01f:
+  0cc: Darumanyo Boss Event Trigger 1
+  0cf: Darumanyo Boss Event Trigger 2
+
+FILE 020:
+  0fa: Robot Bee
+  0fb: Pink Robot FB
+  0fc: Pink Robot FC
+  0fd: Green Robot FD
+  0fe: Green Robot FE
+  100: Blue Robot
+  103: Scarecrow Bot
+  110: Pink Robot 110 (Festival Temple & Hagi)
+  12c: Small Cannon
+  12d: Flying Dragon Head
+  130: Drum Robot
+  146: Drum Robot (Unused)
+
+FILE 021:
+  0ff: Big Swatting Robot
+  10d: UNKNOWN/UNUSED
+  10e: UNKNOWN/UNUSED
+
+FILE 022:
+  102: Slinky Enemy (Mt. Fuji)
+  191: Rolling Boulder (Unused)
+  19a: Falling Barrel
+  3da: Boulder (Kompira Mountain)
+
+FILE 023:
+  104: Can-can Legs
+  106: Spinning Kite
+  10f: Can Can Legs (1x, unused)
+  132: Bouncing Darumanyo
+  133: Paper Ghost
+  145: Kite
+  148: Water Snake
+  3d1: Floating Ingredients (Gourmet Sub)
+
+FILE 024:
+  105: Flatfish (Tosa Bridge)
+  10c: Sword Robot
+  131: Triangle Robot
+  138: UNKNOWN/UNUSED
+  13c: Giant Enemy Crab
+  13d: Samurai
+  13f: Hammer Thrower
+  147: Bomber Bird
+
+FILE 025:
+  107: Bamboo Shooter
+  135: UNKNOWN/UNUSED
+  136: Red Eye Fish
+  13e: Rose Robot
+  140: Fire Stalker
+  141: Ninja
+  190: Flying Tile
+  1a6: Fox Mask
+  364: UNKNOWN/UNUSED
+
+FILE 026:
+  108: Jet Robot
+  109: Yellow Robot
+  10a: Big Swatting Robot Red
+  10b: Shrinking Robot
+  362: Green Robot with Yellow Robot Blaster Box (unused)
+
+FILE 027:
+  12e: Seahorse
+  12f: Spiny Sea Urchin
+  144: Burrowing Robot
+  363: UNKNOWN/UNUSED
+  3fc: Floor Flamethrower
+
+FILE 028:
+  137: UNKNOWN/UNUSED
+  139: UNKNOWN/UNUSED
+  195: Ghost Toys Torch
+  19e: Fan Platform (Spreading)
+  19f: Fan Platform (Rotating)
+  1a4: UNKNOWN/UNUSED
+  1a5: UNKNOWN/UNUSED
+  1a8: UNKNOWN/UNUSED
+  1a9: Falling Bomb Block
+  320: Festival Temple Fish Kite
+  333: UNKNOWN/UNUSED
+  334: Sushi Spawner (Gourmet Sub)
+  365: Giant Spinning Top (Ghost Toys)
+  366: Spinning Rectangular Platform (Ghost Toys)
+  3c4: False Floor (Ghost Toys)
+  3c5: Invisible Path (Gourmet Sub)
+  3c6: Ramen Bowl Platform (Gourmet Sub)
+  3cb: Festival Temple Accordion Stairs
+
+FILE 029:
+  13a: Tank
+
+FILE 02a:
+  142: Sweets Minigame
+  1ac: UNKNOWN/UNUSED
+  1ad: Sweets from Sweets Minigame (Unused)
+  1ae: Giant Portrait Casting a Shadow (Unused, sweets minigame?)
+  1b1: Huge Shadow (Unused, sweets minigame?)
+
+FILE 02b:
+  193: Key
+  194: UNKNOWN/UNUSED
+  199: UNKNOWN/UNUSED
+  1a2: UNKNOWN/UNUSED
+  23a: Double Sliding Door 23a
+  23b: Double Sliding Door 23b
+  23c: Double Sliding Door 23c
+  23d: Bombable Wall
+  23e: Locked Door
+  23f: Sliding Door (Musical Castle)
+  241: Swing Door
+  242: Swing Door (Short)
+  24d: Sliding Door 24d
+  256: Sliding Door 256
+  31f: Double Cross Sliding Door
+  321: Sliding Door (Ghost Toys)
+  32f: Automatic Door (Gourmet Sub)
+  340: Door to Yamato Shrine
+  341: Torii Gate to Husband and Wife Rocks
+  342: Torii Return Gate to Kii-Awaji Island
+  343: Small Boat
+  345: Invisible Wall That Blocks Doors Until Event Conditions Are Met
+  348: Sogen Maze Gate
+  34b: Door to Oedo Lord's Room
+  3c8: Ghost Toys Entrance Barricade
+  3c9: Unknown 3c9 (Mutsu Shoreline)
+  3d7: UNKNOWN/UNUSED
+  3eb: UNKNOWN/UNUSED
+
+FILE 02c:
+  1a1: Drum Platform
+  1a3: Treadmill (Musical Castle 2)
+  1f4: Platform (Stationary)
+  1f5: Platform (Stationary, unused)
+  1f6: UNKNOWN/UNUSED
+  1fc: Elevator
+  1fd: Shogi Platform
+  1fe: Hot Platform
+  228: Moving Platform (Horizontal)
+  3e0: Moving Platform (Vertical or Rotating)
+
+FILE 02d:
+  1af: UNKNOWN/UNUSED
+  24c: Wiseman's House / Impact Boss Trigger (Iga)
+  30b: UNKNOWN/UNUSED
+  317: UNKNOWN/UNUSED
+  318: UNKNOWN/UNUSED
+
+FILE 02e:
+  1b0: Mind-Control Robot (Required to not freeze dragonback cutscenes)
+  1b4: UNKNOWN/UNUSED
+  1b5: UNKNOWN/UNUSED
+  1b6: Robot Bee Spawner
+  1bd: Billiard Balls (all of them)
+  1be: Billiard Ball (Unused)
+  3db: UNKNOWN/UNUSED
+
+FILE 02f:
+  1b2: High Jump Minigame
+
+FILE 030:
+  1bc: Sudden Impact Minigame
+
+FILE 031:
+  1c0: Benkei
+  1c3: UNKNOWN/UNUSED
+
+FILE 032:
+  226: Switch
+  227: UNKNOWN/UNUSED
+
+FILE 033:
+  240: Door to Musashi
+  2d0: Guard (Gatekeeper)
+  311: Musashi Bridge Invisible Wall
+
+FILE 034:
+  246: Unknown (Oedo Castle Entrance)
+
+FILE 035:
+  24e: UNKNOWN/UNUSED
+  316: Kyushu (All of it)
+  31b: UNKNOWN/UNUSED
+  33f: UNKNOWN/UNUSED
+
+FILE 036:
+  255: Lord of Oedo Castle Event Trigger
+  2d3: Lord of Oedo
+  2d4: Princess Yuki
+
+FILE 037:
+  257: Yae Introduction Event Trigger
+
+FILE 038:
+  27a: UNKNOWN/UNUSED
+  27e: UNKNOWN/UNUSED
+  287: Water
+  288: Waterfall Mist
+  289: Waterfall Ripple
+  28b: Unknown (Kai Highway)
+  28d: Falling Snow Weather Effect
+  2bc: UNKNOWN/UNUSED
+  3b6: Unknown (Related to water in Ghost Toys?)
+  3e1: Sound of Flowing Water (in Stereo!)
+  3f0: Waves Flooring (Musical Castle 1)
+
+FILE 039:
+  28f: Ushikawa
+  290: Unknown (Golden Temple)
+  291: Priest (Golden Temple)
+  349: Flame
+
+FILE 03a:
+  2a0: Dragonback Cutscene Triggers (all of them)
+
+FILE 03b:
+  2bd: Dog
+  2be: Old Man
+  2bf: Boy
+  2c0: Purple Woman
+  2c1: Girl
+  2c2: Happy Brown Man
+  2c3: Happy Brown Man (Glitchy, unused)
+  2c4: Thief
+  2c5: Hiker
+  2c6: Middle Aged Brown Man
+  2c7: Blue Man
+  2c8: Red Woman
+  2c9: Running Man
+  2ca: Farmer
+  2cb: Ronin
+  2cc: Guard
+  2cd: Gatekeeper with lantern
+  2ce: Young Woman
+  2cf: UNKNOWN/UNUSED
+  2d8: Boy (Folkypoke)
+  2d9: Girl (Folkypoke)
+  32e: Hiker/Boy (Bizen Bridge)
+
+FILE 03c:
+  2dc: Credits Sequence
+
+FILE 03d:
+  309: Inn Cutscene
+  34e: Unknown 34e (Goemon's House)
+  400: Secret Decorations (Goemon's House)
+
+FILE 03e:
+  315: Kappa Event Trigger
+  3d6: Shishi-odoshi
+
+FILE 03f:
+  319: Kompira Shrine Collection Box
+
+FILE 040:
+  325: Giant Boulder (Mt. Fear)
+
+FILE 041:
+  329: The Turtle Rock
+
+FILE 042:
+  32c: UNKNOWN/UNUSED
+  32d: Inaba Battery
+  3c7: Izumo Tree Battery?
+
+FILE 043:
+  335: Pemopemo God
+  336: UNKNOWN/UNUSED
+  33e: UNKNOWN/UNUSED
+
+FILE 044:
+  338: Zazen Fish
+
+FILE 045:
+  33a: Sign (Waterfall of Kegon)
+
+FILE 046:
+  344: Unknown 344 (Mutsu Shoreline)
+
+FILE 047:
+  34f: Unknown (Darumanyo Boss Room)
+
+FILE 048:
+  355: Unknown (Kompira Mountain Base)
+
+FILE 049:
+  358: Unknown (Tsurami Boss Room)
+
+FILE 04a:
+  35c: The Gorgeous Stage
+
+FILE 04b:
+  35d: Gorgeous Performance Trigger
+
+FILE 04c:
+  36b: Unknown (Outside Oedo Castle)
+
+FILE 04d:
+  3b5: Thaisamba Boss Trigger
+
+FILE 04e:
+  3d9: Dim Lighting (Witch's House)
+
+FILE 04f:
+  3dc: Unknown (Pipe Maker's House)
+  3dd: Wise Old Man (Sogen Restaurant)
+
+FILE 050:
+  3de: Hot Floor Steam (Gourmet Sub)
+  3ea: Hot Spring Steam (Iyo)

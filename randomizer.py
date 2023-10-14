@@ -3,7 +3,7 @@ from randomtools.tablereader import (
     get_activated_patches, mutate_normal, shuffle_normal, write_patch,
     get_random_degree, tblpath, get_open_file)
 from randomtools.utils import (
-    classproperty, cached_property, read_lines_nocomment,
+    classproperty, cached_property, clached_property, read_lines_nocomment,
     utilrandom as random)
 from randomtools.interface import (
     get_outfile, get_seed, get_flags, get_activated_codes, activate_code,
@@ -109,7 +109,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     a pointer that never gets read, so that the "next" pointer issue never
     comes up. Two such indexes are:
         336 - Room 001 - Alternate Oedo Castle Tile Room (unused)
-        46d - Room 1ce - Null (unused, no exits or actors)
+        46d - Room 1ce - Unknown Training Gym (unused, no exits or actors)
     '''
     MAIN_CODE_INDEX = 0xb
     MAX_WARP_INDEX = 0x1e4
@@ -886,6 +886,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         if self.room_name:
             header += f'  # {self.room_name}'
         header += '\n# {0:25} {1}'.format('Total Memory Used', self.total_size)
+        if self.warp_index in MapCategoryObject.special_idle_animations:
+            value = MapCategoryObject.special_idle_animations[self.warp_index]
+            header += '\n# {0:25} {1:0>4x}'.format('Idle Animation', value)
         for attr in ('instance_offset', 'footer_offset',
                      'ending_offset', 'loading_pointer'):
             a, b = self.METADATA_STRUCTURE[attr]
@@ -1329,7 +1332,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
 class MapCategoryObject(TableObject, ConvertPointerMixin):
     ROOM_DATA_INDEX = 0xa
-    VIRTUAL_RAM_OFFSET = 0x1d0b90           # Location in RAM where file 00b is
+    VIRTUAL_RAM_OFFSET = 0x1d0b90           # Location in RAM where file 00a is
     POINTER_POINTERS = [
         0x20e7cc,
         0x20e7e4,
@@ -1468,6 +1471,20 @@ class MapCategoryObject(TableObject, ConvertPointerMixin):
         mmo = MapMetaObject.get(MapCategoryObject.ROOM_DATA_INDEX)
         MapCategoryObject._data = BytesIO(mmo.get_decompressed())
         return MapCategoryObject.data
+
+    @clached_property
+    def special_idle_animations(self):
+        pointer = 0x3e084
+        self.data.seek(pointer)
+        result = {}
+        while True:
+            room_index = self.data.read(2)
+            if room_index == b'\xff\xff':
+                break
+            room_index = int.from_bytes(room_index, byteorder='big')
+            result[room_index] = int.from_bytes(self.data.read(2),
+                                                byteorder='big')
+        return result
 
     @classmethod
     def convert_pointer(self, pointer):
