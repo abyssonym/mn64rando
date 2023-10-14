@@ -598,10 +598,6 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             assert self.definition.index == self.definition_index
 
     @classproperty
-    def after_order(self):
-        return [MapCategoryObject]
-
-    @classproperty
     def sorted_rooms(self):
         return sorted(
             (mmo for mmo in self.every if mmo.is_room),
@@ -886,8 +882,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         if self.room_name:
             header += f'  # {self.room_name}'
         header += '\n# {0:25} {1}'.format('Total Memory Used', self.total_size)
-        if self.warp_index in MapCategoryObject.special_idle_animations:
-            value = MapCategoryObject.special_idle_animations[self.warp_index]
+        if self.warp_index in MapCategoryData.special_idle_animations:
+            value = MapCategoryData.special_idle_animations[self.warp_index]
             header += '\n# {0:25} {1:0>4x}'.format('Idle Animation', value)
         for attr in ('instance_offset', 'footer_offset',
                      'ending_offset', 'loading_pointer'):
@@ -902,7 +898,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             value = ('{0:0>%sx}' % length).format(getattr(self, attr))
             header += f'\n# !meta {attr:19} {value}'
 
-        for attr in sorted(MapCategoryObject.MapCategoryData.STRUCTURE):
+        for attr in sorted(MapCategoryData.STRUCTURE):
             value = self.misc_data.get_pretty_attribute(attr)
             header += f'\n# !misc {attr:19} {value}'
 
@@ -925,8 +921,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     @property
     def misc_data(self):
-        return MapCategoryObject.MapCategoryData.get_by_warp_index(
-            self.warp_index)
+        return MapCategoryData.get_by_warp_index(self.warp_index)
 
     @property
     def metasize(self):
@@ -1188,9 +1183,16 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             data = self.get_compressed()
         else:
             data = self.get_decompressed()
-        data += b'\x00\x00\x00\x00'
-        while len(data) % 0x10:
-            data += b'\x00'
+
+        if self.index == MapCategoryData.ROOM_DATA_INDEX:
+            old_length = len(self.get_compressed())
+            assert len(data) <= old_length
+            data += b'\x00' * (old_length-len(data))
+        else:
+            data += b'\x00\x00\x00\x00'
+            while len(data) % 0x10:
+                data += b'\x00'
+
         if self.is_rom_split:
             data = b''
         address = self.allocate(len(data))
@@ -1246,24 +1248,17 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             assert self.entities
 
     def preclean(self):
-        if self.index >= self.MAIN_CODE_INDEX:
-            self.deallocate()
-        if not self.data_has_changed:
-            return
-        if self.index == MapCategoryObject.ROOM_DATA_INDEX:
+        if self.index >= MapCategoryData.ROOM_DATA_INDEX:
             self.deallocate()
 
     def cleanup(self):
         if self.is_room and self.data_has_changed:
             self.validate_entities()
-        if (self.index == MapCategoryObject.ROOM_DATA_INDEX
+        if (self.index == MapCategoryData.ROOM_DATA_INDEX
                 and self.data_has_changed):
             print(f'WARNING: Modifying miscellaneous data in file '
                   f'{self.index:0>3x} may result in instability.')
-            threshold = self.index
-        else:
-            threshold = self.MAIN_CODE_INDEX
-        if self.index >= threshold:
+        if self.index >= MapCategoryData.ROOM_DATA_INDEX:
             self.compress_and_write()
             # for whatever reason, pointers must be in ascending order
             assert self.relocated
@@ -1303,6 +1298,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         super().preprocess_all()
 
     @classmethod
+    def full_preclean(cls):
+        MapCategoryData.full_preclean()
+        super().full_preclean()
+
+    @classmethod
     def full_cleanup(cls):
         (a, b) = min(cls.free_space)
         if b < addresses.expected_data_end:
@@ -1330,9 +1330,18 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             assert 0 <= next_mmo.data_pointer-prev_mmo.data_pointer <= 0x7ffff
 
 
-class MapCategoryObject(TableObject, ConvertPointerMixin):
+class MapCategoryData:
     ROOM_DATA_INDEX = 0xa
     VIRTUAL_RAM_OFFSET = 0x1d0b90           # Location in RAM where file 00a is
+
+    CATEGORY_RANGES = [
+        (0x000, 0x05a),
+        (0x12c, 0x15e),
+        (0x15e, 0x190),
+        (0x190, 0x1e4),
+        (0x05a, 0x080),
+        (0x080, 0x12c),
+        ]
     POINTER_POINTERS = [
         0x20e7cc,
         0x20e7e4,
@@ -1346,131 +1355,154 @@ class MapCategoryObject(TableObject, ConvertPointerMixin):
         20, 8, 8, 4, 4, 2, 2,
         ]
 
-    class MapCategoryData:
-        STRUCTURE = {
-            'unknown0':         (0, (0, 20)),
-            'unknown1':         (1, (0, 8)),
-            'loading_files':    [(2, (0, 2)),
-                                 (2, (2, 4)),
-                                 (2, (4, 6)),
-                                 (2, (6, 8))],
-            'unknown3':         (2, (0, 4)),
-            'unknown4':         (4, (0, 4)),
-            'bgm':              (5, (0, 2)),
-            'unknown6':         (6, (0, 2)),
-            }
+    STRUCTURE = {
+        'unknown0':         (0, (0, 20)),
+        'unknown1':         (1, (0, 8)),
+        'loading_files':    [(2, (0, 2)),
+                             (2, (2, 4)),
+                             (2, (4, 6)),
+                             (2, (6, 8))],
+        'unknown3':         (3, (0, 4)),
+        'unknown4':         (4, (0, 4)),
+        'bgm':              (5, (0, 2)),
+        'unknown6':         (6, (0, 2)),
+        }
 
-        datas_by_warp_index = {}
+    datas_by_warp_index = {}
 
-        def __init__(self, warp_index):
-            self.warp_index = warp_index
-            self.read_attributes()
+    def __init__(self, warp_index):
+        self.warp_index = warp_index
+        self.read_attributes()
 
-        @classproperty
-        def every(self):
-            return [self.get_by_warp_index(mmo.warp_index)
-                    for mmo in MapMetaObject.sorted_rooms]
+    @classproperty
+    def every(self):
+        return [self.get_by_warp_index(mmo.warp_index)
+                for mmo in MapMetaObject.sorted_rooms]
 
-        @classmethod
-        def get_by_warp_index(self, warp_index):
-            if warp_index in self.datas_by_warp_index:
-                mcd = self.datas_by_warp_index[warp_index]
-                assert mcd.warp_index == warp_index
-                return mcd
-            mcd = MapCategoryObject.MapCategoryData(warp_index)
-            self.datas_by_warp_index[warp_index] = mcd
-            return self.get_by_warp_index(warp_index)
+    @classmethod
+    def get_by_warp_index(self, warp_index):
+        if warp_index in self.datas_by_warp_index:
+            mcd = self.datas_by_warp_index[warp_index]
+            assert mcd.warp_index == warp_index
+            return mcd
+        mcd = MapCategoryData(warp_index)
+        self.datas_by_warp_index[warp_index] = mcd
+        return self.get_by_warp_index(warp_index)
 
-        @property
-        def has_changed(self):
-            for attribute in self.old_data:
-                if self.old_data[attribute] != getattr(self, attribute):
-                    return True
-            return False
+    @property
+    def has_changed(self):
+        for attribute in self.old_data:
+            if self.old_data[attribute] != getattr(self, attribute):
+                return True
+        return False
 
-        def read_attribute(self, section, indexes):
-            a, b = indexes
-            data = MapCategoryObject.get_data(self.warp_index, section)[a:b]
-            if len(data) > 4:
-                return data
-            return int.from_bytes(data, byteorder='big')
+    def read_attribute(self, section, indexes):
+        a, b = indexes
+        data = MapCategoryData.get_data(self.warp_index, section)[a:b]
+        if len(data) > 4:
+            return data
+        return int.from_bytes(data, byteorder='big')
 
-        def read_attributes(self):
-            if not hasattr(self, 'old_data'):
-                self.old_data = {}
-            for attribute, directions in self.STRUCTURE.items():
-                if isinstance(directions, list):
-                    setattr(self, attribute,
-                            [self.read_attribute(section, indexes)
-                             for (section, indexes) in directions])
-                else:
-                    section, indexes = directions
-                    setattr(self, attribute,
-                            self.read_attribute(section, indexes))
-                if attribute not in self.old_data:
-                    value = getattr(self, attribute)
-                    if isinstance(value, list):
-                        value = list(value)
-                    self.old_data[attribute] = value
-
-        def get_pretty_attribute(self, attribute):
-            directions = self.STRUCTURE[attribute]
-            value = getattr(self, attribute)
-            if not isinstance(directions, list):
-                directions = [directions]
-                value = [value]
-            assert len(directions) == len(value)
-            result = []
-            for d, v in zip(directions, value):
-                if isinstance(v, int):
-                    section, (a, b) = d
-                    length = (b-a) * 2
-                    result.append(('{0:0>%sx}' % length).format(v))
-                else:
-                    result.append(hexify(v))
-            return ','.join(result)
-
-        def save_attribute(self, section, indexes, value):
-            a, b = indexes
-            if isinstance(value, int):
-                value = value.to_bytes(length=(b-a), byteorder='big')
-            data = MapCategoryObject.get_data(self.warp_index, section)
-            data = data[:a] + value + data[b:]
-            MapCategoryObject.save_data(self.warp_index, section, data)
-
-        def save_attributes(self):
-            assert not hasattr(self, '_saved')
-            self._saved = True
-            for attribute, directions in self.STRUCTURE.items():
+    def read_attributes(self):
+        if not hasattr(self, 'old_data'):
+            self.old_data = {}
+        for attribute, directions in self.STRUCTURE.items():
+            if isinstance(directions, list):
+                setattr(self, attribute,
+                        [self.read_attribute(section, indexes)
+                         for (section, indexes) in directions])
+            else:
+                section, indexes = directions
+                setattr(self, attribute,
+                        self.read_attribute(section, indexes))
+            if attribute not in self.old_data:
                 value = getattr(self, attribute)
-                if value == self.old_data[attribute]:
-                    continue
-                if isinstance(directions, list):
-                    assert len(directions) == len(value)
-                    for (d, v) in zip(directions, value):
-                        section, indexes = d
-                        self.save_attribute(section, indexes, v)
-                else:
-                    section, indexes = directions
-                    self.save_attribute(section, indexes, value)
+                if isinstance(value, list):
+                    value = list(value)
+                self.old_data[attribute] = value
 
-        def verify_attributes(self):
-            verify = {attribute: getattr(self, attribute)
-                      for attribute in self.STRUCTURE}
-            self.read_attributes()
-            for attribute in self.STRUCTURE:
-                if verify[attribute] != getattr(self, attribute):
-                    print(f'Warning: MapCategoryData {self.warp_index:0>3x} '
-                          f'failed verification.')
+    def get_pretty_attribute(self, attribute):
+        directions = self.STRUCTURE[attribute]
+        value = getattr(self, attribute)
+        if not isinstance(directions, list):
+            directions = [directions]
+            value = [value]
+        assert len(directions) == len(value)
+        result = []
+        for d, v in zip(directions, value):
+            if isinstance(v, int):
+                section, (a, b) = d
+                length = (b-a) * 2
+                result.append(('{0:0>%sx}' % length).format(v))
+            else:
+                result.append(hexify(v))
+        return ','.join(result)
+
+    def save_attribute(self, section, indexes, value):
+        a, b = indexes
+        if isinstance(value, int):
+            value = value.to_bytes(length=(b-a), byteorder='big')
+        data = MapCategoryData.get_data(self.warp_index, section)
+        newdata = data[:a] + value + data[b:]
+        room_category, _ = self.convert_warp_to_category(self.warp_index)
+        if data != newdata and section == 6 and room_category in [0, 3]:
+            assert not 0x5a <= self.warp_index < 0x190
+            raise Exception(f'Room {self.warp_index:0>3x} cannot change '
+                            f'misc data in section {section}.')
+
+        MapCategoryData.save_data(self.warp_index, section, newdata)
+
+    def save_attributes(self):
+        assert not hasattr(self, '_saved')
+        self._saved = True
+        for attribute, directions in self.STRUCTURE.items():
+            value = getattr(self, attribute)
+            if value == self.old_data[attribute]:
+                continue
+            if isinstance(directions, list):
+                assert len(directions) == len(value)
+                for (d, v) in zip(directions, value):
+                    section, indexes = d
+                    self.save_attribute(section, indexes, v)
+            else:
+                section, indexes = directions
+                self.save_attribute(section, indexes, value)
+
+    def verify_attributes(self):
+        assert hasattr(self, '_saved')
+        verify = {attribute: getattr(self, attribute)
+                  for attribute in self.STRUCTURE}
+        self.read_attributes()
+        for attribute in self.STRUCTURE:
+            if verify[attribute] != getattr(self, attribute):
+                raise Exception(error)
+
+    def randomize(self):
+        room_category, _ = self.convert_warp_to_category(self.warp_index)
+        for attribute in self.STRUCTURE:
+            if attribute == 'unknown6' and room_category in {0, 3}:
+                continue
+            value = getattr(self, attribute)
+            if isinstance(value, int):
+                oldvalue = value
+                while value == oldvalue:
+                    value += random.randint(-value, 0x10)
+            elif isinstance(value, list):
+                random.shuffle(value)
+            else:
+                value = list(value)
+                random.shuffle(value)
+                value = bytes(value)
+            setattr(self, attribute, value)
 
     @classproperty
     def data(self):
-        if hasattr(MapCategoryObject, '_data'):
-            return MapCategoryObject._data
+        if hasattr(MapCategoryData, '_data'):
+            return MapCategoryData._data
 
-        mmo = MapMetaObject.get(MapCategoryObject.ROOM_DATA_INDEX)
-        MapCategoryObject._data = BytesIO(mmo.get_decompressed())
-        return MapCategoryObject.data
+        mmo = MapMetaObject.get(MapCategoryData.ROOM_DATA_INDEX)
+        MapCategoryData._data = BytesIO(mmo.get_decompressed())
+        return MapCategoryData.data
 
     @clached_property
     def special_idle_animations(self):
@@ -1500,14 +1532,20 @@ class MapCategoryObject(TableObject, ConvertPointerMixin):
             return pointer + self.VIRTUAL_RAM_OFFSET
 
     @classmethod
-    def get_data_address(self, warp_index, section):
-        for mco in self.every:
-            if warp_index < mco.threshold:
-                room_category = mco.index
-                category_index = warp_index - mco.previous_threshold
+    def convert_warp_to_category(self, warp_index):
+        for n, (a, b) in enumerate(self.CATEGORY_RANGES):
+            if a <= warp_index < b:
+                room_category = n
+                category_index = warp_index - a
                 break
         else:
-            raise Exception('Unknown room category.')
+            raise Exception(f'Warp index {warp_index:0>3x} has no category.')
+        return room_category, category_index
+
+    @classmethod
+    def get_data_address(self, warp_index, section):
+        room_category, category_index = \
+                self.convert_warp_to_category(warp_index)
 
         mmo = MapMetaObject.get(self.ROOM_DATA_INDEX)
         pointer_pointer = self.POINTER_POINTERS[section]
@@ -1533,24 +1571,14 @@ class MapCategoryObject(TableObject, ConvertPointerMixin):
         self.data.seek(pointer)
         self.data.write(data)
 
-    @property
-    def threshold(self):
-        return int.from_bytes(self.threshold_str, byteorder='big')
-
-    @property
-    def previous_threshold(self):
-        if self.index == 0:
-            return 0
-        return self.get(self.index-1).threshold
-
     @classmethod
     def full_preclean(self):
         assert not hasattr(MapMetaObject, 'cleaned')
         assert not hasattr(MapMetaObject, 'precleaned')
-        super().full_preclean()
-        for mcd in self.MapCategoryData.every:
+
+        for mcd in self.every:
             mcd.save_attributes()
-        for mcd in self.MapCategoryData.every:
+        for mcd in self.every:
             mcd.verify_attributes()
 
         mmo = MapMetaObject.get(self.ROOM_DATA_INDEX)
