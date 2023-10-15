@@ -1,5 +1,12 @@
 MetaSizeObject          struct_meta_size.txt            5594c   1312
 MapMetaObject           struct_map_meta_pointer.txt     58258   1312
+$file00a_ram_offset         1d0b90  # Location in RAM where file 00a is
+$file00a_pointer_offset     20e7cc  # Location of pointers to misc room data
+$file00a_idle_offset        20ec14  # Location of table for map idle animations
+$file00b_ram_offset         212090  # Location in RAM where file 00b is
+$file00b_efile_offset       22e546  # Associated file for each entity
+$file00b_loading_bank       230000  # Bank of each room's loading files
+$file00b_pointer_offset     235fe8  # Pointers to room metadata
 $expected_data_end          f9e8a4
 $free_space_start           fa0000
 $free_space_end             ffffff

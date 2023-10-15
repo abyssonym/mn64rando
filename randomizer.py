@@ -118,12 +118,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     ROM_SPLIT_THRESHOLD_HI = 0x46d
     ROM_SPLIT_THRESHOLDS = (ROM_SPLIT_THRESHOLD_LOW, ROM_SPLIT_THRESHOLD_HI)
 
-    VIRTUAL_RAM_OFFSET = 0x212090           # Location in RAM where file 00b is
-    POINTER_TABLE_OFFSET = 0x235fe8         # Pointers to room metadata
-
-    LOADING_CODE_HEADER = (
-        b'\x27\xBD\xFF\xE8\xAF\xBF\x00\x14\x3C\x04\x80\x23\x0C\x00\x4D\x95'
-        b'\x24\x84')
+    LOADING_CODE_HEADER = \
+        b'\x27\xBD\xFF\xE8\xAF\xBF\x00\x14\x3C\x04\x80\x23\x0C\x00'
     LOADING_CODE_FOOTER = \
         b'\x8F\xBF\x00\x14\x27\xBD\x00\x18\x03\xE0\x00\x08\x00\x00\x00\x00'
 
@@ -143,7 +139,6 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     METADATA_LENGTH = 0x1c
     ENTITY_FOOTER_LENGTH = 0x1c
 
-    ENTITY_FILE_TABLE_OFFSET = 0x22e546     # Associated file for each entity
     ENTITY_FILES = {}
 
     with open(ENTITY_STRUCTURES_FILENAME) as f:
@@ -598,6 +593,14 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             assert self.definition.index == self.definition_index
 
     @classproperty
+    def VIRTUAL_RAM_OFFSET(self):
+        return addresses.file00b_ram_offset
+
+    @classproperty
+    def POINTER_TABLE_OFFSET(self):
+        return addresses.file00b_pointer_offset
+
+    @classproperty
     def sorted_rooms(self):
         return sorted(
             (mmo for mmo in self.every if mmo.is_room),
@@ -612,7 +615,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         routine_start = 0xffffffff
         routine_end = 0
         with BytesIO(main_code._data) as f:
-            f.seek(self.convert_pointer(self.ENTITY_FILE_TABLE_OFFSET))
+            f.seek(self.convert_pointer(addresses.file00b_efile_offset))
             for entity_index in range(0x402):
                 value = int.from_bytes(f.read(2), byteorder='big')
                 self.ENTITY_FILES[entity_index] = value
@@ -654,11 +657,13 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 routine = f.read(0x24)
                 routine_end = max(routine_end, f.tell())
                 assert routine.startswith(self.LOADING_CODE_HEADER)
+                self.LOADING_CODE_HEADER = routine[:0x12]
                 assert routine.endswith(self.LOADING_CODE_FOOTER)
                 assert len(routine) == len(
                     self.LOADING_CODE_HEADER + self.LOADING_CODE_FOOTER) + 2
                 offset = int.from_bytes(routine[0x12:0x14], byteorder='big')
-                f.seek(self.convert_pointer(0x230000 | offset))
+                f.seek(self.convert_pointer(
+                    addresses.file00b_loading_bank | offset))
                 data_start = min(data_start, f.tell())
                 warp_loads = []
                 while True:
@@ -1330,9 +1335,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             assert 0 <= next_mmo.data_pointer-prev_mmo.data_pointer <= 0x7ffff
 
 
-class MapCategoryData:
+class MapCategoryData(ConvertPointerMixin):
     ROOM_DATA_INDEX = 0xa
-    VIRTUAL_RAM_OFFSET = 0x1d0b90           # Location in RAM where file 00a is
 
     CATEGORY_RANGES = [
         (0x000, 0x05a),
@@ -1341,15 +1345,6 @@ class MapCategoryData:
         (0x190, 0x1e4),
         (0x05a, 0x080),
         (0x080, 0x12c),
-        ]
-    POINTER_POINTERS = [
-        0x20e7cc,
-        0x20e7e4,
-        0x20e7fc,
-        0x20e814,
-        0x20e82c,
-        0x20e844,
-        0x20e85c,
         ]
     DATA_LENGTHS = [
         20, 8, 8, 4, 4, 2, 2,
@@ -1373,6 +1368,15 @@ class MapCategoryData:
     def __init__(self, warp_index):
         self.warp_index = warp_index
         self.read_attributes()
+
+    @classproperty
+    def VIRTUAL_RAM_OFFSET(self):
+        # Location in RAM where file 00a is
+        return addresses.file00a_ram_offset
+
+    @clached_property
+    def POINTER_POINTERS(self):
+        return [addresses.file00a_pointer_offset + (i*4*6) for i in range(7)]
 
     @classproperty
     def every(self):
@@ -1506,8 +1510,7 @@ class MapCategoryData:
 
     @clached_property
     def special_idle_animations(self):
-        pointer = 0x3e084
-        self.data.seek(pointer)
+        self.data.seek(self.convert_pointer(addresses.file00a_idle_offset))
         result = {}
         while True:
             room_index = self.data.read(2)
@@ -1517,19 +1520,6 @@ class MapCategoryData:
             result[room_index] = int.from_bytes(self.data.read(2),
                                                 byteorder='big')
         return result
-
-    @classmethod
-    def convert_pointer(self, pointer):
-        if isinstance(pointer, bytes):
-            pointer = int.from_bytes(pointer, byteorder='big')
-        if pointer >= self.VIRTUAL_RAM_OFFSET:
-            pointer &= 0x7fffffff
-            pointer -= self.VIRTUAL_RAM_OFFSET
-            assert 0 <= pointer < self.VIRTUAL_RAM_OFFSET
-            return pointer
-        else:
-            assert (pointer + self.VIRTUAL_RAM_OFFSET) <= 0xffffff
-            return pointer + self.VIRTUAL_RAM_OFFSET
 
     @classmethod
     def convert_warp_to_category(self, warp_index):

@@ -1,1 +1,2 @@
 MN64_JP             9b929e0bf8d63e62820f2fa6257cc5cf    tables_list.txt
+MN64_EN             643cce1ab06f97e9590241d27e5c2363    tables_list_en.txt
