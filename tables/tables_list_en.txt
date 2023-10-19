@@ -7,6 +7,8 @@ $file00b_ram_offset         20d2a0  # Location in RAM where file 00b is
 $file00b_efile_offset       2297d6  # Associated file for each entity
 $file00b_loading_bank       220000  # Bank of each room's loading files
 $file00b_pointer_offset     231300  # Pointers to room metadata
+$file042_pemopemo_offset    a58     # Where Pemopemo destination is loaded
+$file042_direction_register f       # Register of direction of Pemopemo warp
 $expected_data_end          fc8211
 $free_space_start           fc9000
 $free_space_end             ffffff

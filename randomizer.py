@@ -877,6 +877,50 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 break
         MapMetaObject.free_space = sorted(free_space)
 
+    @classmethod
+    def set_pemopemo_destination(self, room, x, z, y, direction):
+        PEMOPEMO_ENTITY = 0x335
+        PEMOPEMO_FILE_INDEX = self.ENTITY_FILES[PEMOPEMO_ENTITY]-1
+        PEMOPEMO_LOAD_COORDS_POINTER = addresses.file042_pemopemo_offset
+        DIRECTION_REGISTER = addresses.file042_direction_register
+        VERIFY = b''
+        SUBVERIFY = b'\xaf' + bytes([DIRECTION_REGISTER | 0xa0]) + b'\x00\x10'
+        VERIFY += b'\x24' + bytes([DIRECTION_REGISTER]) + b'\x02\x00'
+        VERIFY += SUBVERIFY
+        VERIFY += (
+                   b'\x24\x04\x00\xa8'
+                   b'\x00\x00\x28\x25'
+                   b'\x24\x06\xff\xb5'
+                   b'\x24\x07\x01\xb3')
+        assert PEMOPEMO_FILE_INDEX == 0x42
+        mmo = MapMetaObject.get(PEMOPEMO_FILE_INDEX)
+        f = BytesIO(mmo.get_decompressed())
+        f.seek(PEMOPEMO_LOAD_COORDS_POINTER)
+        test = f.read(len(VERIFY))
+        try:
+            assert test == VERIFY
+        except:
+            import pdb; pdb.set_trace()
+        registers = [4, 5, 6, 7]
+        values = [room, x, z, y]
+        new_data = b''
+        register = 0xa
+        value = direction << 8
+        new_data += b'\x24'
+        new_data += DIRECTION_REGISTER.to_bytes(length=1, byteorder='big')
+        new_data += value.to_bytes(length=2, byteorder='big')
+        new_data += SUBVERIFY
+        for register, value in zip(registers, values):
+            new_data += b'\x24'
+            new_data += register.to_bytes(length=1, byteorder='big')
+            new_data += value.to_bytes(length=2, byteorder='big')
+        f.seek(PEMOPEMO_LOAD_COORDS_POINTER)
+        assert len(new_data) == len(VERIFY)
+        f.write(new_data)
+        f.seek(0)
+        mmo._data = f.read()
+        f.close()
+
     def __repr__(self):
         if self.warp_index is not None:
             header = f'ROOM {self.warp_index:0>3X}: '
@@ -1351,7 +1395,10 @@ class MapCategoryData(ConvertPointerMixin):
         ]
 
     STRUCTURE = {
-        'unknown0':         (0, (0, 20)),
+        'unknown0':         (0, (0, 8)),
+        'unk0_loading':     [(0, ( 8, 12)),
+                             (0, (12, 16)),
+                             (0, (16, 20))],
         'unknown1':         (1, (0, 8)),
         'loading_files':    [(2, (0, 2)),
                              (2, (2, 4)),
@@ -1368,6 +1415,7 @@ class MapCategoryData(ConvertPointerMixin):
     def __init__(self, warp_index):
         self.warp_index = warp_index
         self.read_attributes()
+        assert self.special_idle_animations
 
     @classproperty
     def VIRTUAL_RAM_OFFSET(self):
@@ -1597,6 +1645,8 @@ if __name__ == '__main__':
         for code in sorted(get_activated_codes()):
             print('Code "%s" activated.' % code)
 
+        MapMetaObject.set_pemopemo_destination(0xc1, 0xfe8a, 0xff60, 0x0, 0x1)
+
         import_filename = None
         if 'import' in get_activated_codes():
             if 'MN64_IMPORT' in environ:
@@ -1607,10 +1657,16 @@ if __name__ == '__main__':
                 import_filename = f'{get_sourcefile()}.import.txt'
             print(f'IMPORTING from {import_filename}')
             MapMetaObject.import_from_file(import_filename)
-            for mmo in MapMetaObject.every:
-                if mmo.is_room and (mmo.data_has_changed
-                                    or mmo.misc_data.has_changed):
-                    print('Updated:', str(mmo).split('\n')[0])
+
+        for mmo in MapMetaObject.every:
+            if mmo.data_has_changed:
+                if mmo.room_name:
+                    name = f'ROOM {mmo.index:0>3x} {mmo.room_name}'
+                else:
+                    name = f'FILE {mmo.index:0>3x}'
+                print('Updated:', name)
+
+        clean_and_write(ALL_OBJECTS)
 
         if 'export' in get_activated_codes():
             if DEBUG_MODE:
@@ -1637,9 +1693,6 @@ if __name__ == '__main__':
                 for mmo in MapMetaObject.sorted_rooms:
                     f.write(str(mmo) + '\n\n')
 
-        #write_seed()
-
-        clean_and_write(ALL_OBJECTS)
         checksum(get_open_file(get_outfile()))
         finish_interface()
 
