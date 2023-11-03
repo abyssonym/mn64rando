@@ -1,0 +1,19 @@
+# RAM address 01f63c
+02023c: 0c 01 06 ec     # JAL       0x80041bb0
+        00 00 00 00
+        00 00 00 00
+
+# RAM address 041bb0
+0427b0: 95 f9 d5 2c     # LHU       T9, 0xD52C(T7)
+        33 38 00 20     # ANDI      T8, T9, 0x0020
+        13 00 00 02     # BEQZ      T8, PC + 0x8
+
+        # L button pressed
+        27 19 ff ea     # ADDIU     T9, T8, 0xFFEA
+        a1 f9 d2 84     # SB        T9, 0xD284 (T7)
+
+        # branch here normally
+        95 ef d5 2c     # LHU       T7, 0xD52C(T7)
+        24 79 7f ff     # ADDIU     T9, V1, 0x7FFF
+        31 f8 10 00     # ANDI      T8, T7, 0x1000
+        03 e0 00 08     # JR        RA

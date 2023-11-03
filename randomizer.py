@@ -11,11 +11,13 @@ from randomtools.interface import (
     get_sourcefile)
 
 from collections import Counter, defaultdict
-from time import time, gmtime
+from functools import lru_cache
 from io import BytesIO
 from itertools import combinations
 from os import path, mkdir, environ
+from time import time, gmtime
 from traceback import format_exc
+
 import re
 import yaml
 
@@ -123,6 +125,13 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     LOADING_CODE_FOOTER = \
         b'\x8F\xBF\x00\x14\x27\xBD\x00\x18\x03\xE0\x00\x08\x00\x00\x00\x00'
 
+    BGM_GROUPS = {
+        (0x1a, 0x1b),
+        (0x40, 0x41, 0x42),
+        (0x59, 0x5a, 0x5b),
+        (0x54, 0x55, 0x53),
+        }
+
     METADATA_STRUCTURE = {
             'unknown_pointer1': (0x00, 0x04),
             'unknown_pointer2': (0x04, 0x08),
@@ -168,6 +177,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             room_names[__data_index] = __name
             warp_names[__warp_index] = __name
 
+    available_memory_flags = set()
+
     class EntityMixin:
         DICT_MATCHER = re.compile('{[^}]*}')
 
@@ -192,12 +203,23 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 self.validate_data()
 
         def __repr__(self):
+            data = pretty_hexify(self.data, newlines=False)
+            if isinstance(self, MapMetaObject.EntityDefinition):
+                hexified = f'{self.index:0>3x}: {data}'
+            else:
+                for index, i in enumerate(self.parent.instances):
+                    if self is i:
+                        break
+                else:
+                    index = -1
+                hexified = f'+{index:0>2x}: {data}'
+
             details = self.details
             if details is not None:
                 details = '  ' + details.replace('\n', '\n  ')
-                s = '{0}\n{1}'.format(self.hexify(), details)
+                s = '{0}\n{1}'.format(hexified, details)
             else:
-                s = self.hexify()
+                s = hexified
             return s
 
         @property
@@ -239,14 +261,6 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             details = [v for (s, v) in sorted(unsorted_details)]
             details.insert(0, f'@ {self.name}')
             return '\n'.join(details)
-
-        def hexify(self):
-            data = pretty_hexify(self.data, newlines=False)
-            if isinstance(self, MapMetaObject.EntityDefinition):
-                return f'{self.index:0>3x}: {data}'
-            else:
-                index = self.parent.instances.index(self)
-                return f'+{index:0>2x}: {data}'
 
         def validate_data(self):
             return
@@ -319,6 +333,25 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         DATA_LENGTH = 0x10
         MAIN_PROPERTY_NAME = 'name'
 
+        DOOR_DESIGNS = {
+            0x23a: set(),
+            0x23b: set(),
+            0x23c: {0},
+            0x23d: set(),
+            0x23f: {6, 7},
+            0x240: set(),
+            0x241: {5},
+            0x242: {5},
+            0x24d: set(),
+            0x256: set(),
+            0x31f: {3},
+            0x321: {1, 2},
+            0x32f: {4, 8},
+            0x340: set(),
+            0x34b: set(),
+            0x3c8: set(),
+            }
+
         @property
         def actor_id(self):
             return int.from_bytes(self.data[:2], byteorder='big')
@@ -340,8 +373,25 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             return MapMetaObject.ENTITY_STRUCTURES[self.actor_id]
 
         @property
+        def instances(self):
+            return [i for i in self.parent.instances if i.definition is self]
+
+        @property
         def is_exit(self):
-            return self.structure and 'dest_room' in self.structure
+            return (self.structure and 'dest_room' in self.structure
+                    and self.get_property_value('misc_exit_id') != 0)
+
+        @property
+        def is_door(self):
+            return (self.structure and 'exit_id' in self.structure
+                    and not self.is_exit)
+
+        @property
+        def exit_id(self):
+            if self.is_exit:
+                return self.get_property_value('misc_exit_id') & 0xf
+            elif self.is_door:
+                return self.get_property_value('exit_id')
 
         @property
         def is_lock(self):
@@ -376,10 +426,47 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             return self.actor_id == 0x87
 
         @property
+        def is_battery(self):
+            return self.actor_id in {0x32d, 0x3c7}
+
+        @property
+        def is_pickup(self):
+            return (self.is_key or self.is_gold_dango or self.is_silver_cat or
+                    self.is_gold_cat or self.is_surprise_pack or
+                    self.is_elly_fant or self.is_mr_arrow)
+
+        @property
+        def door(self):
+            assert self.is_exit
+            candidates = [d for d in self.parent.definitions
+                          if d.is_door and d.exit_id == self.exit_id]
+            assert len(candidates) <= 1
+            if candidates:
+                return candidates[0]
+            return None
+
+        @property
+        def exit(self):
+            assert self.is_door
+            candidates = [x for x in self.parent.definitions
+                          if x.is_exit and x.exit_id == self.exit_id]
+            assert len(candidates) == 1
+            return candidates[0]
+
+        @property
+        def destination_parent(self):
+            assert self.is_exit
+            return MapMetaObject.get_by_warp_index(
+                    self.get_property_value('dest_room'))
+
+        @cached_property
+        def destination_has_same_bgm(self):
+            assert self.is_exit
+            return self.parent.matches_bgm(self.destination_parent)
+
+        @property
         def comment(self):
             if self.is_exit:
-                if self.get_property_value('misc') == 0:
-                    return '(no destination)'
                 dest_room = self.get_property_value('dest_room')
                 if dest_room in MapMetaObject.warp_names:
                     dest_name = MapMetaObject.warp_names[dest_room]
@@ -389,6 +476,18 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                     return (f'to unknown: {parent_index:0>3x} '
                             f'-> {dest_room:0>3x}')
 
+        def remove(self):
+            associations = [(d, d.instances) for d in self.parent.definitions]
+            for i in self.instances:
+                self.parent.entities.remove(i)
+            self.parent.entities.remove(self)
+            for n, definition in enumerate(self.parent.definitions):
+                definition.index = n
+                for (d, instances) in associations:
+                    if d is definition:
+                        for i in instances:
+                            i.set_main_property(definition.index)
+
         def set_main_property(self, value):
             actor_id = value.to_bytes(length=2, byteorder='big')
             data = actor_id + self.data[2:]
@@ -396,15 +495,61 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             self.data = data
             assert self.actor_id == value
 
+        def set_exit_id(self, exit_id):
+            assert self.is_exit or self.is_door
+            if self.is_exit:
+                assert not exit_id & 0xf0
+                value = self.get_property_value('misc_exit_id') & 0xf0
+                self.set_property('misc_exit_id', value | exit_id)
+            elif self.is_door:
+                self.set_property('exit_id', exit_id)
+
+        def become_regular_door(self):
+            if self.is_door and not self.is_lock:
+                return
+            assert self.is_lock
+            designs = sorted({k for k in self.DOOR_DESIGNS
+                              if self.get_property_value('door_design')
+                              in self.DOOR_DESIGNS[k]})
+            if len(designs) == 1:
+                design = designs[0]
+            else:
+                temp = {e.actor_id for e in self.parent.definitions
+                        if e.is_door and e is not self}
+                temp = sorted(temp & set(designs))
+                if temp:
+                    designs = temp
+                design = random.choice(designs)
+            x = self.exit
+            lock_index = self.get_property_value('lock_index')
+            self.parent.free_memory_flag(lock_index)
+            self.data = b'\x00' * len(self.data)
+            self.set_main_property(design)
+            self.set_exit_id(x.exit_id)
+
+        def become_locked_door(self, key_type, lock_index, accept_key):
+            pass
+
+        def become_gold_dango(self):
+            GOLD_DANGO_INDEX = 0x85
+            if self.is_key:
+                key_index = self.get_property_value('key_index')
+                self.parent.free_memory_flag(key_index)
+            self.data = b'\x00' * len(self.data)
+            self.set_main_property(GOLD_DANGO_INDEX)
+
     class EntityInstance(EntityMixin):
         DATA_LENGTH = 0x14
         MAIN_PROPERTY_NAME = 'definition_index'
-        DETAIL_PROPERTIES = ['x', 'y', 'z']
+        DETAIL_PROPERTIES = ['x', 'y', 'z', 'rotx', 'roty', 'rotz']
 
         structure = {'definition_index':    {'index': (0xe, 0xf)},
                      'x':                   {'index': (0x0, 0x1)},
                      'z':                   {'index': (0x2, 0x3)},
                      'y':                   {'index': (0x4, 0x5)},
+                     'rotx':                {'index': (0x6, 0x7)},
+                     'rotz':                {'index': (0x8, 0x9)},
+                     'roty':                {'index': (0xa, 0xb)},
                      }
 
         @property
@@ -461,6 +606,15 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             if self.definition is None:
                 return False
             return self.definition.is_lock
+
+        @property
+        def is_pickup(self):
+            return self.definition.is_pickup
+
+        @property
+        def is_unique(self):
+            return len([i for i in self.parent.instances
+                        if i.definition is self.definition]) == 1
 
         @property
         def exit_pair(self):
@@ -580,9 +734,47 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 self.definition.set_property(
                         p, chosen.definition.get_property_value(p, old=True))
 
+        def spawn_door_blocker(self):
+            BLOCKER_INDEX = 0x328
+            if not hasattr(self, '_blocker_messages'):
+                messages = set()
+                for mmo in MapMetaObject.sorted_rooms:
+                    for e in mmo.definitions:
+                        if 'message' in e.structure:
+                            messages.add(e.get_property_value('message'))
+                self._blocker_messages = sorted(messages)
+            candidates = [b for b in self.parent.definitions
+                          if b.actor_id == BLOCKER_INDEX]
+            if candidates:
+                blocker = random.choice(candidates)
+            else:
+                data = b'\x00' * len(self.definition.data)
+                blocker = self.parent.add_new_definition(data)
+                blocker.set_main_property(BLOCKER_INDEX)
+                blocker.set_property('message',
+                                     random.choice(self._blocker_messages))
+            data = b'\x00' * len(self.data)
+            blocker_instance = self.parent.EntityInstance(data, self.parent)
+            for attr in self.DETAIL_PROPERTIES:
+                blocker_instance.set_property(attr,
+                                              self.get_property_value(attr))
+            blocker_instance.set_main_property(blocker.index)
+            if self.parent.entities[-1].is_null:
+                nullstance = self.parent.entities.pop()
+                self.parent.entities.append(blocker_instance)
+                self.parent.entities.append(nullstance)
+            else:
+                self.parent.entities.append(blocker_instance)
+            blocker_instance.clean()
+
         def yeet(self):
             self.data = self.parent.instances[0].data
             assert self.definition.actor_id == 0x8e
+
+        def clean(self):
+            if self.is_null:
+                return
+            self.data = self.data[:12] + b'\x08\x00' + self.data[14:]
 
         def validate_data(self):
             if self.is_null:
@@ -590,6 +782,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             if self.definition is None:
                 raise Exception(f'Instance {self.parent.warp_index:0>3x}-'
                                 f'{self.definition_index:0>3x} is undefined.')
+            assert self.data[12:14] == b'\x08\x00'
             assert self.definition.index == self.definition_index
 
     @classproperty
@@ -703,7 +896,18 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
             if mmo.data_has_changed:
                 mmo.validate_entity_files()
-            values = mmo.loading_files
+            values = []
+            for l in mmo.loading_files:
+                if l in mmo.misc_data.loading_files:
+                    raise Exception(f'File {l:0>3x} specified in both meta '
+                                    f'and misc loading data for room '
+                                    f'{warp_index:0>3x}.')
+                if l in values:
+                    print(f'Warning: Removing duplicate file {l:0>3x} from '
+                          f'room {warp_index:0>3x}')
+                    continue
+                values.append(l)
+            mmo.loading_files = values
             data_list = b''.join([v.to_bytes(length=2, byteorder='big')
                                   for v in values])
             data_list += b'\x00\x00'
@@ -769,7 +973,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         f.close()
 
     @classmethod
+    @lru_cache(maxsize=None)
     def get_by_warp_index(self, index):
+        assert self is MapMetaObject
         choices = [mmo for mmo in MapMetaObject.every
                    if hasattr(mmo, 'warp_index')
                    and mmo.warp_index == index]
@@ -777,6 +983,16 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             return None
         assert len(choices) == 1
         return choices[0]
+
+    @classmethod
+    @lru_cache(maxsize=None)
+    def get_entity_by_signature(self, signature):
+        assert self is MapMetaObject
+        warp_index, _ = signature.split('-')
+        mmo = MapMetaObject.get_by_warp_index(int(warp_index, 0x10))
+        for e in mmo.entities:
+            if e.signature == signature:
+                return e
 
     @classmethod
     def import_from_file(self, filename):
@@ -897,10 +1113,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         f = BytesIO(mmo.get_decompressed())
         f.seek(PEMOPEMO_LOAD_COORDS_POINTER)
         test = f.read(len(VERIFY))
-        try:
-            assert test == VERIFY
-        except:
-            import pdb; pdb.set_trace()
+        assert test == VERIFY
         registers = [4, 5, 6, 7]
         values = [room, x, z, y]
         new_data = b''
@@ -920,6 +1133,16 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         f.seek(0)
         mmo._data = f.read()
         f.close()
+
+    @classmethod
+    def free_memory_flag(self, flag):
+        self.available_memory_flags.add(flag)
+
+    @classmethod
+    def acquire_memory_flag(self):
+        chosen = min(self.available_memory_flags)
+        self.available_memory_flags.remove(chosen)
+        return chosen
 
     def __repr__(self):
         if self.warp_index is not None:
@@ -954,7 +1177,22 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         if self.loading_files:
             loading_files = ' '.join([f'{v:0>3x}' for v in self.loading_files])
             header += f'\n!load {loading_files}'
-        s = header + '\n\n' + self.hexify()
+
+        definitions = self.definitions
+        instances = self.instances
+        h = '# DEFINITIONS\n'
+        h += '\n'.join(map(str, definitions))
+        h += '\n\n# INSTANCES\n'
+        h += '\n'.join(map(str, instances))
+        h += '\n\n# FOOTER\n'
+        h += pretty_hexify(self.footer).replace('\n', ' ') + '\n'
+        if set(self.leftover_data) > {0} or True:
+            h += f'\n\n# LEFTOVER ({len(self.leftover_data)})\n'
+            h += pretty_hexify(self.leftover_data) + '\n'
+        while '\n\n\n' in h:
+            h = h.replace('\n\n\n', '\n\n')
+
+        s = header + '\n\n' + h
         s = s.replace('\n', '\n  ')
         while ' \n' in s:
             s = s.replace(' \n', '\n')
@@ -978,8 +1216,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     @property
     def total_size(self):
+        loading_files = list(self.loading_files)
+        loading_files += [l for l in self.misc_data.loading_files if l > 0]
+        assert 0 not in loading_files
         return sum([MetaSizeObject.get(index-1).metasize
-                    for index in self.loading_files])
+                    for index in loading_files])
 
     @property
     def data(self):
@@ -1132,21 +1373,19 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         self.leftover_data = leftover
         return self.entities
 
-    def hexify(self):
-        definitions = self.definitions
-        instances = self.instances
-        s = '# DEFINITIONS\n'
-        s += '\n'.join(map(str, definitions))
-        s += '\n\n# INSTANCES\n'
-        s += '\n'.join(map(str, instances))
-        s += '\n\n# FOOTER\n'
-        s += pretty_hexify(self.footer).replace('\n', ' ') + '\n'
-        if set(self.leftover_data) > {0} or True:
-            s += f'\n\n# LEFTOVER ({len(self.leftover_data)})\n'
-            s += pretty_hexify(self.leftover_data) + '\n'
-        while '\n\n\n' in s:
-            s = s.replace('\n\n\n', '\n\n')
-        return s.strip()
+    def add_new_definition(self, data):
+        definition_indexes = {d.index for d in self.definitions}
+        instance_indexes = {d.index for d in self.instances}
+        new_index = max(definition_indexes) + 1
+        if new_index in instance_indexes:
+            for i in self.instances:
+                i.index += 1
+            instance_indexes = {d.index for d in self.instances}
+        assert new_index not in instance_indexes
+        definition = self.EntityDefinition(data, self, index=new_index)
+        self.entities = self.definitions + [definition] + self.instances
+        assert self.entities.index(definition) == definition.index
+        return definition
 
     def import_line(self, line):
         if '#' in line:
@@ -1285,6 +1524,16 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 print(f'Warning: Entity {e.definition.signature} requires '
                       f'file {file_index:0>3x}; adding automatically.')
                 self.loading_files.append(file_index)
+
+    def matches_bgm(self, other):
+        assert self.is_room
+        assert other.is_room
+        if self.misc_data.bgm == other.misc_data.bgm:
+            return True
+        for group in self.BGM_GROUPS:
+            if self.misc_data.bgm in group and other.misc_data.bgm in group:
+                return True
+        return False
 
     def preprocess(self):
         self.get_compressed()
@@ -1625,6 +1874,113 @@ class MapCategoryData(ConvertPointerMixin):
         self.data.close()
 
 
+def randomize_doors(config_filename=None):
+    from randomtools.doorrouter import Graph as DoorRouter
+    if config_filename is None:
+        config_filename = 'mn64_settings.yaml'
+    with open(config_filename) as f:
+        config = yaml.load(f.read(), Loader=yaml.SafeLoader)
+
+    PEMOPEMO_LABEL = '14c-002'
+    FINAL_ROOM_LABEL = '0c1-001'
+    BIZEN_LOCK_LABEL = '143-009'
+
+    MapMetaObject.set_pemopemo_destination(0xc1, 0xfe8a, 0xff60, 0x0, 0x1)
+
+    preset_connections = defaultdict(set)
+
+    for mmo in MapMetaObject.sorted_rooms:
+        if len(mmo.exits) == 1 and \
+                config['fixed_singletons'] > random.random():
+            x = mmo.exits[0]
+            y = x.exit_pair
+            if not (x and y):
+                continue
+            x = x.definition.signature
+            y = y.definition.signature
+            if FINAL_ROOM_LABEL not in {x, y}:
+                assert x not in preset_connections
+                assert y not in preset_connections
+                preset_connections[x].add((y, frozenset()))
+                preset_connections[y].add((x, frozenset()))
+
+    if config['cluster_bgm']:
+        def bgm_validator(node1, node2):
+            a = MapMetaObject.get_entity_by_signature(node1.label)
+            b = MapMetaObject.get_entity_by_signature(node2.label)
+            if a.parent.matches_bgm(b.parent):
+                return True
+            return not (a.destination_has_same_bgm or
+                        b.destination_has_same_bgm)
+    else:
+        def bgm_validator(node1, node2):
+            return True
+
+    dr = DoorRouter('mn64_settings.yaml',
+                    preset_connections=preset_connections,
+                    strict_validator=None, lenient_validator=bgm_validator)
+
+    dr.build_graph()
+
+    def label_to_name(label):
+        warp_index, _ = label.split('-')
+        return MapMetaObject.get_by_warp_index(int(warp_index, 0x10)).room_name
+
+    solutions = dr.generate_solutions()
+    s = ''
+    previous_line = None
+    for node, path in solutions:
+        warp_index = node.label.split('-')[0]
+        s += f'\n{warp_index} {label_to_name(node.label)}\n'
+        nodes = [p.destination for p in path]
+        for n in nodes:
+            line = f'  {label_to_name(n.label)}\n'
+            if line != previous_line:
+                s += line
+                previous_line = line
+    s = s.strip()
+    solution_filename = f'{get_outfile()}.spoiler.txt'
+    with open(solution_filename, 'w+') as f:
+        f.write(f'{dr.description}\n\n{s}')
+    print(s)
+
+    # Set exit destinations
+    for e in sorted(dr.all_edges):
+        if not e.generated:
+            continue
+        source = MapMetaObject.get_entity_by_signature(e.source.label)
+        dest = MapMetaObject.get_entity_by_signature(e.destination.label)
+        dest = dest.instances[0]
+        dest_source = dest.exit_pair.definition
+        for attr in ('dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction'):
+            value = dest_source.get_property_value(attr, old=True)
+            source.set_property(attr, value)
+
+    # Clear unused exits
+    for n in sorted(dr.connectable):
+        if n.label in preset_connections:
+            continue
+        if any(e.generated for e in n.edges):
+            continue
+        source = MapMetaObject.get_entity_by_signature(n.label)
+        if not source.is_exit:
+            continue
+        for x in source.instances:
+            x.spawn_door_blocker()
+        if source.door is not None:
+            source.door.remove()
+        source.remove()
+
+    for mmo in MapMetaObject.sorted_rooms:
+        for e in mmo.definitions:
+            if e.is_lock:
+                if e.signature == BIZEN_LOCK_LABEL:
+                    continue
+                e.become_regular_door()
+            if e.is_key:
+                e.become_gold_dango()
+
+
 if __name__ == '__main__':
     try:
         print('You are using the MN64 Door Randomizer '
@@ -1645,8 +2001,6 @@ if __name__ == '__main__':
         for code in sorted(get_activated_codes()):
             print('Code "%s" activated.' % code)
 
-        MapMetaObject.set_pemopemo_destination(0xc1, 0xfe8a, 0xff60, 0x0, 0x1)
-
         import_filename = None
         if 'import' in get_activated_codes():
             if 'MN64_IMPORT' in environ:
@@ -1658,12 +2012,14 @@ if __name__ == '__main__':
             print(f'IMPORTING from {import_filename}')
             MapMetaObject.import_from_file(import_filename)
 
+        randomize_doors()
+
         for mmo in MapMetaObject.every:
             if mmo.data_has_changed:
                 if mmo.room_name:
-                    name = f'ROOM {mmo.index:0>3x} {mmo.room_name}'
+                    name = f'ROOM {mmo.warp_index:0>3X} {mmo.room_name}'
                 else:
-                    name = f'FILE {mmo.index:0>3x}'
+                    name = f'FILE {mmo.index:0>3X}'
                 print('Updated:', name)
 
         clean_and_write(ALL_OBJECTS)

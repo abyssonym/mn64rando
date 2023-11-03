@@ -89,8 +89,10 @@
     0x01:       North
     0x02:       West
     0x03:       South
-  misc:
-    index:      [14,15]
+  misc_exit_id:
+    index:      14
+  misc_unknown:
+    index:      15
 
 0x08e:
   name:       Death Boundary
@@ -390,20 +392,28 @@
   name:       Moving Platform (Horizontal)
 
 0x23a:
-  name:       Double Sliding Door 23a
+  name:       Divider Wall 23a
+  exit_id:
+    index:      13
 
 0x23b:
-  name:       Double Sliding Door 23b
+  name:       Divider Wall 23b
+  exit_id:
+    index:      13
 
 0x23c:
-  name:       Double Sliding Door 23c
+  name:       Double Sliding Door (Oedo Castle)
+  exit_id:
+    index:      13
 
 0x23d:
   name:       Bombable Wall
+  exit_id:
+    index:      13
 
 0x23e:
   name:       Locked Door
-  zone:
+  door_design:
     index:      4
     0x0:        Oedo Castle
     0x1:        Ghost Toys 1
@@ -424,22 +434,32 @@
     index:      [8,9]
   accept_key:
     index:      [10,11]
+  exit_id:
+    index:      13
 
 0x23f:
   name:       Sliding Door (Musical Castle)
+  exit_id:
+    index:      13
 
 0x240:
   name:       Door to Musashi
+  exit_id:
+    index:      13
 
 0x241:
-  name:       Swing Door
+  name:       Swing Door 241
   graphic:
     index:      4
+  exit_id:
+    index:      13
 
 0x242:
-  name:       Swing Door (Short)
+  name:       Swing Door 242
   graphic:
     index:      4
+  exit_id:
+    index:      13
 
 0x243:
   name:       Small Wooden Box (Carryable, unused)
@@ -463,12 +483,16 @@
   name:       Sliding Door 24d
   graphic:
     index:      4
+  exit_id:
+    index:      13
 
 0x255:
   name:       Lord of Oedo Castle Event Trigger
 
 0x256:
   name:       Sliding Door 256
+  exit_id:
+    index:      13
 
 0x257:
   name:       Yae Introduction Event Trigger
@@ -801,7 +825,9 @@
     index:      [10,11]
 
 0x31f:
-  name:       Double Cross Sliding Door
+  name:       Double Cross Sliding Door (Festival Temple)
+  exit_id:
+    index:      13
 
 0x320:
   name:       Festival Temple Fish Kite
@@ -810,6 +836,8 @@
   name:       Sliding Door (Ghost Toys)
   enemies:
     index:      5
+  exit_id:
+    index:      13
 
 0x322:
   name:       Ladder 322
@@ -854,6 +882,8 @@
 
 0x32f:
   name:       Automatic Door (Gourmet Sub)
+  exit_id:
+    index:      13
 
 0x330:
   name:       Glowing IN Sign
@@ -902,6 +932,8 @@
 
 0x340:
   name:       Door to Yamato Shrine
+  exit_id:
+    index:      13
 
 0x341:
   name:       Torii Gate to Husband and Wife Rocks
@@ -939,6 +971,8 @@
 
 0x34b:
   name:       Door to Oedo Lord's Room
+  exit_id:
+    index:      13
 
 0x34e:
   name:       Unknown 34e (Goemon's House)
@@ -1008,6 +1042,8 @@
 
 0x3c8:
   name:       Ghost Toys Entrance Barricade
+  exit_id:
+    index:      13
 
 0x3c9:
   name:       Unknown 3c9 (Mutsu Shoreline)

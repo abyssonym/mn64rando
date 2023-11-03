@@ -1,0 +1,16 @@
+seed:               69696969
+logic_filename:     router_logic.txt
+nodes_filename:     router_nodes.txt
+retry_limit:        2000  # Max loops before reaching goal
+retry_limit_close:  3000  # Max cleanup loops when goal has been reached
+map_size:           0.75  # Percentage of all possible nodes to connect
+map_strictness:     0.75  # Lower bound percentage of selected nodes to connect
+  #progression_speed:  0.10  # Rate to prioritize key nodes
+  #trap_doors:         0.10  # Rate to allow one-way doors
+  #linearity:          0.75  # Rate to avoid connecting nodes of different ranks
+  #skip_complex_nodes: 1.00  # Rate to skip nodes that are difficult to route
+  #lazy_complex_nodes: True  # Simplify complex nodes (softlock potential)
+fixed_singletons:   1.00  # Rate to preserve connections to isolated rooms
+cluster_bgm:        True  # Try to connect rooms with the same BGM
+  #fixed_singletons:   0.00  # Rate to preserve connections to isolated rooms
+  #cluster_bgm:        False # Try to connect rooms with the same BGM

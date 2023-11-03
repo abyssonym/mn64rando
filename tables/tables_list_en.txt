@@ -13,3 +13,4 @@ $expected_data_end          fc8211
 $free_space_start           fc9000
 $free_space_end             ffffff
 #.patch                      patch_no_checksum.txt
+.option                     patch_debug_menu_en.txt

@@ -1,3 +1,54 @@
+.def pipe_maker     1d2-001
+.def chain_pipe     pipe_maker
+.def congo          016-001
+.def super_pass     028-001
+.def yae            167-002
+.def ushikawa       173-002
+.def benkei         171-002
+.def achilles_heel  ushikawa&168-002&16b-002&16e-004&171-002&172-002
+.def turtle_rock    137-002
+.def yamato_opened  turtle_rock
+.def turtle_torii   turtle_rock
+.def tourism        1b8-001|1b9-001
+.def dragon         tourism&13c-002
+.def fire_ryo       140-003
+.def golden_temple  16d-002
+.def mini_ebisu     ushikawa&golden_temple&1b5-001
+.def camera         031-003
+.def darumanyo      049-001
+.def bizen_opened   darumanyo&camera
+.def sasuke         camera&14a-002&149-002
+.def ice_kunai      sasuke&06e-001
+.def tsurami        071-001
+.def kyushu         tsurami&153-002
+#.def sudden_impact  1cf-001
+.def sudden_impact  kyushu&1c4-001
+.def silver_weapons pipe_maker&179-002
+.def witch          1d4-001
+.def mermaid        yae&witch&154-002
+.def thaisamba      09d-001
+.def kappa          16a-002
+.def special_key    thaisamba&benkei&kappa&golden_temple
+.def super_jump     sasuke&1d0-001
+.def miracle_moon   congo
+.def miracle_flower darumanyo&camera
+.def miracle_star   tsurami
+.def miracle_snow   thaisamba&benkei&super_jump&kappa&16f-002
+.def pemopemo_god   miracle_moon&miracle_flower&miracle_star&miracle_snow&14c-002
+.def gold_weapons   19f-001&194-001
+
+.start      1d1-001
+.goal       pemopemo_god
+
+.guarantee  03b-001 camera
+.guarantee  040-001 camera
+.guarantee  091-001 camera
+
+#.unreachable 061-005
+#.unreachable 065-003
+#.unreachable 091-00c
+#.unreachable 091-00d
+
 # 000 Oedo Castle 1F Tile Room
 000-001=000-003                         # 0.109.silver
 000-005=000-001                         # key
@@ -93,19 +144,15 @@
 015-003=015-001                         # cat
 
 # 016 Oedo Castle 2F Congo Boss Room
-016-001=016-003
+016-001=>016-003
 
 # 01A Oedo Castle 2F-3F Elevator / Baron Room
-01a-001=01a-003
-01a-001=01a-003
 01a-001=01a-006
-01a-003=01a-003
-01a-003=01a-006
-01a-003=01a-006
 01a-008=01a-001                         # cat
-01a-008=01a-003                         # cat
-01a-008=01a-003                         # cat
 01a-008=01a-006                         # cat
+
+# 028 Oedo Castle Lord's Room
+028-001>>166-002
 
 # 02F Ghost Toys Entrance
 02f-001=>02f-003 fire_ryo
@@ -158,7 +205,6 @@
 03a-003=03a-005
 
 # 03B Ghost Toys 1F Invisible Ghost Key Room
-03b-001=03b-001 camera
 03b-005=03b-001 camera                  # key
 
 # 03C Ghost Toys 1F-2F Elevator / Tiny Darumanyo Room
@@ -186,7 +232,6 @@
 03f-010=03f-007                         # dango
 
 # 040 Ghost Toys 2F Invisible Darumanyo Key Room
-040-001=040-001 camera
 040-005=040-001 camera                  # key
 
 # 041 Ghost Toys 2F Jump Rope Room
@@ -269,7 +314,6 @@
 060-00a=060-007                         # pack
 
 # 061 Festival Temple East Chain Pipe Room
-061-005=061-005 unreachable
 061-001<061-003
 061-001<061-007
 061-001=061-003 chain_pipe|super_jump
@@ -302,7 +346,6 @@
 064-005=064-007
 
 # 065 Festival Temple East Samurai Bomb Room
-065-003=065-003 unreachable
 065-001=065-005
 
 # 066 Festival Temple East Bamboo Barrel Bomb Room
@@ -316,10 +359,10 @@
 066-004=066-006 super_jump
 066-004=066-008 super_jump
 066-006=066-008
-066-00a=066-002 super_jump              # dango
-066-00a=066-004 super_jump              # dango
-066-00a=066-006                         # dango
-066-00a=066-008                         # dango
+#066-00a=066-002 super_jump              # dango
+#066-00a=066-004 super_jump              # dango
+#066-00a=066-006                         # dango
+#066-00a=066-008                         # dango
 
 # 067 Festival Temple East Silver Cat Lock Fork
 067-001=067-003
@@ -404,7 +447,8 @@
 082-00b=082-006                         # key
 082-00a=082-001 super_jump              # pack
 082-00a=082-003 super_jump              # pack
-082-00a=082-005                         # pack
+082-00a<082-005                         # pack
+082-00a=082-005 mini_ebisu              # pack
 082-00a=082-006 super_jump              # pack
 
 # 083 Gourmet Sub 2F Seahorse / Mini Ebisumaru Crosspath
@@ -426,7 +470,6 @@
 085-00e=085-003                         # dango
 
 # 086 Gourmet Sub 2F Turret Dango Stockpile Room
-086-001=086-001 unreachable
 086-004=086-004 mermaid
 086-002=086-004 mermaid
 
@@ -479,16 +522,13 @@
 090-005=090-003                         # pack
 
 # 091 Gourmet Sub 1F-3F Entrance / Elevator
-091-001=091-001 camera
 091-009=091-009 mermaid
 091-00b=091-00b mini_ebisu
-091-00c=091-00c unreachable
-091-00d=091-00d unreachable
 091-00e=091-00e mermaid
 091-00f=091-00f mermaid
 091-001=091-003 camera
 091-001=091-009 camera&mermaid
-091-001=091-00b camera
+091-001=091-00b camera&mini_ebisu
 091-003=091-009 mermaid
 091-003=091-00b mini_ebisu
 091-005=091-007
@@ -566,8 +606,8 @@
 
 # 0AD Musical Castle 1 Gold Key Fan Room
 0ad-006=0ad-001                         # key
-0ad-005=0ad-001                         # dango
-0ad-005=0ad-001                         # dango
+#0ad-005=0ad-001                         # dango
+#0ad-005=0ad-001                         # dango
 
 # 0AE Musical Castle 1 High Jump Gold Key Waves Room
 0ae-001<0ae-003
@@ -617,12 +657,13 @@
 0b4-003=0b4-001                         # key
 
 # 0B5 Musical Castle 1 Mini Gold Key Big Wave Generator Room
+0b5-005=0b5-005 mini_ebisu
 0b5-001=0b5-003
-0b5-001>0b5-005
-0b5-003>0b5-005
+0b5-001>0b5-005 mini_ebisu
+0b5-003>0b5-005 mini_ebisu
 0b5-00c<0b5-001                         # key
 0b5-00c<0b5-003                         # key
-0b5-00c=0b5-005                         # key
+0b5-00c=0b5-005 mini_ebisu              # key
 
 # 0B6 Musical Castle 1 Big Aquarium Room
 0b6-001=0b6-003
@@ -731,9 +772,9 @@
 12d-00b<12d-008                         # cat
 12d-00b<12d-009                         # cat
 # there are two dangos on this map; do not put key items here
-12d-01c=12d-002                         # dango
-12d-01c=12d-008                         # dango
-12d-01c=12d-009                         # dango
+#12d-01c=12d-002                         # dango
+#12d-01c=12d-008                         # dango
+#12d-01c=12d-009                         # dango
 
 # 12E Mt. Fuji Interior (Base)
 12e-002=12e-003
@@ -769,7 +810,6 @@
 132-009=132-004                         # dango
 
 # 133 Yamato
-133-006=133-006 yamato_opened
 133-008=133-008 mermaid
 133-002=133-004
 133-002=133-005
@@ -856,7 +896,6 @@
 142-00c=142-004 mini_ebisu|chain_pipe|super_jump    # cat
 
 # 143 Bizen
-143-008=143-008 special_key
 143-002=143-004
 143-002=143-006
 143-002=143-008 special_key             # 5.196.special
@@ -916,14 +955,17 @@
 14b-004=14b-006 silver_weapons
 
 # 14D Mutsu - Shoreline
+14d-006=14d-006 mermaid
 14d-002=14d-004
 14d-002=>14d-006 mermaid
 14d-004=>14d-006 mermaid
 
 # 14E Japan Sea - Underwater
 14e-002=14e-002 mermaid
-14e-002=>14e-003 mermaid&!thaisamba
-14e-002=>14e-005 mermaid&!thaisamba
+14e-003=14e-003 mermaid
+14e-005=14e-005 mermaid
+14e-002>>14e-003 mermaid
+14e-002>>14e-005 mermaid
 14e-009=14e-002 mermaid                 # cat
 14e-00b=14e-002 mermaid                 # pack
 14e-00a=14e-002 mermaid                 # dango
@@ -1299,3 +1341,13 @@
 17d-002=17d-003 mermaid
 17d-005=17d-002 mermaid                 # cat
 17d-005=17d-003                         # cat
+
+# 1B8 Folkypoke Tourism Center
+1b8-001=1b9-001 dragon
+1b8-001>>13c-002
+
+# 1B9 Kii-Awaji Tourism Center
+1b9-001=1b8-001 dragon
+1b9-001>>13c-002
+
+#*>142-02f flute
