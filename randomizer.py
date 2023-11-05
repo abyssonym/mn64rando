@@ -178,6 +178,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             warp_names[__warp_index] = __name
 
     available_memory_flags = set()
+    entity_signatures = {}
 
     class EntityMixin:
         DICT_MATCHER = re.compile('{[^}]*}')
@@ -201,6 +202,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             self.old_data = data
             if validate:
                 self.validate_data()
+            self.signature
 
         def __repr__(self):
             data = pretty_hexify(self.data, newlines=False)
@@ -228,11 +230,25 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
         @property
         def signature(self):
+            if self in MapMetaObject.entity_signatures:
+                return MapMetaObject.entity_signatures[self]
             parent_index = f'{self.parent.warp_index:0>3x}'
             name = self.name.strip()
             if '#' in name:
                 name = name.split('#')[0].strip()
-            return f'{parent_index}-{self.index:0>3x}'
+            signature = f'{parent_index}-{self.index:0>3x}'
+            if signature in MapMetaObject.entity_signatures:
+                counter = 2
+                while True:
+                    test = f'{signature}-{counter}'
+                    if test not in MapMetaObject.entity_signatures:
+                        break
+                    counter += 1
+                signature = test
+            MapMetaObject.entity_signatures[signature] = self
+            MapMetaObject.entity_signatures[self] = signature
+            return self.signature
+
 
         @property
         def details(self):
@@ -985,14 +1001,16 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         return choices[0]
 
     @classmethod
-    @lru_cache(maxsize=None)
     def get_entity_by_signature(self, signature):
         assert self is MapMetaObject
-        warp_index, _ = signature.split('-')
+        if signature in MapMetaObject.entity_signatures:
+            return MapMetaObject.entity_signatures[signature]
+        warp_index = signature.split('-')[0]
         mmo = MapMetaObject.get_by_warp_index(int(warp_index, 0x10))
         for e in mmo.entities:
             if e.signature == signature:
                 return e
+        raise Exception(f'No entity: {signature}')
 
     @classmethod
     def import_from_file(self, filename):
