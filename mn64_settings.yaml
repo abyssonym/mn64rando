@@ -1,4 +1,4 @@
-seed:               6969696969
+seed:               3
 logic_filename:     router_logic.txt
 nodes_filename:     router_nodes.txt
 retry_limit:        2000  # Max loops before reaching goal

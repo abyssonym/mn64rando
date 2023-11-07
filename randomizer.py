@@ -13,7 +13,7 @@ from randomtools.interface import (
 from collections import Counter, defaultdict
 from functools import lru_cache
 from io import BytesIO
-from itertools import combinations
+from itertools import product
 from os import path, mkdir, environ
 from time import time, gmtime
 from traceback import format_exc
@@ -281,8 +281,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         def validate_data(self):
             return
 
-        def get_property_indexes(self, property_name):
-            data = self.structure[property_name]
+        def get_property_indexes(self, property_name, old=False):
+            if old:
+                data = self.old_structure[property_name]
+            else:
+                data = self.structure[property_name]
             index = data['index']
             if isinstance(index, int):
                 start = index
@@ -294,11 +297,13 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             return start, finish
 
         def get_property_value(self, property_name, old=False):
-            start, finish = self.get_property_indexes(property_name)
             if old:
+                start, finish = self.get_property_indexes(property_name,
+                                                          old=True)
                 value = int.from_bytes(self.old_data[start:finish],
                                        byteorder='big')
             else:
+                start, finish = self.get_property_indexes(property_name)
                 value = int.from_bytes(self.data[start:finish],
                                        byteorder='big')
             return value
@@ -323,9 +328,12 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             data = self.structure[property_name]
             start, finish = self.get_property_indexes(property_name)
             if isinstance(value, str):
-                if '-' in value:
-                    value = value.split('-')[0]
-                value = int(value, 0x10)
+                for i, name in self.structure[property_name].items():
+                    if name == value:
+                        value = i
+                        break
+                else:
+                    value = int(value, 0x10)
             value_length = finish - start
             value = value.to_bytes(length=value_length, byteorder='big')
             data = self.data[:start] + value + self.data[finish:]
@@ -373,6 +381,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             return int.from_bytes(self.data[:2], byteorder='big')
 
         @property
+        def old_actor_id(self):
+            return int.from_bytes(self.old_data[:2], byteorder='big')
+
+        @property
         def name(self):
             if self.structure is None:
                 return f'{self.actor_id:0>3x}'
@@ -387,6 +399,12 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             if self.actor_id not in MapMetaObject.ENTITY_STRUCTURES:
                 return None
             return MapMetaObject.ENTITY_STRUCTURES[self.actor_id]
+
+        @cached_property
+        def old_structure(self):
+            if self.old_actor_id not in MapMetaObject.ENTITY_STRUCTURES:
+                return None
+            return MapMetaObject.ENTITY_STRUCTURES[self.old_actor_id]
 
         @property
         def instances(self):
@@ -543,8 +561,33 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             self.set_main_property(design)
             self.set_exit_id(x.exit_id)
 
-        def become_locked_door(self, key_type, lock_index, accept_key):
-            pass
+        def become_locked_door(self, key):
+            LOCK_INDEX = 0x23e
+            assert self.actor_id in self.DOOR_DESIGNS
+            options = self.DOOR_DESIGNS[self.actor_id]
+            temp = {e.get_property_value('door_design', old=True)
+                    for e in self.parent.definitions
+                    if e.old_structure and 'door_design' in e.old_structure}
+            temp = temp & options
+            if temp:
+                options = temp
+            door_design = random.choice(sorted(options))
+            exit_id = self.get_property_value('exit_id')
+            self.data = b'\x00' * len(self.data)
+            self.set_main_property(LOCK_INDEX)
+            self.set_property('door_design', door_design)
+            self.set_property('key_type', key.get_pretty_value('key_type'))
+            self.set_property('lock_index', self.parent.acquire_memory_flag())
+            self.set_property('accept_key',
+                              key.get_property_value('key_index'))
+            self.set_property('exit_id', exit_id)
+
+        def become_key(self, key_type):
+            KEY_INDEX = 0x193
+            self.data = b'\x00' * len(self.data)
+            self.set_main_property(KEY_INDEX)
+            self.set_property('key_type', key_type)
+            self.set_property('key_index', self.parent.acquire_memory_flag())
 
         def become_gold_dango(self):
             GOLD_DANGO_INDEX = 0x85
@@ -567,6 +610,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                      'rotz':                {'index': (0x8, 0x9)},
                      'roty':                {'index': (0xa, 0xb)},
                      }
+        old_structure = structure
 
         @property
         def definition_index(self):
@@ -1204,9 +1248,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         h += '\n'.join(map(str, instances))
         h += '\n\n# FOOTER\n'
         h += pretty_hexify(self.footer).replace('\n', ' ') + '\n'
-        if set(self.leftover_data) > {0} or True:
-            h += f'\n\n# LEFTOVER ({len(self.leftover_data)})\n'
-            h += pretty_hexify(self.leftover_data) + '\n'
+        h += f'\n\n# LEFTOVER ({len(self.leftover_data)})\n'
+        h += pretty_hexify(self.leftover_data) + '\n'
         while '\n\n\n' in h:
             h = h.replace('\n\n\n', '\n\n')
 
@@ -1940,27 +1983,11 @@ def randomize_doors(config_filename=None):
 
     dr.build_graph()
 
-    def label_to_name(label):
-        warp_index, _ = label.split('-')
-        return MapMetaObject.get_by_warp_index(int(warp_index, 0x10)).room_name
+    def label_to_mmo(label):
+        return MapMetaObject.get_by_warp_index(int(label.split('-')[0], 0x10))
 
-    solutions = dr.generate_solutions()
-    s = ''
-    previous_line = None
-    for node, path in solutions:
-        warp_index = node.label.split('-')[0]
-        s += f'\n{warp_index} {label_to_name(node.label)}\n'
-        nodes = [p.destination for p in path]
-        for n in nodes:
-            line = f'  {label_to_name(n.label)}\n'
-            if line != previous_line:
-                s += line
-                previous_line = line
-    s = s.strip()
-    solution_filename = f'{get_outfile()}.spoiler.txt'
-    with open(solution_filename, 'w+') as f:
-        f.write(f'{dr.description}\n\n{s}')
-    print(s)
+    def label_to_name(label):
+        return label_to_mmo(label).room_name
 
     # Set exit destinations
     for e in sorted(dr.all_edges):
@@ -1998,10 +2025,265 @@ def randomize_doors(config_filename=None):
             if e.is_key:
                 e.become_gold_dango()
 
+    key_assignments = generate_locks(dr)
+
+    solutions = dr.generate_solutions()
+    s = ''
+    previous_line = None
+    for node, path in solutions:
+        warp_index = node.label.split('-')[0]
+        extra = None
+        if node in key_assignments.values():
+            extra = '{0} Key'.format(
+                    MapMetaObject.get_entity_by_signature(
+                        node.label).get_pretty_value('key_type'))
+        elif node in key_assignments.keys():
+            extra = '{0} Lock'.format(
+                    MapMetaObject.get_entity_by_signature(
+                        node.label).get_pretty_value('key_type'))
+        if extra is None:
+            s += f'\n{warp_index} {label_to_name(node.label)}\n'
+        else:
+            s += f'\n{warp_index} {label_to_name(node.label)} **{extra}**\n'
+        nodes = [p.destination for p in path]
+        for n in nodes:
+            line = f'  {label_to_name(n.label)}\n'
+            if line != previous_line:
+                s += line
+                previous_line = line
+    s = s.strip()
+    solution_filename = f'{get_outfile()}.spoiler.txt'
+    with open(solution_filename, 'w+') as f:
+        f.write(f'{dr.description}\n\n{s}')
+    print(s)
+
+def generate_locks(dr):
+    pickups = {n for n in dr.rooted
+               if MapMetaObject.get_entity_by_signature(n.label).is_pickup}
+    interesting_nodes = pickups
+    lockable_doors = {}
+    lockable_edges_by_node = {}
+    print('Locking doors...')
+    for i, edge in enumerate(dr.all_edges):
+        node = edge.source
+        x = MapMetaObject.get_entity_by_signature(node.label)
+        if not x.is_exit:
+            continue
+        if not x.door:
+            continue
+        if x.door.actor_id not in MapMetaObject.EntityDefinition.DOOR_DESIGNS:
+            continue
+        if not MapMetaObject.EntityDefinition.DOOR_DESIGNS[x.door.actor_id]:
+            continue
+        x2 = MapMetaObject.get_entity_by_signature(edge.destination.label)
+        if not x2.is_exit:
+            continue
+        if x.parent is x2.parent and not edge.generated:
+            continue
+        bridge_orphans = edge.check_is_real_bridge()
+        if not bridge_orphans:
+            continue
+        if edge.destination not in bridge_orphans:
+            continue
+        rfr, rrf = edge.get_bridge_double_orphanable()
+        if not rfr:
+            continue
+        if not ((dr.nodes & dr.rooted) - rfr) & pickups:
+            continue
+        #if rrf - rfr:
+        #    continue
+        lockable_doors[node] = (rfr, rrf)
+        assert node not in lockable_edges_by_node
+        lockable_edges_by_node[node] = edge
+
+    lockable_pickups = {}
+    lockable_locks = {}
+    lock_potential_keys = {}
+    for node in lockable_doors:
+        rfr, rrf = lockable_doors[node]
+        node_pickups = rfr & pickups
+        node_locks = rfr & set(lockable_doors.keys())
+        node_keys = rfr - pickups
+        lockable_pickups[node] = node_pickups
+        lockable_locks[node] = node_locks
+        lock_potential_keys[node] = node_keys
+    reverse_lockable_locks = {}
+    for node in lockable_locks:
+        if node not in reverse_lockable_locks:
+            reverse_lockable_locks[node] = set()
+    for node in lockable_locks:
+        for n in lockable_locks[node]:
+            reverse_lockable_locks[n].add(node)
+    key_types = ['Silver', 'Gold', 'Diamond']
+    key_chains = []
+    done_nodes = set()
+    while True:
+        starters = sorted(set(lockable_doors) - done_nodes)
+        if not starters:
+            break
+        starter = random.choice(starters)
+        key_chain = [None, starter, None]
+        done_nodes |= set(key_chain)
+        while True:
+            pairs = list(enumerate(zip(key_chain, key_chain[1:])))
+            random.shuffle(pairs)
+            for i, (a, b) in pairs:
+                candidates = set(lockable_doors)
+                if a is not None:
+                    candidates &= lockable_locks[a]
+                if b is not None:
+                    candidates &= reverse_lockable_locks[b]
+                candidates -= done_nodes
+                if candidates:
+                    chosen = random.choice(sorted(candidates))
+                    key_chain.insert(i+1, chosen)
+                    done_nodes |= set(key_chain)
+                    break
+            else:
+                break
+        for (a, b) in zip(key_chain, key_chain[1:]):
+            if a and b:
+                assert b in lockable_locks[a]
+                assert a in reverse_lockable_locks[b]
+                assert a not in lockable_locks[b]
+                assert b not in reverse_lockable_locks[a]
+        assert key_chain[0] == key_chain[-1] == None
+        key_chains.append(key_chain)
+
+    key_locations = {}
+    new_chains = []
+    for key_chain in key_chains:
+        for (a, b) in zip(key_chain, key_chain[1:]):
+            if b is None:
+                continue
+            if a is None:
+                candidates = pickups - lockable_pickups[b]
+            if a and b:
+                candidates = lockable_pickups[a] - lockable_pickups[b]
+                if key_locations[a] and not candidates and \
+                        random.choice([True, False]):
+                    candidates = key_locations[a]
+                    key_locations[a] = set()
+            key_locations[b] = candidates
+        new_chains.append([k for k in key_chain if k and key_locations[k]])
+
+    key_chains = sorted(new_chains,
+                        key=lambda kc: (len(kc), random.random(), kc),
+                        reverse=True)
+
+    new_chains = []
+    for key_type in key_types:
+        candidates = None
+        if key_type != key_types[-1]:
+            candidates = [kc for kc in key_chains if len(kc) > 1]
+        if not candidates:
+            candidates = key_chains
+        candidates = [kc for kc in candidates if kc not in new_chains]
+        max_index = len(candidates)-1
+        index = random.randint(0, random.randint(0, max_index))
+        new_chains.append(candidates[index])
+    key_chains = sorted(new_chains,
+                        key=lambda kc: (len(kc), random.random(), kc),
+                        reverse=True)
+
+    key_assignments = {}
+
+    def verify_single(n1):
+        return key_assignments[n1] not in lockable_pickups[n1]
+
+    def verify_double(n1, n2):
+        return not (key_assignments[n1] in lockable_pickups[n2] and
+                    key_assignments[n2] in lockable_pickups[n1])
+
+    def verify_triple(n1, n2, n3):
+        if (key_assignments[n1] in lockable_pickups[n2] and
+                key_assignments[n2] in lockable_pickups[n3] and
+                key_assignments[n3] in lockable_pickups[n1]):
+            return False
+        if (key_assignments[n1] in lockable_pickups[n3] and
+                key_assignments[n2] in lockable_pickups[n1] and
+                key_assignments[n3] in lockable_pickups[n2]):
+            return False
+        return True
+
+    def clear_assignments(l):
+        keys = {k for (k, v) in key_assignments.items()
+                if v not in key_locations[l]}
+        for k in sorted(key_assignments):
+            if k not in keys:
+                del(key_assignments[k])
+
+    all_locks = [k for kc in key_chains for k in kc]
+    problematic_locks = defaultdict(int)
+    while True:
+        random.shuffle(all_locks)
+        for l in all_locks:
+            if l in key_assignments:
+                continue
+            candidates = sorted(key_locations[l]-set(key_assignments.values()))
+            if not candidates:
+                clear_assignments(l)
+                candidates = sorted(key_locations[l])
+                problematic_locks[l] += 1
+            chosen = random.choice(candidates)
+            assert chosen not in key_assignments.values()
+            key_assignments[l] = chosen
+            assert verify_single(l)
+        for (kc1, kc2) in [(key_chains[0], key_chains[1]),
+                           (key_chains[0], key_chains[2]),
+                           (key_chains[1], key_chains[2])]:
+            for (a, b) in product(kc1, kc2):
+                if a in key_assignments and b in key_assignments:
+                    if not verify_double(a, b):
+                        problematic_locks[a] += 1
+                        problematic_locks[b] += 1
+                        clear_assignments(a)
+                        clear_assignments(b)
+        for (a, b, c) in product(*key_chains):
+            if {a, b, c} <= set(key_assignments.keys()):
+                if not verify_triple(a, b, c):
+                    problematic_locks[a] += 1
+                    problematic_locks[b] += 1
+                    problematic_locks[c] += 1
+                    clear_assignments(a)
+                    clear_assignments(b)
+                    clear_assignments(c)
+        if set(key_assignments) == set(all_locks):
+            break
+        for l in all_locks:
+            if problematic_locks[l] > 100:
+                all_locks.remove(l)
+                del(key_assignments[l])
+                problematic_locks = defaultdict(int)
+                break
+
+    for lock, key in key_assignments.items():
+        for key_type, key_chain in zip(key_types, key_chains):
+            if lock in key_chain:
+                break
+        else:
+            raise Exception('Lock not part of key chain.')
+        assert lock.rooted
+        assert key.rooted
+        lock = MapMetaObject.get_entity_by_signature(lock.label)
+        assert lock.is_exit
+        assert lock.door
+        key = MapMetaObject.get_entity_by_signature(key.label)
+        key.become_key(key_type=key_type)
+        lock.door.become_locked_door(key=key)
+
+    for lock, key in key_assignments.items():
+        edge = lockable_edges_by_node[lock]
+        lock.add_edge(edge.destination, condition=frozenset({key.label}),
+                      procedural=edge.generated)
+        edge.remove()
+    dr.verify()
+    return key_assignments
+
 
 if __name__ == '__main__':
     try:
-        print('You are using the MN64 Door Randomizer '
+        print('You are using the Ancient Cave Starring Goemon '
               'randomizer version %s.' % VERSION)
 
         ALL_OBJECTS = [g for g in globals().values()
