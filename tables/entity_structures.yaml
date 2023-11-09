@@ -71,18 +71,18 @@
 0x08b:
   name:       Sign
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x08c:
   name:       Exit
   dest_room:
-    index:      [4,5]
+    index:      [4, 5]
   dest_x:
-    index:      [6,7]
+    index:      [6, 7]
   dest_z:
-    index:      [8,9]
+    index:      [8, 9]
   dest_y:
-    index:      [10,11]
+    index:      [10, 11]
   direction:
     index:      12
     0x00:       East
@@ -105,6 +105,8 @@
 
 0x091:
   name:       Surprise Pack (Extra Life)
+  flag:
+    index:    [4, 5]
 
 0x0ca:
   name:       Congo's Hand
@@ -265,7 +267,7 @@
 0x192:
   name:       Pot
   num_spawn:
-    index:      [4,5]
+    index:      [4, 5]
   spawn_id:
     index:      11
     0x81:       Ryo
@@ -281,7 +283,7 @@
     0x1:        Gold
     0x2:        Diamond
   key_index:
-    index:      [8,9]
+    index:      [8, 9]
 
 0x195:
   name:       Ghost Toys Torch
@@ -387,6 +389,8 @@
 
 0x226:
   name:       Switch
+  flag:
+    index:    [4, 5]
 
 0x228:
   name:       Moving Platform (Horizontal)
@@ -431,9 +435,9 @@
     0x2:        Silver
     0x3:        Special
   lock_index:
-    index:      [8,9]
+    index:      [8, 9]
   accept_key:
-    index:      [10,11]
+    index:      [10, 11]
   exit_id:
     index:      13
 
@@ -515,7 +519,7 @@
 0x28f:
   name:       Ushikawa
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x290:
   name:       Unknown (Golden Temple)
@@ -523,7 +527,7 @@
 0x291:
   name:       Priest (Golden Temple)
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2a0:
   name:       Dragonback Cutscene Triggers (all of them)
@@ -531,9 +535,9 @@
 0x2bd:
   name:       Dog
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
   hidden:
     index:      15
     0x0:        No
@@ -542,37 +546,37 @@
 0x2be:
   name:       Old Man
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2bf:
   name:       Boy
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2c0:
   name:       Purple Woman
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2c1:
   name:       Girl
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2c2:
   name:       Happy Brown Man
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2c3:
   name:       Happy Brown Man (Glitchy, unused)
@@ -580,7 +584,7 @@
 0x2c4:
   name:       Thief
   message:
-    index:      [10,11]
+    index:      [10, 11]
   hidden:
     index:      15
     0x0:        No
@@ -589,16 +593,16 @@
 0x2c5:
   name:       Hiker
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2c6:
   name:       Middle Aged Brown Man
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
   hidden:
     index:      15
     0x0:        No
@@ -607,44 +611,44 @@
 0x2c7:
   name:       Blue Man
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2c8:
   name:       Red Woman
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2c9:
   name:       Running Man
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2ca:
   name:       Farmer
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2cb:
   name:       Ronin
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2cc:
   name:       Guard
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2cd:
   name:       Gatekeeper with lantern (unused)
@@ -652,24 +656,24 @@
 0x2ce:
   name:       Young Woman
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2d0:
   name:       Guard (Gatekeeper)
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2d3:
   name:       Lord of Oedo
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2d4:
   name:       Princess Yuki
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2d7:
   name:       Oedo Castle Baron Event Trigger
@@ -677,16 +681,16 @@
 0x2d8:
   name:       Boy (Folkypoke)
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2d9:
   name:       Girl (Folkypoke)
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2dc:
   name:       Credits Sequence
@@ -703,7 +707,7 @@
 0x2f5:
   name:       Plasma Backup Dancer
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2f6:
   name:       Chef (Deals contact damage)
@@ -711,84 +715,84 @@
 0x2f7:
   name:       Woman at Tourism Center with Rice Ball
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2f8:
   name:       Drunk
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2f9:
   name:       Sleeping Woman
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2fa:
   name:       Kneeling Woman (unused?)
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2fb:
   name:       Kneeling Woman with Fan (from inn)
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2fc:
   name:       Shopkeeper
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2fd:
   name:       Old Woman
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2fe:
   name:       Tour Guide
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x2ff:
   name:       Man in Blue Kimono (unused)
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x300:
   name:       Priest
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x301:
   name:       Restaurant Hostess
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x302:
   name:       Inn Keeper
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x304:
   name:       Guardhouse Guard
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x305:
   name:       Mokubei (Pipe maker)
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x306:
   name:       Plasma
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x307:
   name:       Gym Trainer
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x308:
   name:       Fixed Camera Actor
@@ -817,12 +821,12 @@
 0x31d:
   name:       Automatic Message
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x31e:
   name:       Omitsu
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x31f:
   name:       Double Cross Sliding Door (Festival Temple)
@@ -853,16 +857,18 @@
 
 0x326:
   name:       Retractable Platform
+  flag:
+    index:      [8, 9]
 
 0x327:
   name:       Sign & Mysterious Shadow (Mutsu Shoreline)
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x328:
   name:       Stone Marker
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x329:
   name:       The Turtle Rock
@@ -876,9 +882,9 @@
 0x32e:
   name:       Hiker/Boy (Bizen Bridge)
   pathing:
-    index:      [6,7]
+    index:      [6, 7]
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x32f:
   name:       Automatic Door (Gourmet Sub)
@@ -949,16 +955,18 @@
 
 0x345:
   name:       Invisible Wall That Blocks Doors Until Event Conditions Are Met
+  flag:
+    index:      [8, 9]
 
 0x346:
   name:       Witch
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x347:
   name:       Eboshi Priest
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x348:
   name:       Sogen Maze Gate
@@ -1090,7 +1098,7 @@
 0x3dd:
   name:       Wise Old Man (Sogen Restaurant)
   message:
-    index:      [10,11]
+    index:      [10, 11]
 
 0x3de:
   name:       Hot Floor Steam (Gourmet Sub)
@@ -1125,6 +1133,6 @@
 0x401:
   name:       Restaurant Patron or Prop
   graphic:
-    index:      [6,7]
+    index:      [6, 7]
   dish:
     index:      11

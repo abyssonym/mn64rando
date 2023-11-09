@@ -11,7 +11,7 @@ from randomtools.interface import (
     get_sourcefile)
 
 from collections import Counter, defaultdict
-from functools import lru_cache
+from functools import lru_cache, total_ordering
 from io import BytesIO
 from itertools import product
 from os import path, mkdir, environ
@@ -353,6 +353,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                     self.set_property(key, value)
             assert '{' not in details and '}' not in details
 
+    @total_ordering
     class EntityDefinition(EntityMixin):
         DATA_LENGTH = 0x10
         MAIN_PROPERTY_NAME = 'name'
@@ -375,6 +376,15 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             0x34b: set(),
             0x3c8: set(),
             }
+
+        def __hash__(self):
+            return id(self)
+
+        def __eq__(self, other):
+            return self is other
+
+        def __lt__(self, other):
+            return self.signature < other.signature
 
         @property
         def actor_id(self):
@@ -448,6 +458,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             return self.actor_id == 0x89
 
         @property
+        def is_cat(self):
+            return self.is_silver_cat or self.is_gold_cat
+
+        @property
         def is_surprise_pack(self):
             return self.actor_id == 0x91
 
@@ -462,6 +476,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         @property
         def is_battery(self):
             return self.actor_id in {0x32d, 0x3c7}
+
+        @property
+        def is_pot(self):
+            return self.actor_id == 0x192
 
         @property
         def is_pickup(self):
@@ -584,18 +602,88 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
         def become_key(self, key_type):
             KEY_INDEX = 0x193
+            if 'enemies' in self.old_structure:
+                enemies = self.get_property_value('enemies', old=True)
+            else:
+                enemies = 0
             self.data = b'\x00' * len(self.data)
             self.set_main_property(KEY_INDEX)
             self.set_property('key_type', key_type)
             self.set_property('key_index', self.parent.acquire_memory_flag())
+            self.set_property('enemies', enemies)
 
         def become_gold_dango(self):
             GOLD_DANGO_INDEX = 0x85
             if self.is_key:
                 key_index = self.get_property_value('key_index')
                 self.parent.free_memory_flag(key_index)
+            elif 'flag' in self.structure:
+                self.parent.free_memory_flag(self.get_property_value('flag'))
             self.data = b'\x00' * len(self.data)
             self.set_main_property(GOLD_DANGO_INDEX)
+
+        def become_cat(self, cat_type, flag):
+            assert len(self.instances) == 1
+            self.data = b'\x00' * len(self.data)
+            self.set_main_property(cat_type)
+            self.set_property('flag', flag)
+
+        def become_gold_cat(self, flag):
+            GOLD_CAT_INDEX = 0x89
+            self.become_cat(GOLD_CAT_INDEX, flag)
+
+        def become_silver_cat(self, flag):
+            SILVER_CAT_INDEX = 0x88
+            self.become_cat(SILVER_CAT_INDEX, flag)
+
+        def become_surprise_pack(self, flag):
+            SURPRISE_PACK_INDEX = 0x91
+            self.data = b'\x00' * len(self.data)
+            self.set_main_property(SURPRISE_PACK_INDEX)
+            self.set_property('flag', flag)
+
+        def become_pot(self):
+            POT_INDEX = 0x192
+            RYO_INDEX = 0x81
+            self.data = b'\x00' * len(self.data)
+            self.set_main_property(POT_INDEX)
+            self.set_property('num_spawn', 4)
+            self.set_property('spawn_id', RYO_INDEX)
+            self.randomize_pot()
+
+        def become_random_pickup(self):
+            selector = random.randint(1, 3)
+            if selector == 1:
+                try:
+                    flag = MapMetaObject.acquire_memory_flag()
+                    self.become_surprise_pack(flag)
+                except ValueError:
+                    selector = random.randint(2, 3)
+            if selector == 2:
+                self.become_gold_dango()
+            if selector == 3:
+                self.become_pot()
+
+        def randomize_pot(self):
+            POT_INDEX = 0x192
+            assert self.actor_id == POT_INDEX
+            if not hasattr(MapMetaObject, '_pots'):
+                pots = [e for mmo in MapMetaObject.sorted_rooms
+                        for e in mmo.definitions
+                        if e.old_actor_id == POT_INDEX]
+                MapMetaObject._pots = pots
+            chosen = random.choice(MapMetaObject._pots)
+            self.set_property('spawn_id',
+                              chosen.get_property_value('spawn_id'))
+            old_num_spawn = chosen.get_property_value('num_spawn')
+            spawn_range = old_num_spawn-1
+            num_spawn = random.randint(1, old_num_spawn)
+            while True:
+                value = random.randint(0, spawn_range)
+                num_spawn += value
+                if spawn_range == 0 or value != spawn_range:
+                    break
+            self.set_property('num_spawn', num_spawn)
 
     class EntityInstance(EntityMixin):
         DATA_LENGTH = 0x14
@@ -1945,6 +2033,7 @@ def randomize_doors(config_filename=None):
     PEMOPEMO_LABEL = '14c-002'
     FINAL_ROOM_LABEL = '0c1-001'
     BIZEN_LOCK_LABEL = '143-009'
+    MUSICAL_2_KEY_TRIGGER = '0bd-00f'
 
     MapMetaObject.set_pemopemo_destination(0xc1, 0xfe8a, 0xff60, 0x0, 0x1)
 
@@ -1982,6 +2071,7 @@ def randomize_doors(config_filename=None):
                     strict_validator=None, lenient_validator=bgm_validator)
 
     dr.build_graph()
+    random.seed(dr.seed)
 
     def label_to_mmo(label):
         return MapMetaObject.get_by_warp_index(int(label.split('-')[0], 0x10))
@@ -2016,16 +2106,24 @@ def randomize_doors(config_filename=None):
             source.door.remove()
         source.remove()
 
+    silver_cats = set()
+    gold_cats = set()
     for mmo in MapMetaObject.sorted_rooms:
         for e in mmo.definitions:
             if e.is_lock:
                 if e.signature == BIZEN_LOCK_LABEL:
                     continue
                 e.become_regular_door()
-            if e.is_key:
+            if e.is_key or e.is_elly_fant or e.is_mr_arrow:
                 e.become_gold_dango()
+            if e.is_silver_cat:
+                silver_cats.add(e.get_property_value('flag'))
+            if e.is_gold_cat:
+                gold_cats.add(e.get_property_value('flag'))
 
-    key_assignments = generate_locks(dr)
+    key_assignments = {}
+    if dr.config['randomize_keys']:
+        key_assignments = generate_locks(dr)
 
     solutions = dr.generate_solutions()
     s = ''
@@ -2046,6 +2144,7 @@ def randomize_doors(config_filename=None):
         else:
             s += f'\n{warp_index} {label_to_name(node.label)} **{extra}**\n'
         nodes = [p.destination for p in path]
+        previous_line = None
         for n in nodes:
             line = f'  {label_to_name(n.label)}\n'
             if line != previous_line:
@@ -2056,6 +2155,58 @@ def randomize_doors(config_filename=None):
     with open(solution_filename, 'w+') as f:
         f.write(f'{dr.description}\n\n{s}')
     print(s)
+
+    m2key = MapMetaObject.get_entity_by_signature(MUSICAL_2_KEY_TRIGGER)
+    old_flag = m2key.get_property_value('key_index', old=True)
+    if 'flag' in m2key.structure:
+        flag = m2key.get_property_value('flag')
+    elif 'key_index' in m2key.structure:
+        flag = m2key.get_property_value('key_index')
+    else:
+        flag = MapMetaObject.acquire_memory_flag()
+        m2key.become_surprise_pack(flag)
+        flag = m2key.get_property_value('flag')
+
+    for e in m2key.parent.definitions:
+        if 'flag' in e.structure and e.get_property_value('flag') == old_flag:
+            e.set_property('flag', flag)
+
+    pickups = set()
+    if dr.config['randomize_pickups']:
+        for mmo in MapMetaObject.sorted_rooms:
+            for e in mmo.definitions:
+                if e is m2key:
+                    continue
+                if e.is_pot:
+                    e.randomize_pot()
+                if e.is_cat or e.is_surprise_pack:
+                    e.become_gold_dango()
+                if e.is_pickup and not e.is_key:
+                    assert e.is_gold_dango
+                    node = dr.get_by_label(e.signature)
+                    if node and node.rooted:
+                        pickups.add(e)
+
+        pickups = sorted(pickups)
+        MapMetaObject.available_memory_flags -= (silver_cats | gold_cats)
+        num_entities = min(len(gold_cats), len(pickups))
+        if num_entities < len(gold_cats):
+            print('WARNING: Unable to allocate all golden cat dolls.')
+        gold_cat_entities = random.sample(pickups, num_entities)
+        pickups = sorted(set(pickups) - set(gold_cat_entities))
+        for e, flag in zip(gold_cat_entities, gold_cats):
+            e.become_gold_cat(flag)
+
+        num_entities = min(len(silver_cats), len(pickups))
+        if num_entities < len(silver_cats):
+            print('WARNING: Unable to allocate all silver cat dolls.')
+        silver_cat_entities = random.sample(pickups, num_entities)
+        pickups = sorted(set(pickups) - set(silver_cat_entities))
+        for e, flag in zip(silver_cat_entities, silver_cats):
+            e.become_silver_cat(flag)
+
+        for e in pickups:
+            e.become_random_pickup()
 
 def generate_locks(dr):
     pickups = {n for n in dr.rooted

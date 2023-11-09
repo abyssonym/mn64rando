@@ -1,4 +1,5 @@
-seed:               3
+seed:               0
+seed:               467425670
 logic_filename:     router_logic.txt
 nodes_filename:     router_nodes.txt
 retry_limit:        2000  # Max loops before reaching goal
@@ -14,3 +15,5 @@ fixed_singletons:   1.00  # Rate to preserve connections to isolated rooms
 cluster_bgm:        True  # Try to connect rooms with the same BGM
   #fixed_singletons:   0.00  # Rate to preserve connections to isolated rooms
   #cluster_bgm:        False # Try to connect rooms with the same BGM
+randomize_keys:     True
+randomize_pickups:  True

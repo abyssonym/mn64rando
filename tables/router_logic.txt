@@ -259,6 +259,9 @@
 046-008=046-001                         # key
 046-005=046-001                         # dango
 
+# 049 Ghost Toys 2F-3F Elevator / Darumanyo Boss Room
+049-001>>142-004
+
 # 05A Festival Temple West Main Entrance
 05a-001=05a-002
 05a-001=05a-004
@@ -323,14 +326,14 @@
 061-003=061-007 chain_pipe|super_jump
 
 # 062 Festival Temple East Meatsaw Hammer Room
-062-001<062-003
+062-001>062-003
 062-001=062-003 ice_kunai|super_jump
-062-001=062-005
-062-001<062-007
-062-001=062-007 ice_kunai|super_jump
-062-003>062-005
-062-003=062-005 ice_kunai|super_jump
+062-003=062-005
+062-003<062-007
 062-003=062-007 ice_kunai|super_jump
+062-001>062-005
+062-001=062-005 ice_kunai|super_jump
+062-001=062-007 ice_kunai|super_jump
 062-005<062-007
 062-005=062-007 ice_kunai|super_jump
 
@@ -427,6 +430,9 @@
 
 # 070 Festival Temple North Bamboo Path to Boss
 070-001=070-003
+
+# 071 Festival Temple North Tsurami Boss Room
+071-001>>147-002
 
 # 081 Gourmet Sub 2F Bazooka Room
 081-003=081-001                         # key
@@ -576,6 +582,9 @@
 099-00a=099-001                         # dango
 099-00a=099-003                         # dango
 099-00a=099-005                         # dango
+
+# 09D Gourmet Sub 4F Thaisamba Boss Room
+09d-001>>14d-002
 
 # 0A8 Musical Castle 1 Entrance
 0a8-001=0a8-003                         # 6.188.gold

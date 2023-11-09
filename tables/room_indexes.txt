@@ -242,7 +242,7 @@
 17d 42a Festival Village - Hidden Lake Area
 17e 415
 17f 42b
-180 416
+180 416 MACHI 34 - Zazen Waterway - Unused
 181 42c
 182 417
 183 42d
