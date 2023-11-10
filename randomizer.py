@@ -2287,6 +2287,12 @@ def randomize_doors(config_filename=None):
         for e in pickups:
             e.become_random_pickup()
 
+    final = MapMetaObject.get_entity_by_signature(FINAL_ROOM_LABEL)
+    for x in final.instances:
+        x.spawn_door_blocker()
+    final.door.remove()
+    final.remove()
+
 def generate_locks(dr):
     pickups = {n for n in dr.rooted
                if MapMetaObject.get_entity_by_signature(n.label).is_pickup}
