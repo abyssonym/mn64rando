@@ -132,6 +132,13 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         (0x54, 0x55, 0x53),
         }
 
+    DEBUG_WARP_CATEGORIES = {
+        0x000:  'SIRO',
+        0x12c:  'DOUCHU',
+        0x15e:  'MACHI',
+        0x190:  'SHOP',
+        }
+
     METADATA_STRUCTURE = {
             'unknown_pointer1': (0x00, 0x04),
             'unknown_pointer2': (0x04, 0x08),
@@ -1306,7 +1313,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         header += (f'{self.index:0>3x},{self.pointer:0>5x}->'
                    f'{self.reference_pointer:0>8x}')
         if self.room_name:
-            header += f'  # {self.room_name}'
+            header += f'  # {self.debug_index} - {self.room_name}'
+        else:
+            header += f'  # {self.debug_index}'
         header += '\n# {0:25} {1}'.format('Total Memory Used', self.total_size)
         if self.warp_index in MapCategoryData.special_idle_animations:
             value = MapCategoryData.special_idle_animations[self.warp_index]
@@ -1436,6 +1445,13 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     def room_name(self):
         if self.index in self.room_names:
             return self.room_names[self.index]
+
+    @cached_property
+    def debug_index(self):
+        category_index = max(i for i in self.DEBUG_WARP_CATEGORIES
+                             if i <= self.warp_index)
+        category_name = self.DEBUG_WARP_CATEGORIES[category_index]
+        return f'{category_name} {self.warp_index-category_index}'
 
     @cached_property
     def exits(self):
@@ -2140,9 +2156,6 @@ def randomize_doors(config_filename=None):
     def label_to_mmo(label):
         return MapMetaObject.get_by_warp_index(int(label.split('-')[0], 0x10))
 
-    def label_to_name(label):
-        return label_to_mmo(label).room_name
-
     # Set exit destinations
     for e in sorted(dr.all_edges):
         if not e.generated:
@@ -2203,14 +2216,16 @@ def randomize_doors(config_filename=None):
             extra = '{0} Lock'.format(
                     MapMetaObject.get_entity_by_signature(
                         node.label).get_pretty_value('key_type'))
+        mmo = label_to_mmo(node.label)
         if extra is None:
-            s += f'\n{warp_index} {label_to_name(node.label)}\n'
+            s += f'\n{warp_index} {mmo.room_name}\n'
         else:
-            s += f'\n{warp_index} {label_to_name(node.label)} **{extra}**\n'
+            s += f'\n{warp_index} {mmo.room_name} **{extra}**\n'
         nodes = [p.destination for p in path]
         previous_line = None
         for n in nodes:
-            line = f'  {label_to_name(n.label)}\n'
+            mmo = label_to_mmo(n.label)
+            line = f'  {mmo.debug_index:10} {mmo.room_name}\n'
             if line != previous_line:
                 s += line
                 previous_line = line
@@ -2508,6 +2523,7 @@ if __name__ == '__main__':
         codes = {
             'export': ['export'],
             'import': ['import'],
+            'norandom': ['norandom'],
         }
 
         run_interface(ALL_OBJECTS, snes=False, n64=True, codes=codes,
@@ -2527,7 +2543,8 @@ if __name__ == '__main__':
             print(f'IMPORTING from {import_filename}')
             MapMetaObject.import_from_file(import_filename)
 
-        randomize_doors()
+        if 'norandom' not in get_activated_codes():
+            randomize_doors()
 
         for mmo in MapMetaObject.every:
             if mmo.data_has_changed:

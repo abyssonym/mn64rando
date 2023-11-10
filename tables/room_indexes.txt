@@ -1,5 +1,5 @@
 000 335 Oedo Castle 1F Tile Room
-001 336 SIRO 1 - Oedo Castle Tile Room - Unused
+001 336 Oedo Castle Tile Room - Unused
 002 337 Oedo Castle 1F Entrance
 003 338 Oedo Castle 1F Swatting Robot Silver Key Room
 004 339 Oedo Castle 1F Gold Dango Room
@@ -17,16 +17,16 @@
 010 345 Oedo Castle 2F Crusher Platforms
 011 346 Oedo Castle 2F Chain Pipe Moat
 012 347 Oedo Castle 2F Silver Key Room
-013 348 SIRO 19 - Oedo Castle Gold Key Room - Unused
+013 348 Oedo Castle Gold Key Room - Unused
 014 349 Oedo Castle 2F Congo's Hand
 015 34a Oedo Castle 2F Blocked Silver Cat Room
 016 34b Oedo Castle 2F Congo Boss Room
-017 34c SIRO 23 - Congo Boss Room - Unused
+017 34c Congo Boss Room - Unused
 018 34d Null
 019 34e Null
 01a 34f Oedo Castle 2F-3F Elevator / Baron Room
 01b 350 Null
-01c 351 SIRO 28 - Oedo Castle Final Room - Unused
+01c 351 Oedo Castle Final Room - Unused
 01d 352 Null
 01e 353 Null
 01f 354 Null
@@ -69,7 +69,7 @@
 049 37b Ghost Toys 2F-3F Elevator / Darumanyo Boss Room
 054 35d
 055 37c
-056 35e SIRO 86 - Oedo Castle 1st Elevator Room - Unused
+056 35e Oedo Castle 1st Elevator Room - Unused
 059 37d
 05a 37e Festival Temple West Main Entrance
 05b 37f Festival Temple West Gold Cat Dango Room
@@ -102,15 +102,15 @@
 076 39a Null
 077 39b Null
 078 39c Null
-080 39d SIRO 128 - Submarine Bazooka Room - Unused
+080 39d Submarine Bazooka Room - Unused
 081 39e Gourmet Sub 2F Bazooka Room
 082 39f Gourmet Sub 2F Jetpack Crab Gold Key & Double Lock Room
 083 3a0 Gourmet Sub 2F Seahorse / Mini Ebisumaru Crosspath
-084 3a1 SIRO 132 - Submarine Unknown Room - Unused
+084 3a1 Submarine Unknown Room - Unused
 085 3a2 Gourmet Sub 2F Lava Treadmill Key & Lock Room
 086 3a3 Gourmet Sub 2F Turret Dango Stockpile Room
 087 3a4 Gourmet Sub 2F Ramen Soup Corridor
-088 3a5 SIRO 136 - Submarine Red Ramen Corridor - Unused
+088 3a5 Submarine Red Ramen Corridor - Unused
 089 3a6 Gourmet Sub 2F Underwater Spiny Key & Lock Room
 08a 3a7 Gourmet Sub 3F-4F Elevator / Turret Tightrope Room
 08b 3a8 Gourmet Sub 3F Invisible Path Diamond Key Room
@@ -202,11 +202,11 @@
 154 401 Waterfall of Kegon
 155 402 Dragon Fight
 156 403
-157 404 DOUCHU 43 - Mermaid Waterfall - Unused
+157 404 Mermaid Waterfall - Unused
 158 405
 159 3ef
-15a 3f0 DOUCHU 46 - Kompira Shrine - Unused
-15b 3f1 DOUCHU 47 - Lake Tree - Unused
+15a 3f0 Kompira Shrine - Unused
+15b 3f1 Lake Tree - Unused
 15c 406
 15e 407 Oedo - Bridge to Musashi
 15f 408 Oedo Town (West)
@@ -242,7 +242,7 @@
 17d 42a Festival Village - Hidden Lake Area
 17e 415
 17f 42b
-180 416 MACHI 34 - Zazen Waterway - Unused
+180 416 Zazen Waterway - Unused
 181 42c
 182 417
 183 42d
@@ -253,7 +253,7 @@
 192 431 Folkypoke - Restaurant
 193 432 Festival Village - Restaurant
 194 433 Sogen - Restaurant
-195 434 SHOP 5 - Unknown Town Restaurant - Unused
+195 434 Unknown Town Restaurant - Unused
 196 435 Oedo - Riceball Shop
 197 436 Oedo - Armor Shop
 198 437 Zazen - Riceball Shop
@@ -264,25 +264,25 @@
 19d 43c Festival Village - Hidden Lake Shop
 19e 43d Sogen - Riceball Shop
 19f 43e Sogen - Armor Shop
-1a0 43f SHOP 16 - Unknown Town Shop - Unused
+1a0 43f Unknown Town Shop - Unused
 1a1 440 Oedo - Inn
 1a2 441 Zazen - Inn
 1a3 442 Folkypoke - Inn
 1a4 443 Festival Village - Inn
 1a5 444 Sogen - Inn
-1a6 445 SHOP 22 - Unknown Town Inn - Unused
+1a6 445 Unknown Town Inn - Unused
 1a7 446 Oedo - Plasma
 1a8 447 Zazen - Plasma
 1a9 448 Folkypoke - Plasma
 1aa 449 Festival Village - Plasma
-1ab 44a SHOP 27 - Unknown Town Plasma - Unused
-1ac 44b SHOP 28 - Unknown Town Plasma - Unused
+1ab 44a Unknown Town Plasma - Unused
+1ac 44b Unknown Town Plasma - Unused
 1ad 44c Oedo Guardhouse
 1ae 44d Zazen Guardhouse
 1af 44e Null
 1b0 44f Oedo - Omitsu's Teahouse
 1b1 450 Kai Highway Teahouse
-1b2 451 SHOP 34 - Awaji Island Coffee Shop - Unused
+1b2 451 Awaji Island Coffee Shop - Unused
 1b3 452 Kii-Awaji Teahouse
 1b4 453 Kompira Teahouse
 1b5 454 Iyo Teahouse
@@ -290,13 +290,13 @@
 1b7 456 Null
 1b8 457 Folkypoke Tourism Center
 1b9 458 Kii-Awaji Tourism Center
-1ba 459 SHOP 42 - Unknown Town Guardhouse - Unused
+1ba 459 Unknown Town Guardhouse - Unused
 1bb 45a West Oedo House (Drunk)
 1bc 45b North Oedo House (Boy)
 1bd 45c North Oedo House (Red Woman)
 1be 45d South Zazen House (Old Woman)
 1bf 45e Kompira Shrine House
-1c0 45f SHOP 48 - Unknown Town House - Unused
+1c0 45f Unknown Town House - Unused
 1c1 460 South Oedo House (Old Woman)
 1c2 461 South Oedo House (Young Woman)
 1c3 462 South Oedo House (Man c3)
@@ -310,7 +310,7 @@
 1cb 46a East Festival House (Red Woman)
 1cc 46b East Festival House (Drunk)
 1cd 46c Northwest Festival House (Old Man)
-1ce 46d SHOP 62 - Unknown Training Gym - Unused
+1ce 46d Unknown Training Gym - Unused
 1cf 46e South Oedo House (Muscle Training Gym, occupied?)
 1d0 46f Sasuke Jetpack Training
 1d1 470 South Oedo - Goemon's House
