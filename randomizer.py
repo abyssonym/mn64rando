@@ -530,15 +530,19 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
         def remove(self):
             associations = [(d, d.instances) for d in self.parent.definitions]
-            for i in self.instances:
-                self.parent.entities.remove(i)
-            self.parent.entities.remove(self)
+            for group, instances in self.parent.spawn_groups.items():
+                self.parent.spawn_groups[group] = [i for i in instances
+                                                   if i not in self.instances]
+            self.parent.definitions.remove(self)
             for n, definition in enumerate(self.parent.definitions):
                 definition.index = n
                 for (d, instances) in associations:
                     if d is definition:
                         for i in instances:
                             i.set_main_property(definition.index)
+            assert self not in self.parent.entities
+            for i in self.instances:
+                assert i not in self.parent.entities
 
         def set_main_property(self, value):
             actor_id = value.to_bytes(length=2, byteorder='big')
@@ -907,13 +911,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 blocker_instance.set_property(attr,
                                               self.get_property_value(attr))
             blocker_instance.set_main_property(blocker.index)
-            if self.parent.entities[-1].is_null:
-                nullstance = self.parent.entities.pop()
-                self.parent.entities.append(blocker_instance)
-                self.parent.entities.append(nullstance)
-            else:
-                self.parent.entities.append(blocker_instance)
+            self.parent.spawn_groups[(-1,-1,-1)].append(blocker_instance)
             blocker_instance.clean()
+            assert blocker_instance in self.parent.instances
 
         def yeet(self):
             self.data = self.parent.instances[0].data
@@ -1086,8 +1086,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
             mmo.instance_offset = (
                 len(mmo.definitions) * mmo.EntityDefinition.DATA_LENGTH)
-            mmo.footer_offset = mmo.instance_offset + (
-                len(mmo.instances) * mmo.EntityInstance.DATA_LENGTH)
+            instance_data, _ = mmo.get_instance_data()
+            mmo.footer_offset = mmo.instance_offset + len(instance_data)
             mmo.ending_offset = mmo.footer_offset + self.ENTITY_FOOTER_LENGTH
 
             metadata_length = max(max(self.METADATA_STRUCTURE.values()))
@@ -1167,10 +1167,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                                         f'The index is being used as a buffer '
                                         f'between old data and new data.')
                     assert mmo.entities is not None
-                    mmo.entities = []
+                    mmo.definitions = []
+                    mmo.spawn_groups = {}
                     previous_entity = None
                     mmo.footer = b''
-                    mmo.leftover_data = b''
+                    spawn_group = (-1, -1, -1)
                 elif line.startswith('!load '):
                     line = line[6:]
                     values = [int(v, 0x10) for v in line.split()]
@@ -1195,6 +1196,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                         assert len(value) <= 8
                         value = int(value, 0x10)
                     setattr(mmo.misc_data, attribute, value)
+                elif line.upper().startswith('+GROUP'):
+                    coords = line.split()[-1]
+                    x, z, y = coords.split(',')
+                    spawn_group = (int(x, 0x10), int(z, 0x10), int(y, 0x10))
                 elif line.startswith('@'):
                     line = line.replace(' ', '')
                     line = line[1:]
@@ -1206,17 +1211,16 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                     else:
                         previous_entity.set_main_property(int(line, 0x10))
                     assert not mmo.footer
-                    assert not mmo.leftover_data
                 elif ':' in line:
-                    previous_entity = mmo.import_line(line)
+                    previous_entity = mmo.import_line(line, spawn_group)
                     assert not mmo.footer
-                    assert not mmo.leftover_data
                 else:
                     line = [int(v, 0x10).to_bytes(length=2, byteorder='big')
                             for v in line.split()]
                     line = b''.join(line)
                     if mmo.footer:
-                        mmo.leftover_data += line
+                        raise Exception(
+                            f'Extraneous data: ROOM {mmo.warp_index:0>3X}')
                     else:
                         mmo.footer += line
                     assert len(mmo.footer) == self.ENTITY_FOOTER_LENGTH
@@ -1329,15 +1333,20 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             header += f'\n!load {loading_files}'
 
         definitions = self.definitions
-        instances = self.instances
         h = '# DEFINITIONS\n'
         h += '\n'.join(map(str, definitions))
         h += '\n\n# INSTANCES\n'
-        h += '\n'.join(map(str, instances))
+        for group, instances in sorted(self.spawn_groups.items()):
+            s = '\n'.join(map(str, instances))
+            if instances and group != (-1, -1, -1):
+                label = ','.join([f'{g:0>2x}' for g in group])
+                s = f'+GROUP {label}\n{s}'
+                s = s.replace('\n', '\n  ')
+            h += s + '\n'
         h += '\n\n# FOOTER\n'
+        h += f'# Spawn group dimensions: ' \
+            f'{self.groups_x:0>2x},{self.groups_z:0>2x},{self.groups_y:0>2x}\n'
         h += pretty_hexify(self.footer).replace('\n', ' ') + '\n'
-        h += f'\n\n# LEFTOVER ({len(self.leftover_data)})\n'
-        h += pretty_hexify(self.leftover_data) + '\n'
         while '\n\n\n' in h:
             h = h.replace('\n\n\n', '\n\n')
 
@@ -1377,10 +1386,24 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             return self._data
         if self.is_room:
             data = b''
-            for e in self.entities:
+            for e in self.definitions:
                 data += e.data
+
+            definitions_length = len(data)
+            instance_data, group_offsets = self.get_instance_data()
+            data += instance_data
+
             data += self.footer
-            data += self.leftover_data
+            for x in range(self.groups_x):
+                for z in range(self.groups_z):
+                    for y in range(self.groups_y):
+                        if (x, z, y) not in group_offsets:
+                            data += b'\x00\x00\x00\x00'
+                            continue
+                        data += b'\x08\x00'
+                        value = group_offsets[x,z,y] + definitions_length
+                        data += value.to_bytes(length=2, byteorder='big')
+
             return data
         if self.index == self.MAIN_CODE_INDEX:
             assert hasattr(self, '_data')
@@ -1419,16 +1442,31 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         return [e for e in self.instances if e.is_exit]
 
     @property
-    def definitions(self):
-        self.get_entities()
-        return [e for e in self.entities
-                if isinstance(e, self.EntityDefinition)]
+    def instances(self):
+        entities = []
+        for key in sorted(self.spawn_groups):
+            entities += self.spawn_groups[key]
+        return entities
 
     @property
-    def instances(self):
-        self.get_entities()
-        return [e for e in self.entities
-                if isinstance(e, self.EntityInstance)]
+    def entities(self):
+        return self.definitions + self.instances
+
+    @property
+    def groups_x(self):
+        return int.from_bytes(self.footer[0x14:0x16], byteorder='big')
+
+    @property
+    def groups_z(self):
+        return int.from_bytes(self.footer[0x16:0x18], byteorder='big')
+
+    @property
+    def groups_y(self):
+        return int.from_bytes(self.footer[0x18:0x1a], byteorder='big')
+
+    @property
+    def group_data(self):
+        return b''
 
     @property
     def is_compressed(self):
@@ -1488,39 +1526,67 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     def get_entities(self):
         assert not self.is_rom_split
         assert self.is_room
-        if hasattr(self, 'entities'):
+        if hasattr(self, 'footer'):
             return self.entities
 
-        self.entities = []
         self.footer = None
-        self.leftover_data = None
         data = self.get_decompressed()
         if data is None:
             return None
 
         definition_segment = data[:self.instance_offset]
         instance_segment = data[self.instance_offset:self.footer_offset]
-        footer = data[self.footer_offset:self.ending_offset]
-        leftover = data[self.ending_offset:]
+        self.footer = data[self.footer_offset:self.ending_offset]
+        group_data = data[self.ending_offset:]
         assert len(data) >= self.ending_offset
 
+        self.spawn_groups = {}
+        self.definitions = []
         while definition_segment:
             entity = self.EntityDefinition(
                 definition_segment[:self.EntityDefinition.DATA_LENGTH], self)
             definition_segment = \
                 definition_segment[self.EntityDefinition.DATA_LENGTH:]
-            self.entities.append(entity)
+            self.definitions.append(entity)
 
-        while instance_segment:
-            entity = self.EntityInstance(
-                instance_segment[:self.EntityInstance.DATA_LENGTH], self)
-            instance_segment = \
-                instance_segment[self.EntityInstance.DATA_LENGTH:]
-            self.entities.append(entity)
+        group_offsets = {(-1, -1, -1): 0}
+        for x in range(self.groups_x):
+            for z in range(self.groups_z):
+                for y in range(self.groups_y):
+                    group, group_data = group_data[:4], group_data[4:]
+                    if group == b'\x00\x00\x00\x00':
+                        continue
+                    assert group[:2] == b'\x08\x00'
+                    offset = int.from_bytes(group[2:], byteorder='big')
+                    group_offsets[(x, z, y)] = offset - self.instance_offset
 
-        self.footer = footer
-        self.leftover_data = leftover
+        for key in group_offsets:
+            offset = group_offsets[key]
+            data = instance_segment[offset:]
+            spawn_group = []
+            while True:
+                edata, data = (data[:self.EntityInstance.DATA_LENGTH],
+                               data[self.EntityInstance.DATA_LENGTH:])
+                entity = self.EntityInstance(edata, self)
+                if entity.is_null:
+                    break
+                spawn_group.append(entity)
+                self.spawn_groups[key] = spawn_group
         return self.entities
+
+    def get_instance_data(self):
+        group_offsets = {}
+        data = b''
+        for key in sorted(self.spawn_groups):
+            if not self.spawn_groups[key]:
+                continue
+            group_offsets[key] = len(data)
+            for e in self.spawn_groups[key]:
+                data += e.data
+            data += b'\x00' * self.EntityInstance.DATA_LENGTH
+        if not data:
+            data = b'\x00' * self.EntityInstance.DATA_LENGTH
+        return data, group_offsets
 
     def add_new_definition(self, data):
         definition_indexes = {d.index for d in self.definitions}
@@ -1532,11 +1598,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             instance_indexes = {d.index for d in self.instances}
         assert new_index not in instance_indexes
         definition = self.EntityDefinition(data, self, index=new_index)
-        self.entities = self.definitions + [definition] + self.instances
+        self.definitions.append(definition)
         assert self.entities.index(definition) == definition.index
         return definition
 
-    def import_line(self, line):
+    def import_line(self, line, spawn_group):
         if '#' in line:
             line = line.split('#')[0]
         assert '@' not in line
@@ -1567,8 +1633,13 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             raise Exception('Improper import data length.')
 
         new_entity = entity_type(new_data, self, index, validate=False)
-        self.entities.append(new_entity)
-        self.entities = sorted(self.entities, key=lambda e: e.index)
+        if isinstance(new_entity, MapMetaObject.EntityDefinition):
+            self.definitions.append(new_entity)
+            self.definitions = sorted(self.definitions, key=lambda e: e.index)
+        else:
+            if spawn_group not in self.spawn_groups:
+                self.spawn_groups[spawn_group] = []
+            self.spawn_groups[spawn_group].append(new_entity)
         return new_entity
 
     def deallocate(self):
@@ -1650,12 +1721,6 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             raise Exception(f'Room {self.index:0>3x}: Entity definitions must '
                              'be in order at the start.')
 
-        if not self.instances[-1].is_null:
-            print(f'Warning: Room {self.index:0>3x} requires a null '
-                  f'instance before footer; adding automatically.')
-            self.entities.append(self.EntityInstance(
-                b'\x00' * self.EntityInstance.DATA_LENGTH, self))
-
         for e in self.entities:
             e.validate_data()
 
@@ -1692,7 +1757,6 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         if self.is_room:
             self.get_entities()
             assert not self.data_has_changed
-            assert self.entities
 
     def preclean(self):
         if self.index >= MapCategoryData.ROOM_DATA_INDEX:
