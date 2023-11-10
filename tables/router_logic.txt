@@ -43,6 +43,9 @@
 .guarantee  03b-001 camera
 .guarantee  040-001 camera
 .guarantee  091-001 camera
+.guarantee  091-003 camera
+.guarantee  091-009 camera
+.guarantee  091-00b camera
 
 #.unreachable 061-005
 #.unreachable 065-003
