@@ -90,12 +90,20 @@ class MetaSizeObject(TableObject):
         return int.from_bytes(self.metasize_str, byteorder='big')
 
     def set_metasize(self, value):
-        self.metasize_str = value.to_bytes(length=2, byteorder='big')
+        self.metasize_str = value.to_bytes(length=3, byteorder='big')
 
     def del_metasize(self):
         raise NotImplementedError
 
     metasize = property(get_metasize, set_metasize, del_metasize)
+
+    @property
+    def effective_metasize(self):
+        if self.metasize % 0x40 == 0:
+            return self.metasize
+        m = self.metasize + (0x40-(self.metasize % 0x40))
+        assert m % 0x40 == 0
+        return m
 
 
 class MapMetaObject(TableObject, ConvertPointerMixin):
@@ -115,6 +123,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     '''
     MAIN_CODE_INDEX = 0xb
     MAX_WARP_INDEX = 0x1e4
+    FORCE_OLD_POINTER = list(range(0xc)) + list(range(0x4a6, 0x520))
 
     ROM_SPLIT_THRESHOLD_LOW = 0x336
     ROM_SPLIT_THRESHOLD_HI = 0x46d
@@ -167,6 +176,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         if __name in structure_names:
             raise Exception(f'Duplicate structure name: {name}')
         structure_names.add(__name)
+
+    MINIMUM_SAFE_BUDGET = 0x52000
+    ENEMY_FILES = {0x20, 0x21, 0x23, 0x24, 0x25, 0x26, 0x27, 0x29}
+    PICKUP_FILES = {0x1a, 0x1c, 0x2b}
 
     room_names = {}
     warp_names = {}
@@ -935,6 +948,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             if self.is_null:
                 return
             if self.definition is None:
+                import pdb; pdb.set_trace()
                 raise Exception(f'Instance {self.parent.warp_index:0>3x}-'
                                 f'{self.definition_index:0>3x} is undefined.')
             assert self.data[12:14] == b'\x08\x00'
@@ -1020,6 +1034,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                         break
                     warp_loads.append(value)
                 mmo.loading_files = warp_loads
+                mmo.total_budget = max(mmo.total_size, mmo.MINIMUM_SAFE_BUDGET)
+                mmo.enemy_budget = mmo.enemy_size
+                mmo.pickup_budget = mmo.pickup_size
                 data_end = max(data_end, f.tell())
 
         MapMetaObject.loading_data_start = data_start
@@ -1051,6 +1068,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
             if mmo.data_has_changed:
                 mmo.validate_entity_files()
+                mmo.validate_budget()
             values = []
             for l in mmo.loading_files:
                 if l in mmo.misc_data.loading_files:
@@ -1322,44 +1340,52 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             header += '\n# {0:25} {1:0>4x}'.format('Idle Animation', value)
         for attr in ('instance_offset', 'footer_offset',
                      'ending_offset', 'loading_pointer'):
+            if not hasattr(self, attr):
+                continue
             a, b = self.METADATA_STRUCTURE[attr]
             length = (b-a)*2
             value = ('{0:0>%sx}' % length).format(getattr(self, attr))
             header += f'\n# {attr:25} {value}'
 
         for attr in ('file_index', 'unknown_pointer1', 'unknown_pointer2'):
+            if not hasattr(self, attr):
+                continue
             a, b = self.METADATA_STRUCTURE[attr]
             length = (b-a)*2
             value = ('{0:0>%sx}' % length).format(getattr(self, attr))
             header += f'\n# !meta {attr:19} {value}'
 
         for attr in sorted(MapCategoryData.STRUCTURE):
+            if self.warp_index is None:
+                break
             value = self.misc_data.get_pretty_attribute(attr)
             header += f'\n# !misc {attr:19} {value}'
 
-        if self.loading_files:
+        if hasattr(self, 'loading_files') and self.loading_files:
             loading_files = ' '.join([f'{v:0>3x}' for v in self.loading_files])
             header += f'\n!load {loading_files}'
 
-        definitions = self.definitions
-        h = '# DEFINITIONS\n'
-        h += '\n'.join(map(str, definitions))
-        h += '\n\n# INSTANCES\n'
-        for group, instances in sorted(self.spawn_groups.items()):
-            s = '\n'.join(map(str, instances))
-            if instances and group != (-1, -1, -1):
-                label = ','.join([f'{g:0>2x}' for g in group])
-                s = f'+GROUP {label}\n{s}'
-                s = s.replace('\n', '\n  ')
-            h += s + '\n'
-        h += '\n\n# FOOTER\n'
-        h += f'# Spawn group dimensions: ' \
-            f'{self.groups_x:0>2x},{self.groups_z:0>2x},{self.groups_y:0>2x}\n'
-        h += pretty_hexify(self.footer).replace('\n', ' ') + '\n'
-        while '\n\n\n' in h:
-            h = h.replace('\n\n\n', '\n\n')
+        s = header + '\n\n'
+        if hasattr(self, 'definitions'):
+            definitions = self.definitions
+            h = '# DEFINITIONS\n'
+            h += '\n'.join(map(str, definitions))
+            h += '\n\n# INSTANCES\n'
+            for group, instances in sorted(self.spawn_groups.items()):
+                s2 = '\n'.join(map(str, instances))
+                if instances and group != (-1, -1, -1):
+                    label = ','.join([f'{g:0>2x}' for g in group])
+                    s2 = f'+GROUP {label}\n{s2}'
+                    s2 = s2.replace('\n', '\n  ')
+                h += s2 + '\n'
+            h += '\n\n# FOOTER\n'
+            h += f'# Spawn group dimensions: ' \
+                f'{self.groups_x:0>2x},{self.groups_z:0>2x},{self.groups_y:0>2x}\n'
+            h += pretty_hexify(self.footer).replace('\n', ' ') + '\n'
+            while '\n\n\n' in h:
+                h = h.replace('\n\n\n', '\n\n')
+            s += h
 
-        s = header + '\n\n' + h
         s = s.replace('\n', '\n  ')
         while ' \n' in s:
             s = s.replace(' \n', '\n')
@@ -1383,11 +1409,31 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     @property
     def total_size(self):
+        if not hasattr(self, 'loading_files'):
+            return None
         loading_files = list(self.loading_files)
         loading_files += [l for l in self.misc_data.loading_files if l > 0]
         assert 0 not in loading_files
-        return sum([MetaSizeObject.get(index-1).metasize
+        return sum([MetaSizeObject.get(index-1).effective_metasize
                     for index in loading_files])
+
+    @property
+    def enemy_size(self):
+        assert self.total_size
+        enemy_files = set(self.loading_files) & self.ENEMY_FILES
+        return sum([MetaSizeObject.get(index-1).effective_metasize
+                    for index in enemy_files])
+
+    @property
+    def pickup_size(self):
+        assert self.total_size
+        pickup_files = set(self.loading_files) & self.PICKUP_FILES
+        return sum([MetaSizeObject.get(index-1).effective_metasize
+                    for index in pickup_files])
+
+    @property
+    def other_size(self):
+        return self.total_size - (self.enemy_size + self.pickup_size)
 
     @property
     def data(self):
@@ -1448,10 +1494,13 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     @cached_property
     def debug_index(self):
-        category_index = max(i for i in self.DEBUG_WARP_CATEGORIES
-                             if i <= self.warp_index)
-        category_name = self.DEBUG_WARP_CATEGORIES[category_index]
-        return f'{category_name} {self.warp_index-category_index}'
+        if self.warp_index is not None:
+            category_index = max(i for i in self.DEBUG_WARP_CATEGORIES
+                                 if i <= self.warp_index)
+            category_name = self.DEBUG_WARP_CATEGORIES[category_index]
+            return f'{category_name} {self.warp_index-category_index}'
+        else:
+            return f'STAGE.NO {self.index}'
 
     @cached_property
     def exits(self):
@@ -1678,7 +1727,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             if b-a >= length:
                 break
         else:
-            raise Exception('No free space.')
+            raise Exception(f'No free space: {self.index:x}')
         start, finish = a, b
         MapMetaObject.free_space.remove((start, finish))
         new_start = start+length
@@ -1691,7 +1740,29 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             assert start >= addresses.free_space_start
         return start
 
+    def force_allocate(self, start, length):
+        if length == 0:
+            return
+        free_space = [(a, b) for (a, b) in sorted(MapMetaObject.free_space)
+                      if a <= start <= b]
+        assert len(free_space) == 1
+        a, b = free_space[0]
+        assert b - start >= length
+        MapMetaObject.free_space.remove((a, b))
+        if start > a:
+            MapMetaObject.free_space.append((a, start))
+        if start + length < b:
+            MapMetaObject.free_space.append((start+length, b))
+        return start
+
     def compress_and_write(self):
+        if self.index in self.FORCE_OLD_POINTER:
+            assert self.get_compressed() == self._cached_compressed
+            self.force_allocate(self.reference_pointer & 0x7fffffff,
+                                len(self._cached_compressed))
+            self.relocated = True
+            return
+
         if self.data_has_changed and self.is_room:
             old_length = self.metasize.metasize
             assert old_length == len(self._cached_decompressed)
@@ -1726,6 +1797,25 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         new_pointer = (self.reference_pointer & 0x80000000) | address
         self.reference_pointer = new_pointer
         self.relocated = True
+
+    def validate_budget(self):
+        return
+        if self.total_size <= self.total_budget:
+            return
+        used_files = {self.ENTITY_FILES[i.definition.actor_id]
+                      for i in self.instances}
+        maybe_cut = set(self.loading_files) & \
+                (self.ENEMY_FILES | self.PICKUP_FILES)
+        for index in sorted(maybe_cut - used_files):
+            print(f'REMOVING {index:0>3x} from {self.warp_index:0>3x}.')
+            for d in self.definitions:
+                if self.ENTITY_FILES[d.actor_id] == index:
+                    print(f'REMOVING {d.signature} from {self.warp_index:0>3x}.')
+                    d.remove()
+            self.loading_files.remove(index)
+        if self.total_size <= self.total_budget:
+            return
+        import pdb; pdb.set_trace()
 
     def validate_entities(self):
         assert self.is_room
@@ -2104,7 +2194,7 @@ class MapCategoryData(ConvertPointerMixin):
 
 
 def randomize_doors(config_filename=None):
-    from randomtools.doorrouter import Graph as DoorRouter
+    from randomtools.doorrouter import DoorRouter, DoorRouterException
     if config_filename is None:
         config_filename = 'mn64_settings.yaml'
     with open(config_filename) as f:
@@ -2114,8 +2204,42 @@ def randomize_doors(config_filename=None):
     FINAL_ROOM_LABEL = '0c1-001'
     BIZEN_LOCK_LABEL = '143-009'
     MUSICAL_2_KEY_TRIGGER = '0bd-00f'
+    FESTIVAL_WATERFALL_BLOCKER = '06f-00a'
 
     MapMetaObject.set_pemopemo_destination(0xc1, 0xfe8a, 0xff60, 0x0, 0x1)
+
+    if get_global_label() == 'MN64_JP':
+        patch_filename = 'patch_initialize_variables.txt'
+    elif get_global_label() == 'MN64_EN':
+        patch_filename = 'patch_initialize_variables_en.txt'
+    else:
+        raise Exception('Unknown ROM version.')
+
+    parameters = {}
+
+    if config['start-snow']:
+        parameters['start-snow'] = '02 5c'
+    else:
+        parameters['start-snow'] = '00 94'
+
+    if config['start-flute']:
+        parameters['start-yae'] = 'a0'
+        parameters['start-flute'] = 'c0'
+    else:
+        parameters['start-yae'] = '94'
+        parameters['start-flute'] = '94'
+    write_patch(get_outfile(), patch_filename, parameters)
+
+    logic_filename_mapping = {
+            frozenset({'start-snow', 'start-flute'}): \
+                    'router_logic.snow.flute.txt',
+            frozenset({'start-snow',}): 'router_logic.snow.txt',
+            frozenset({'start-flute',}): 'router_logic.flute.txt',
+            frozenset(): 'router_logic.txt',
+    }
+    logic_key = frozenset({attr for attr in ('start-snow', 'start-flute')
+                           if config[attr]})
+    config['logic_filename'] = logic_filename_mapping[logic_key]
 
     preset_connections = defaultdict(set)
 
@@ -2133,6 +2257,7 @@ def randomize_doors(config_filename=None):
                 assert y not in preset_connections
                 preset_connections[x].add((y, frozenset()))
                 preset_connections[y].add((x, frozenset()))
+    preset_connections[FINAL_ROOM_LABEL].add((PEMOPEMO_LABEL, frozenset()))
 
     if config['cluster_bgm']:
         def bgm_validator(node1, node2):
@@ -2146,8 +2271,7 @@ def randomize_doors(config_filename=None):
         def bgm_validator(node1, node2):
             return True
 
-    dr = DoorRouter('mn64_settings.yaml',
-                    preset_connections=preset_connections,
+    dr = DoorRouter(config=config, preset_connections=preset_connections,
                     strict_validator=None, lenient_validator=bgm_validator)
 
     dr.build_graph()
@@ -2158,7 +2282,7 @@ def randomize_doors(config_filename=None):
 
     # Set exit destinations
     for e in sorted(dr.all_edges):
-        if not e.generated:
+        if not (e.generated or e.source.label == FINAL_ROOM_LABEL):
             continue
         source = MapMetaObject.get_entity_by_signature(e.source.label)
         dest = MapMetaObject.get_entity_by_signature(e.destination.label)
@@ -2198,10 +2322,45 @@ def randomize_doors(config_filename=None):
             if e.is_gold_cat:
                 gold_cats.add(e.get_property_value('flag'))
 
-    key_assignments = {}
-    if dr.config['randomize_keys']:
-        key_assignments = generate_locks(dr)
+    num_key_trials = int(dr.config['randomize_keys'])
+    if num_key_trials:
+        trials = {}
+        trial_types = {}
+        dr.commit()
+        counter = 0
+        while True:
+            print(f'Creating a potential key chain. '
+                  f'({counter+1}/{num_key_trials})')
+            random.seed(dr.seed+counter)
+            try:
+                trial_key = f'lock{counter}'
+                trials[trial_key], trial_types[trial_key] = generate_locks(dr)
+                dr.commit(trial_key)
+            except DoorRouterException:
+                print(f'Error: Generation failed.')
+            dr.rollback()
+            counter += 1
+            if trials and counter >= num_key_trials:
+                break
 
+        trial_keys = sorted(trials, key=lambda tk: (len(trials[tk]), tk))
+        trial_key = trial_keys[-1]
+        dr.rollback(trial_key)
+        dr.commit()
+        key_assignments = trials[trial_key]
+        key_type_pairs = trial_types[trial_key]
+
+        for lock, key in key_assignments.items():
+            key_type = key_type_pairs[key]
+            lock = MapMetaObject.get_entity_by_signature(lock.label)
+            assert lock.is_exit
+            assert lock.door
+            key = MapMetaObject.get_entity_by_signature(key.label)
+            assert key.is_pickup
+            key.become_key(key_type=key_type)
+            lock.door.become_locked_door(key=key)
+
+    random.seed(dr.seed)
     solutions = dr.generate_solutions()
     s = ''
     previous_line = None
@@ -2212,10 +2371,6 @@ def randomize_doors(config_filename=None):
             extra = '{0} Key'.format(
                     MapMetaObject.get_entity_by_signature(
                         node.label).get_pretty_value('key_type'))
-        elif node in key_assignments.keys():
-            extra = '{0} Lock'.format(
-                    MapMetaObject.get_entity_by_signature(
-                        node.label).get_pretty_value('key_type'))
         mmo = label_to_mmo(node.label)
         if extra is None:
             s += f'\n{warp_index} {mmo.room_name}\n'
@@ -2223,12 +2378,23 @@ def randomize_doors(config_filename=None):
             s += f'\n{warp_index} {mmo.room_name} **{extra}**\n'
         nodes = [p.destination for p in path]
         previous_line = None
+        pathlines = []
         for n in nodes:
             mmo = label_to_mmo(n.label)
-            line = f'  {mmo.debug_index:10} {mmo.room_name}\n'
-            if line != previous_line:
-                s += line
-                previous_line = line
+            line = f'  {mmo.debug_index:10} {mmo.room_name}'
+            if n in key_assignments.keys() and n is not node:
+                line += ' **{0} Lock**'.format(
+                        MapMetaObject.get_entity_by_signature(
+                            n.label).door.get_pretty_value('key_type'))
+            if (not pathlines) or line != pathlines[-1]:
+                pathlines.append(line)
+            if len(pathlines) >= 2:
+                a, b = pathlines[-2], pathlines[-1]
+                if a.startswith(b):
+                    pathlines = pathlines[:-2] + [a]
+                elif b.startswith(a):
+                    pathlines = pathlines[:-2] + [b]
+        s += '\n'.join(pathlines) + '\n'
     s = s.strip()
     solution_filename = f'{get_outfile()}.spoiler.txt'
     with open(solution_filename, 'w+') as f:
@@ -2287,20 +2453,32 @@ def randomize_doors(config_filename=None):
         for e in pickups:
             e.become_random_pickup()
 
-    final = MapMetaObject.get_entity_by_signature(FINAL_ROOM_LABEL)
-    for x in final.instances:
-        x.spawn_door_blocker()
-    final.door.remove()
-    final.remove()
+    festival_blocker = MapMetaObject.get_entity_by_signature(
+            FESTIVAL_WATERFALL_BLOCKER)
+    festival_blocker.remove()
 
 def generate_locks(dr):
-    pickups = {n for n in dr.rooted
-               if MapMetaObject.get_entity_by_signature(n.label).is_pickup}
-    interesting_nodes = pickups
-    lockable_doors = {}
-    lockable_edges_by_node = {}
-    print('Locking doors...')
+    LOCK_KEY_LOAD_FILE = 0x2b
+    MEMORY_LIMIT = MapMetaObject.MINIMUM_SAFE_BUDGET \
+            - MetaSizeObject.get(LOCK_KEY_LOAD_FILE).effective_metasize
+
+    preliminary_lockable = set()
+    preliminary_keyable = {
+            n for n in dr.rooted if '-x' not in n.label and
+            MapMetaObject.get_entity_by_signature(n.label).is_pickup}
+    valid_key_lock_maps = {mmo.warp_index for mmo in MapMetaObject.every
+                           if mmo.is_room and
+                           (mmo.total_size < MEMORY_LIMIT
+                            or LOCK_KEY_LOAD_FILE in mmo.loading_files)}
+    valid_key_lock_nodes = {n for n in dr.nodes
+                            if int(n.label.split('-')[0], 0x10)
+                            in valid_key_lock_maps}
+
     for i, edge in enumerate(dr.all_edges):
+        if '-x' in edge.source.label:
+            continue
+        if '-x' in edge.destination.label:
+            continue
         node = edge.source
         x = MapMetaObject.get_entity_by_signature(node.label)
         if not x.is_exit:
@@ -2316,205 +2494,106 @@ def generate_locks(dr):
             continue
         if x.parent is x2.parent and not edge.generated:
             continue
-        bridge_orphans = edge.check_is_real_bridge()
-        if not bridge_orphans:
+        if not (edge.source.rooted and edge.destination.rooted):
             continue
-        if edge.destination not in bridge_orphans:
+        if not edge.get_guaranteed_orphanable():
             continue
-        rfr, rrf = edge.get_bridge_double_orphanable()
-        if not rfr:
-            continue
-        if not ((dr.nodes & dr.rooted) - rfr) & pickups:
-            continue
-        #if rrf - rfr:
-        #    continue
-        lockable_doors[node] = (rfr, rrf)
-        assert node not in lockable_edges_by_node
-        lockable_edges_by_node[node] = edge
+        preliminary_lockable.add(edge)
 
-    lockable_pickups = {}
-    lockable_locks = {}
-    lock_potential_keys = {}
-    for node in lockable_doors:
-        rfr, rrf = lockable_doors[node]
-        node_pickups = rfr & pickups
-        node_locks = rfr & set(lockable_doors.keys())
-        node_keys = rfr - pickups
-        lockable_pickups[node] = node_pickups
-        lockable_locks[node] = node_locks
-        lock_potential_keys[node] = node_keys
-    reverse_lockable_locks = {}
-    for node in lockable_locks:
-        if node not in reverse_lockable_locks:
-            reverse_lockable_locks[node] = set()
-    for node in lockable_locks:
-        for n in lockable_locks[node]:
-            reverse_lockable_locks[n].add(node)
-    key_types = ['Silver', 'Gold', 'Diamond']
-    key_chains = []
-    done_nodes = set()
-    while True:
-        starters = sorted(set(lockable_doors) - done_nodes)
-        if not starters:
-            break
-        starter = random.choice(starters)
-        key_chain = [None, starter, None]
-        done_nodes |= set(key_chain)
+    preliminary_lockable = {e for e in preliminary_lockable
+                            if e.source in valid_key_lock_nodes}
+    preliminary_keyable &= valid_key_lock_nodes
+
+    used_key_locations = set()
+    used_lock_locations = set()
+    lock_key_pairs = {}
+    key_type_pairs = {}
+    for key_type in ['Silver', 'Gold', 'Diamond']:
+        print(f'Generating {key_type.lower()} keys...')
+        dr.commit(key_type)
+        hierarchy = {}
+        reverse_hierarchy = defaultdict(set)
+        lockable = set(preliminary_lockable) - used_lock_locations
+        for e in preliminary_lockable:
+            orphans = e.get_guaranteed_orphanable()
+            orphan_edges = {e2 for e2 in preliminary_lockable
+                            if e2.source in orphans}
+            hierarchy[e] = orphan_edges
+            for e2 in orphan_edges:
+                assert e2.rank > e.rank
+                reverse_hierarchy[e2].add(e)
+
+        valid_edges = set(lockable)
+        bad_starters = set()
+        key_chain = []
+        keyable_dict = {}
         while True:
-            pairs = list(enumerate(zip(key_chain, key_chain[1:])))
-            random.shuffle(pairs)
-            for i, (a, b) in pairs:
-                candidates = set(lockable_doors)
-                if a is not None:
-                    candidates &= lockable_locks[a]
-                if b is not None:
-                    candidates &= reverse_lockable_locks[b]
-                candidates -= done_nodes
-                if candidates:
-                    chosen = random.choice(sorted(candidates))
-                    key_chain.insert(i+1, chosen)
-                    done_nodes |= set(key_chain)
-                    break
-            else:
+            starters = {e for e in lockable if e not in key_chain and
+                        len(reverse_hierarchy[e] & valid_edges) == 0}
+            starters = starters - bad_starters
+            if key_chain:
+                starters &= hierarchy[key_chain[-1]]
+            if not starters:
                 break
-        for (a, b) in zip(key_chain, key_chain[1:]):
-            if a and b:
-                assert b in lockable_locks[a]
-                assert a in reverse_lockable_locks[b]
-                assert a not in lockable_locks[b]
-                assert b not in reverse_lockable_locks[a]
-        assert key_chain[0] == key_chain[-1] == None
-        key_chains.append(key_chain)
-
-    key_locations = {}
-    new_chains = []
-    for key_chain in key_chains:
-        for (a, b) in zip(key_chain, key_chain[1:]):
-            if b is None:
+            orphan_pool = sorted(o for s in starters
+                                 for o in s.get_guaranteed_orphanable())
+            orphan = random.choice(orphan_pool)
+            starters = {s for s in starters if
+                        orphan in s.get_guaranteed_orphanable()}
+            assert starters
+            starters = sorted(starters, key=lambda e: str(e))
+            chosen = random.choice(starters)
+            chosen_keyable = preliminary_keyable - \
+                    (chosen.get_guaranteed_orphanable() | used_key_locations)
+            if not chosen_keyable:
+                bad_starters.add(chosen)
                 continue
-            if a is None:
-                candidates = pickups - lockable_pickups[b]
-            if a and b:
-                candidates = lockable_pickups[a] - lockable_pickups[b]
-                if key_locations[a] and not candidates and \
-                        random.choice([True, False]):
-                    candidates = key_locations[a]
-                    key_locations[a] = set()
-            key_locations[b] = candidates
-        new_chains.append([k for k in key_chain if k and key_locations[k]])
-
-    key_chains = sorted(new_chains,
-                        key=lambda kc: (len(kc), random.random(), kc),
-                        reverse=True)
-
-    new_chains = []
-    for key_type in key_types:
-        candidates = None
-        if key_type != key_types[-1]:
-            candidates = [kc for kc in key_chains if len(kc) > 1]
-        if not candidates:
-            candidates = key_chains
-        candidates = [kc for kc in candidates if kc not in new_chains]
-        max_index = len(candidates)-1
-        index = random.randint(0, random.randint(0, max_index))
-        new_chains.append(candidates[index])
-    key_chains = sorted(new_chains,
-                        key=lambda kc: (len(kc), random.random(), kc),
-                        reverse=True)
-
-    key_assignments = {}
-
-    def verify_single(n1):
-        return key_assignments[n1] not in lockable_pickups[n1]
-
-    def verify_double(n1, n2):
-        return not (key_assignments[n1] in lockable_pickups[n2] and
-                    key_assignments[n2] in lockable_pickups[n1])
-
-    def verify_triple(n1, n2, n3):
-        if (key_assignments[n1] in lockable_pickups[n2] and
-                key_assignments[n2] in lockable_pickups[n3] and
-                key_assignments[n3] in lockable_pickups[n1]):
-            return False
-        if (key_assignments[n1] in lockable_pickups[n3] and
-                key_assignments[n2] in lockable_pickups[n1] and
-                key_assignments[n3] in lockable_pickups[n2]):
-            return False
-        return True
-
-    def clear_assignments(l):
-        keys = {k for (k, v) in key_assignments.items()
-                if v not in key_locations[l]}
-        for k in sorted(key_assignments):
-            if k not in keys:
-                del(key_assignments[k])
-
-    all_locks = [k for kc in key_chains for k in kc]
-    problematic_locks = defaultdict(int)
-    while True:
-        random.shuffle(all_locks)
-        for l in all_locks:
-            if l in key_assignments:
+            rfc = chosen.source.get_naive_avoid_reachable(
+                    avoid_edges={chosen}, seek_nodes={dr.root})
+            if dr.root not in rfc:
+                bad_starters.add(chosen)
                 continue
-            candidates = sorted(key_locations[l]-set(key_assignments.values()))
+            orphans = chosen.get_guaranteed_orphanable()
+            assert orphans and rfc and not rfc & orphans
+            valid_edges &= hierarchy[chosen]
+            key_chain.append(chosen)
+            keyable_dict[chosen] = chosen_keyable
+
+        for (a, b) in zip(key_chain, key_chain[1:]):
+            assert b in hierarchy[a]
+            assert a not in hierarchy[b]
+            assert hierarchy[b] < hierarchy[a]
+
+        while True:
+            keyable_ranges = {}
+            keyable_ranges[key_chain[0]] = keyable_dict[key_chain[0]]
+            candidates = set()
+            for (a, b) in zip(key_chain, key_chain[1:]):
+                keyable_ranges[b] = keyable_dict[b] - keyable_dict[a]
+                if len(keyable_ranges[b]) == 0:
+                    candidates |= {a, b}
             if not candidates:
-                clear_assignments(l)
-                candidates = sorted(key_locations[l])
-                problematic_locks[l] += 1
-            chosen = random.choice(candidates)
-            assert chosen not in key_assignments.values()
-            key_assignments[l] = chosen
-            assert verify_single(l)
-        for (kc1, kc2) in [(key_chains[0], key_chains[1]),
-                           (key_chains[0], key_chains[2]),
-                           (key_chains[1], key_chains[2])]:
-            for (a, b) in product(kc1, kc2):
-                if a in key_assignments and b in key_assignments:
-                    if not verify_double(a, b):
-                        problematic_locks[a] += 1
-                        problematic_locks[b] += 1
-                        clear_assignments(a)
-                        clear_assignments(b)
-        for (a, b, c) in product(*key_chains):
-            if {a, b, c} <= set(key_assignments.keys()):
-                if not verify_triple(a, b, c):
-                    problematic_locks[a] += 1
-                    problematic_locks[b] += 1
-                    problematic_locks[c] += 1
-                    clear_assignments(a)
-                    clear_assignments(b)
-                    clear_assignments(c)
-        if set(key_assignments) == set(all_locks):
-            break
-        for l in all_locks:
-            if problematic_locks[l] > 100:
-                all_locks.remove(l)
-                del(key_assignments[l])
-                problematic_locks = defaultdict(int)
                 break
+            key_chain.remove(random.choice(sorted(candidates)))
 
-    for lock, key in key_assignments.items():
-        for key_type, key_chain in zip(key_types, key_chains):
-            if lock in key_chain:
-                break
-        else:
-            raise Exception('Lock not part of key chain.')
-        assert lock.rooted
-        assert key.rooted
-        lock = MapMetaObject.get_entity_by_signature(lock.label)
-        assert lock.is_exit
-        assert lock.door
-        key = MapMetaObject.get_entity_by_signature(key.label)
-        key.become_key(key_type=key_type)
-        lock.door.become_locked_door(key=key)
+        for to_lock in key_chain:
+            to_key = random.choice(sorted(keyable_ranges[to_lock]))
+            to_lock.remove()
+            to_lock.source.add_edge(
+                    to_lock.destination, condition=frozenset({to_key.label}),
+                    procedural=to_lock.generated)
+            used_key_locations.add(to_key)
+            used_lock_locations.add(to_lock)
+            assert to_lock.source not in lock_key_pairs
+            assert to_key not in lock_key_pairs.values()
+            lock_key_pairs[to_lock.source] = to_key
+            key_type_pairs[to_key] = key_type
 
-    for lock, key in key_assignments.items():
-        edge = lockable_edges_by_node[lock]
-        lock.add_edge(edge.destination, condition=frozenset({key.label}),
-                      procedural=edge.generated)
-        edge.remove()
-    dr.verify()
-    return key_assignments
+        dr.clear_rooted_cache()
+        assert not (dr.reachable_from_root - dr.root_reachable_from)
+        assert dr.goal_reached
+        dr.verify()
+    return lock_key_pairs, key_type_pairs
 
 
 if __name__ == '__main__':
@@ -2534,7 +2613,6 @@ if __name__ == '__main__':
 
         run_interface(ALL_OBJECTS, snes=False, n64=True, codes=codes,
                       custom_degree=False, custom_difficulty=False)
-
         for code in sorted(get_activated_codes()):
             print('Code "%s" activated.' % code)
 
@@ -2589,6 +2667,7 @@ if __name__ == '__main__':
 
         checksum(get_open_file(get_outfile()))
         finish_interface()
+        import pdb; pdb.set_trace()
 
     except Exception:
         print('ERROR: %s' % format_exc())

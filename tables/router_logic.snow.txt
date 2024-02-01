@@ -33,7 +33,7 @@
 .def miracle_moon   congo
 .def miracle_flower darumanyo&camera
 .def miracle_star   tsurami
-.def miracle_snow   thaisamba&benkei&super_jump&kappa&16f-002
+.def miracle_snow   1d1-001
 .def pemopemo_god   miracle_moon&miracle_flower&miracle_star&miracle_snow&14c-002
 .def gold_weapons   19f-001&194-001
 

@@ -2,7 +2,7 @@
 .def chain_pipe     pipe_maker
 .def congo          016-001
 .def super_pass     028-001
-.def yae            167-002
+.def yae            1d1-001
 .def ushikawa       173-002
 .def benkei         171-002
 .def achilles_heel  ushikawa&168-002&16b-002&16e-004&171-002&172-002
@@ -33,7 +33,7 @@
 .def miracle_moon   congo
 .def miracle_flower darumanyo&camera
 .def miracle_star   tsurami
-.def miracle_snow   thaisamba&benkei&super_jump&kappa&16f-002
+.def miracle_snow   1d1-001
 .def pemopemo_god   miracle_moon&miracle_flower&miracle_star&miracle_snow&14c-002
 .def gold_weapons   19f-001&194-001
 

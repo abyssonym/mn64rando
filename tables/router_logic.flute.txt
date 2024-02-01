@@ -2,7 +2,7 @@
 .def chain_pipe     pipe_maker
 .def congo          016-001
 .def super_pass     028-001
-.def yae            167-002
+.def yae            1d1-001
 .def ushikawa       173-002
 .def benkei         171-002
 .def achilles_heel  ushikawa&168-002&16b-002&16e-004&171-002&172-002

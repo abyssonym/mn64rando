@@ -1,0 +1,13 @@
+# RAM address 00b50c
+00c10c: 0c 01 06 f8     # JAL 0x80041be0
+        00 00 00 00
+        00 00 00 00
+
+# RAM address 041be0
+0427e0: ac 82 00 90     # Set Unknown flag
+        ac 82 00 94     # Set "Goemon in party" flag
+        ac 82 00 98     # Set "Ebisumaru in party" flag
+        ac 82 00 {{start-yae:a0}}       # "Yae in party" flag
+        ac 82 00 {{start-flute:c0}}     # "Have Flute" flag
+        ac 82 {{start-snow:02 5c}}      # "Have Miracle Snow" flag
+        03 e0 00 08     # Return
