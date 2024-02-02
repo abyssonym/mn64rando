@@ -1,0 +1,12 @@
+# SOURCE DATA COMPRESSED???
+# RAM address 1dc30c
+# File address 00a:010eac
+010eac: 0c 01 4b 94     # JAL       0x80052e50
+        00 00 00 00
+        00 00 00 00
+
+VALIDATION
+
+010eac: 00 0a 58 80     # SLL       T3, T2, 2
+        01 8b 60 21     # ADDU      T4, T4, T3
+        8d 8c c6 dc     # LW        T4, 0xC6DC (T4)

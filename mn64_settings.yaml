@@ -1,5 +1,5 @@
 seed:                 0
-seed:                 8006929380
+seed:                 9994846213
 logic_filename:       router_logic.txt
 nodes_filename:       router_nodes.txt
 retry_limit:           500  # Max loops before reaching goal
@@ -12,5 +12,6 @@ fixed_singletons:     1.00  # Rate to preserve connections to isolated rooms
 cluster_bgm:          True  # Try to connect rooms with the same BGM
 randomize_keys:       2     # Generate keys and locked doors, low # recommended
 randomize_pickups:    True  # Randomize pickups such as dangos and cat dolls
-start-flute:          False # Start with Yae & Flute
-start-snow:           True  # Start with Miracle Snow
+start_camera:         False # Start with Ebisumaru's Karakuri Camera
+start_flute:          False # Start with Yae & Flute
+start_snow:           True  # Start with Miracle Snow

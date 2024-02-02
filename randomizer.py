@@ -123,7 +123,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     '''
     MAIN_CODE_INDEX = 0xb
     MAX_WARP_INDEX = 0x1e4
-    FORCE_OLD_POINTER = list(range(0xb)) + list(range(0x4a6, 0x520))
+    FORCE_OLD_POINTER = (list(range(0x335)) +
+                         list(range(0x4a6, 0x520)))
 
     ROM_SPLIT_THRESHOLD_LOW = 0x336
     ROM_SPLIT_THRESHOLD_HI = 0x46d
@@ -1754,14 +1755,29 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             MapMetaObject.free_space.append((start+length, b))
         return start
 
+    def force_write(self):
+        assert self.is_compressed
+        compressed = recompress(self.data)
+        assert len(compressed) <= len(self._cached_compressed)
+        while len(compressed) < len(self._cached_compressed):
+            compressed += b'\xff'
+        address = self.reference_pointer & 0x7fffffff
+        self.force_allocate(address, len(compressed))
+        f = get_open_file(get_outfile())
+        f.seek(address)
+        f.write(compressed)
+        self.relocated = True
+
     def compress_and_write(self):
         if self.index in self.FORCE_OLD_POINTER:
-            assert not self.data_has_changed
-            assert self.get_compressed() == self._cached_compressed
-            self.force_allocate(self.reference_pointer & 0x7fffffff,
-                                len(self._cached_compressed))
-            self.relocated = True
-            return
+            if not self.data_has_changed:
+                assert self.get_compressed() == self._cached_compressed
+                self.force_allocate(self.reference_pointer & 0x7fffffff,
+                                    len(self._cached_compressed))
+                self.relocated = True
+                return
+            else:
+                return self.force_write()
 
         if self.data_has_changed and self.is_room:
             old_length = self.metasize.metasize
@@ -2192,6 +2208,19 @@ class MapCategoryData(ConvertPointerMixin):
         self.data.close()
 
 
+def decouple_fire_ryo():
+    # This patches code in file 00a, which is compressed
+    # It allows you to charge the Karakuri Camera without obtaining Fire Ryo.
+    data = MapCategoryData.data
+    if get_global_label() == 'MN64_JP':
+        write_patch(data, 'patch_decouple_fire_ryo_00a.txt', noverify=True)
+        write_patch(get_outfile(), 'patch_decouple_fire_ryo.txt')
+    elif get_global_label() == 'MN64_EN':
+        write_patch(data, 'patch_decouple_fire_ryo_00a_en.txt', noverify=True)
+        write_patch(get_outfile(), 'patch_decouple_fire_ryo_en.txt')
+    MapCategoryData.data = data
+
+
 def randomize_doors(config_filename=None):
     from randomtools.doorrouter import DoorRouter, DoorRouterException
     if config_filename is None:
@@ -2214,31 +2243,32 @@ def randomize_doors(config_filename=None):
     else:
         raise Exception('Unknown ROM version.')
 
+    decouple_fire_ryo()
+
     parameters = {}
+    definition_overrides = {}
 
-    if config['start-snow']:
-        parameters['start-snow'] = '02 5c'
+    if config['start_snow']:
+        parameters['start_snow'] = '02 5c'
+        definition_overrides['miracle_snow'] = 'start'
     else:
-        parameters['start-snow'] = '00 94'
+        parameters['start_snow'] = '00 94'
 
-    if config['start-flute']:
-        parameters['start-yae'] = 'a0'
-        parameters['start-flute'] = 'c0'
+    if config['start_flute']:
+        parameters['start_yae'] = 'a0'
+        parameters['start_flute'] = 'c0'
+        definition_overrides['yae'] = 'start'
     else:
-        parameters['start-yae'] = '94'
-        parameters['start-flute'] = '94'
-    write_patch(get_outfile(), patch_filename, parameters)
+        parameters['start_yae'] = '94'
+        parameters['start_flute'] = '94'
 
-    logic_filename_mapping = {
-            frozenset({'start-snow', 'start-flute'}): \
-                    'router_logic.snow.flute.txt',
-            frozenset({'start-snow',}): 'router_logic.snow.txt',
-            frozenset({'start-flute',}): 'router_logic.flute.txt',
-            frozenset(): 'router_logic.txt',
-    }
-    logic_key = frozenset({attr for attr in ('start-snow', 'start-flute')
-                           if config[attr]})
-    config['logic_filename'] = logic_filename_mapping[logic_key]
+    if config['start_camera']:
+        parameters['start_camera'] = 'c8'
+        definition_overrides['camera'] = 'start'
+    else:
+        parameters['start_camera'] = '94'
+
+    write_patch(get_outfile(), patch_filename, parameters=parameters)
 
     preset_connections = defaultdict(set)
 
@@ -2271,7 +2301,8 @@ def randomize_doors(config_filename=None):
             return True
 
     dr = DoorRouter(config=config, preset_connections=preset_connections,
-                    strict_validator=None, lenient_validator=bgm_validator)
+                    strict_validator=None, lenient_validator=bgm_validator,
+                    definition_overrides=definition_overrides)
 
     dr.build_graph()
     random.seed(dr.seed)
@@ -2548,6 +2579,8 @@ def generate_locks(dr):
             assert hierarchy[b] < hierarchy[a]
 
         while True:
+            if not key_chain:
+                break
             keyable_ranges = {}
             keyable_ranges[key_chain[0]] = keyable_dict[key_chain[0]]
             candidates = set()
@@ -2621,6 +2654,7 @@ if __name__ == '__main__':
                     name = f'FILE {mmo.index:0>3X}'
                 print('Updated:', name)
 
+        decouple_fire_ryo()
         clean_and_write(ALL_OBJECTS)
 
         if 'export' in get_activated_codes():

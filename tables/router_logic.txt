@@ -1,3 +1,4 @@
+.def start          1d1-001
 .def pipe_maker     1d2-001
 .def chain_pipe     pipe_maker
 .def congo          016-001
@@ -37,17 +38,8 @@
 .def pemopemo_god   miracle_moon&miracle_flower&miracle_star&miracle_snow&14c-002
 .def gold_weapons   19f-001&194-001
 
-.start      1d1-001
+.start      start
 .goal       pemopemo_god
-
-.guarantee  03b-001 camera
-.guarantee  040-001 camera
-.guarantee  091-001 camera
-.guarantee  091-003 camera
-.guarantee  091-009 camera
-.guarantee  091-00b camera
-.guarantee  031-003 fire_ryo
-.guarantee  142-00c chain_pipe|super_jump|mini_ebisu
 
 #.unreachable 061-005
 #.unreachable 065-003
@@ -55,9 +47,6 @@
 #.unreachable 091-00d
 #.unreachable 15f-005
 #.unreachable 160-003
-
-.orphanless 14e-x00
-.require 14e-x00 14e-002
 
 # 000 Oedo Castle 1F Tile Room
 000-001=000-003                         # 0.109.silver
@@ -165,6 +154,7 @@
 028-001>>166-002
 
 # 02F Ghost Toys Entrance
+.guarantee  02f-003 fire_ryo&02f-001
 02f-001=>02f-003 fire_ryo
 
 # 030 Ghost Toys 1F Elevator Shogi Room
@@ -173,6 +163,7 @@
 030-00e=030-005 mermaid                 # cat
 
 # 031 Ghost Toys 1F Crane Room
+#.guarantee  031-003 fire_ryo
 031-001<031-003
 031-001=031-005
 031-003>031-005
@@ -206,6 +197,7 @@
 036-00b=036-005                         # cat
 
 # 039 Ghost Toys 1F Invisible Ghost Room
+.guarantee  039-003 camera&039-001
 039-001=>039-003 camera
 039-007=039-001                         # mr. arrow
 
@@ -215,6 +207,7 @@
 03a-003=03a-005
 
 # 03B Ghost Toys 1F Invisible Ghost Key Room
+.guarantee  03b-001 camera
 03b-005=03b-001 camera                  # key
 
 # 03C Ghost Toys 1F-2F Elevator / Tiny Darumanyo Room
@@ -242,6 +235,7 @@
 03f-010=03f-007                         # dango
 
 # 040 Ghost Toys 2F Invisible Darumanyo Key Room
+.guarantee  040-001 camera
 040-005=040-001 camera                  # key
 
 # 041 Ghost Toys 2F Jump Rope Room
@@ -542,6 +536,10 @@
 090-005=090-003                         # pack
 
 # 091 Gourmet Sub 1F-3F Entrance / Elevator
+.guarantee  091-001 camera
+.guarantee  091-003 camera
+.guarantee  091-009 camera
+.guarantee  091-00b camera
 091-009=091-009 mermaid
 091-00b=091-00b mini_ebisu
 091-00e=091-00e mermaid
@@ -913,6 +911,7 @@
 141-005=141-006 mini_ebisu
 
 # 142 Iyo - Hot Springs
+.guarantee  142-00c chain_pipe|super_jump|mini_ebisu
 142-003=142-003 mini_ebisu
 142-003<142-004 mini_ebisu
 142-003=142-004 mini_ebisu&chain_pipe
@@ -922,6 +921,7 @@
 142-00c>142-004 chain_pipe|super_jump   # cat
 
 # 143 Bizen
+.guarantee  143-008 special_key&143-x08
 143-002=143-004
 143-002=143-006
 #143-002=>143-008 special_key             # 5.196.special
@@ -957,6 +957,7 @@
 146-004=146-006
 
 # 147 Shuhodo Tunnel to Festival Temple
+.guarantee  147-004 sasuke&147-002
 147-002=>147-004 sasuke
 
 # 148 Izumo
@@ -992,6 +993,8 @@
 14d-x06=>14d-006 mermaid
 
 # 14E Japan Sea - Underwater
+.orphanless 14e-x00
+.require 14e-x00 14e-002
 14e-002=14e-002 mermaid
 14e-003=14e-003 mermaid
 14e-005=14e-005 mermaid
@@ -1029,6 +1032,7 @@
 154-004=154-002 mermaid                 # cat
 
 # 15E Oedo - Bridge to Musashi
+.guarantee  15e-002 super_pass&15e-x02
 #15e-002<=15e-004 super_pass
 15e-x02=15e-004
 #15e-002<=15e-006 super_pass
@@ -1228,6 +1232,7 @@
 16c-00e=16c-00f
 
 # 16E Zazen - Bridge to Bizen
+.guarantee  16e-002 bizen_opened&16e-004
 16e-002<=16e-004 bizen_opened
 16e-004>16e-006
 16e-004=16e-006 super_jump
@@ -1236,6 +1241,7 @@
 16f-002=16f-004
 
 # 171 Zazen - Bridge to Yamato (Benkei)
+.guarantee  171-004 achilles_heel&171-x04
 #171-002=>171-004 achilles_heel
 171-002=171-x04
 171-002=171-006
