@@ -123,7 +123,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     '''
     MAIN_CODE_INDEX = 0xb
     MAX_WARP_INDEX = 0x1e4
-    FORCE_OLD_POINTER = list(range(0xc)) + list(range(0x4a6, 0x520))
+    FORCE_OLD_POINTER = list(range(0xb)) + list(range(0x4a6, 0x520))
 
     ROM_SPLIT_THRESHOLD_LOW = 0x336
     ROM_SPLIT_THRESHOLD_HI = 0x46d
@@ -177,7 +177,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             raise Exception(f'Duplicate structure name: {name}')
         structure_names.add(__name)
 
-    MINIMUM_SAFE_BUDGET = 0x52000
+    MINIMUM_SAFE_BUDGET = 0xb0000
     ENEMY_FILES = {0x20, 0x21, 0x23, 0x24, 0x25, 0x26, 0x27, 0x29}
     PICKUP_FILES = {0x1a, 0x1c, 0x2b}
 
@@ -948,7 +948,6 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             if self.is_null:
                 return
             if self.definition is None:
-                import pdb; pdb.set_trace()
                 raise Exception(f'Instance {self.parent.warp_index:0>3x}-'
                                 f'{self.definition_index:0>3x} is undefined.')
             assert self.data[12:14] == b'\x08\x00'
@@ -1757,6 +1756,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     def compress_and_write(self):
         if self.index in self.FORCE_OLD_POINTER:
+            assert not self.data_has_changed
             assert self.get_compressed() == self._cached_compressed
             self.force_allocate(self.reference_pointer & 0x7fffffff,
                                 len(self._cached_compressed))
@@ -1799,7 +1799,6 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         self.relocated = True
 
     def validate_budget(self):
-        return
         if self.total_size <= self.total_budget:
             return
         used_files = {self.ENTITY_FILES[i.definition.actor_id]
@@ -1813,9 +1812,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                     print(f'REMOVING {d.signature} from {self.warp_index:0>3x}.')
                     d.remove()
             self.loading_files.remove(index)
-        if self.total_size <= self.total_budget:
-            return
-        import pdb; pdb.set_trace()
+        #if self.total_size <= self.total_budget:
+        #    return
+        #import pdb; pdb.set_trace()
 
     def validate_entities(self):
         assert self.is_room
@@ -2458,22 +2457,10 @@ def randomize_doors(config_filename=None):
     festival_blocker.remove()
 
 def generate_locks(dr):
-    LOCK_KEY_LOAD_FILE = 0x2b
-    MEMORY_LIMIT = MapMetaObject.MINIMUM_SAFE_BUDGET \
-            - MetaSizeObject.get(LOCK_KEY_LOAD_FILE).effective_metasize
-
     preliminary_lockable = set()
     preliminary_keyable = {
             n for n in dr.rooted if '-x' not in n.label and
             MapMetaObject.get_entity_by_signature(n.label).is_pickup}
-    valid_key_lock_maps = {mmo.warp_index for mmo in MapMetaObject.every
-                           if mmo.is_room and
-                           (mmo.total_size < MEMORY_LIMIT
-                            or LOCK_KEY_LOAD_FILE in mmo.loading_files)}
-    valid_key_lock_nodes = {n for n in dr.nodes
-                            if int(n.label.split('-')[0], 0x10)
-                            in valid_key_lock_maps}
-
     for i, edge in enumerate(dr.all_edges):
         if '-x' in edge.source.label:
             continue
@@ -2499,10 +2486,6 @@ def generate_locks(dr):
         if not edge.get_guaranteed_orphanable():
             continue
         preliminary_lockable.add(edge)
-
-    preliminary_lockable = {e for e in preliminary_lockable
-                            if e.source in valid_key_lock_nodes}
-    preliminary_keyable &= valid_key_lock_nodes
 
     used_key_locations = set()
     used_lock_locations = set()
@@ -2667,7 +2650,6 @@ if __name__ == '__main__':
 
         checksum(get_open_file(get_outfile()))
         finish_interface()
-        import pdb; pdb.set_trace()
 
     except Exception:
         print('ERROR: %s' % format_exc())

@@ -299,7 +299,7 @@
 05d-001>05d-005
 05d-003=05d-005
 05d-00c=05d-001 ice_kunai|super_jump    # dango
-05d-00c<05d-001                         # dango
+#05d-00c<05d-003                         # dango
 05d-00c=05d-003 ice_kunai|super_jump    # dango
 05d-00c>05d-003                         # dango
 05d-00c=05d-005 ice_kunai|super_jump    # dango
