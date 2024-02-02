@@ -509,6 +509,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                     self.is_elly_fant or self.is_mr_arrow)
 
         @property
+        def is_enemy(self):
+            return MapMetaObject.ENTITY_FILES[self.actor_id] in \
+                    MapMetaObject.ENEMY_FILES
+
+        @property
         def door(self):
             assert self.is_exit
             candidates = [d for d in self.parent.definitions
@@ -757,8 +762,14 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 return None
             definition = self.parent.entities[self.definition_index]
             if isinstance(definition, MapMetaObject.EntityDefinition):
+                if not hasattr(self, '_old_definition'):
+                    self._old_definition = definition
                 return definition
             return None
+
+        @property
+        def old_definition(self):
+            return self._old_definition
 
         @property
         def comment(self):
@@ -783,6 +794,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         @property
         def is_pickup(self):
             return self.definition.is_pickup
+
+        @property
+        def is_enemy(self):
+            return self.definition.is_enemy
 
         @property
         def is_unique(self):
@@ -1518,6 +1533,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         return self.definitions + self.instances
 
     @property
+    def enemies(self):
+        return [i for i in self.instances if i.is_enemy]
+
+    @property
     def groups_x(self):
         return int.from_bytes(self.footer[0x14:0x16], byteorder='big')
 
@@ -1815,8 +1834,6 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         self.relocated = True
 
     def validate_budget(self):
-        if self.total_size <= self.total_budget:
-            return
         used_files = {self.ENTITY_FILES[i.definition.actor_id]
                       for i in self.instances}
         maybe_cut = set(self.loading_files) & \
@@ -1828,9 +1845,6 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                     print(f'REMOVING {d.signature} from {self.warp_index:0>3x}.')
                     d.remove()
             self.loading_files.remove(index)
-        #if self.total_size <= self.total_budget:
-        #    return
-        #import pdb; pdb.set_trace()
 
     def validate_entities(self):
         assert self.is_room
@@ -2221,6 +2235,113 @@ def decouple_fire_ryo():
     MapCategoryData.data = data
 
 
+def randomize_enemies():
+    enemy_maps = [mmo for mmo in MapMetaObject.every
+                  if mmo.is_room and mmo.enemies]
+    enemy_files = []
+    file_counts = []
+    all_enemies = []
+    for mmo in enemy_maps:
+        files = {MapMetaObject.ENTITY_FILES[e.definition.actor_id]
+                 for e in mmo.enemies}
+        file_counts.append(len(files))
+        enemy_files.extend(sorted(files))
+        all_enemies.extend(mmo.enemies)
+        for d in mmo.definitions:
+            if 'enemies' in d.structure:
+                d.set_property('enemies', 0)
+    file_counts = sorted(file_counts)
+    enemy_files = sorted(enemy_files)
+
+    relative_z_data = defaultdict(list)
+    for e in all_enemies:
+        if not e.parent.exits:
+            continue
+        exits = sorted(e.parent.exits, key=lambda x: (e.get_distance(x),
+                                                      x.signature))
+        x = exits[0]
+        ez = e.get_property_value('z')
+        xz = x.get_property_value('z')
+        if ez >= 0x8000:
+            ez = (0x10000-ez) * -1
+        if xz >= 0x8000:
+            xz = (0x10000-xz) * -1
+        relative_z = ez - xz
+        relative_z_data[e.definition.actor_id].append(relative_z)
+
+    mean_relative_z = {}
+    for actor_id in relative_z_data:
+        values = sorted(relative_z_data[actor_id])
+        assert all(-0x8000 <= v <= 0x7fff for v in values)
+        max_index = len(values) - 1
+        if max_index % 2:
+            index = max_index >> 1
+            value = int(round((values[index] + values[index+1]) / 2))
+        else:
+            index = max_index >> 1
+            value = values[index]
+        mean_relative_z[actor_id] = value
+
+    for mmo in enemy_maps:
+        mmo.reseed('enemizer')
+        old_files = {MapMetaObject.ENTITY_FILES[e.definition.actor_id]
+                     for e in mmo.enemies}
+        candidates = [n for n in file_counts if abs(n-len(old_files)) <= 1]
+        new_file_count = random.choice(candidates)
+        new_files = set()
+        while len(new_files) < new_file_count:
+            new_files.add(random.choice(enemy_files))
+        new_files = sorted(new_files)
+        enemy_candidates = [
+                e for e in all_enemies if
+                MapMetaObject.ENTITY_FILES[e.old_definition.old_actor_id]
+                in new_files]
+        enemy_definitions = [d for d in mmo.definitions if d.is_enemy]
+        for enemy_def in enemy_definitions:
+            chosen = random.choice(enemy_candidates)
+            enemy_def.data = chosen.old_definition.old_data
+            enemy_def.validate_data()
+        if len(mmo.definitions) < 0x1e:
+            chosen = random.choice(enemy_candidates)
+            mmo.add_new_definition(chosen.old_definition.old_data)
+        to_reassign = mmo.enemies
+        for m in to_reassign:
+            assert m.old_definition.old_actor_id != 0
+        datas = set()
+        for d in mmo.definitions:
+            if not d.is_enemy:
+                continue
+            if d.data in datas:
+                d.data = b'\x00' * 0x10
+            datas.add(d.data)
+        enemy_definitions = [d for d in mmo.definitions if d.is_enemy]
+        lowest_z = min(m.get_property_value('z') for m in to_reassign)
+        for m in to_reassign:
+            assert m.old_definition.old_actor_id != 0
+            chosen = random.choice(enemy_definitions)
+            old_relative_z = mean_relative_z[m.old_definition.old_actor_id]
+            m.set_main_property(chosen.index)
+            new_relative_z = mean_relative_z[m.definition.actor_id]
+            difference = new_relative_z - old_relative_z
+            offset = random.randint(min(0, difference), max(0, difference))
+            if abs(difference) >= 0x10:
+                z = m.get_property_value('z')
+                if z >= 0x8000:
+                    z = (0x10000-z) * -1
+                z += offset
+                if z < 0:
+                    z = 0x10000 + z
+                z = max(z, lowest_z)
+                m.set_property('z', z)
+        while True:
+            for d in mmo.definitions:
+                if d.is_null:
+                    d.remove()
+                    break
+            else:
+                break
+
+
 def randomize_doors(config_filename=None):
     from randomtools.doorrouter import DoorRouter, DoorRouterException
     if config_filename is None:
@@ -2247,6 +2368,9 @@ def randomize_doors(config_filename=None):
 
     parameters = {}
     definition_overrides = {}
+
+    if config['randomize_enemies']:
+        activate_code('enemizer')
 
     if config['start_snow']:
         parameters['start_snow'] = '02 5c'
@@ -2625,6 +2749,7 @@ if __name__ == '__main__':
             'export': ['export'],
             'import': ['import'],
             'norandom': ['norandom'],
+            'enemizer': ['enemizer'],
         }
 
         run_interface(ALL_OBJECTS, snes=False, n64=True, codes=codes,
@@ -2653,6 +2778,9 @@ if __name__ == '__main__':
                 else:
                     name = f'FILE {mmo.index:0>3X}'
                 print('Updated:', name)
+
+        if 'enemizer' in get_activated_codes():
+            randomize_enemies()
 
         decouple_fire_ryo()
         clean_and_write(ALL_OBJECTS)

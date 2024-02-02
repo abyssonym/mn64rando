@@ -12,6 +12,7 @@ fixed_singletons:     1.00  # Rate to preserve connections to isolated rooms
 cluster_bgm:          True  # Try to connect rooms with the same BGM
 randomize_keys:       2     # Generate keys and locked doors, low # recommended
 randomize_pickups:    True  # Randomize pickups such as dangos and cat dolls
+randomize_enemies:    False # Randomize enemies (may cause softlocks & crashes)
 start_camera:         False # Start with Ebisumaru's Karakuri Camera
 start_flute:          False # Start with Yae & Flute
 start_snow:           True  # Start with Miracle Snow
