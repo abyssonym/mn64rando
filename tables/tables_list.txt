@@ -13,5 +13,3 @@ $expected_data_end          f9e8a4
 $free_space_start           fa0000
 $free_space_end             ffffff
 #.patch                      patch_no_checksum.txt
-.option                     patch_debug_menu.txt
-#.option                     patch_initialize_variables.txt

@@ -1834,6 +1834,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         self.relocated = True
 
     def validate_budget(self):
+        # Some actors depend on files of other actors (i.e. pink robot spawner)
+        # So you can't just remove files blindly
+        return
         used_files = {self.ENTITY_FILES[i.definition.actor_id]
                       for i in self.instances}
         maybe_cut = set(self.loading_files) & \
@@ -2372,11 +2375,20 @@ def randomize_doors(config_filename=None):
     if config['randomize_enemies']:
         activate_code('enemizer')
 
-    if config['start_snow']:
-        parameters['start_snow'] = '02 5c'
-        definition_overrides['miracle_snow'] = 'start'
+    if config['enable_debug']:
+        activate_code('debugmenu')
+
+    if config['start_camera']:
+        parameters['start_camera'] = 'c8'
+        definition_overrides['camera'] = 'start'
     else:
-        parameters['start_snow'] = '00 94'
+        parameters['start_camera'] = '94'
+
+    if config['start_minimaru']:
+        parameters['start_minimaru'] = 'e8'
+        definition_overrides['mini_ebisu'] = 'start'
+    else:
+        parameters['start_minimaru'] = '94'
 
     if config['start_flute']:
         parameters['start_yae'] = 'a0'
@@ -2386,11 +2398,11 @@ def randomize_doors(config_filename=None):
         parameters['start_yae'] = '94'
         parameters['start_flute'] = '94'
 
-    if config['start_camera']:
-        parameters['start_camera'] = 'c8'
-        definition_overrides['camera'] = 'start'
+    if config['start_snow']:
+        parameters['start_snow'] = '02 5c'
+        definition_overrides['miracle_snow'] = 'start'
     else:
-        parameters['start_camera'] = '94'
+        parameters['start_snow'] = '00 94'
 
     write_patch(get_outfile(), patch_filename, parameters=parameters)
 
@@ -2750,6 +2762,7 @@ if __name__ == '__main__':
             'import': ['import'],
             'norandom': ['norandom'],
             'enemizer': ['enemizer'],
+            'debugmenu': ['debugmenu'],
         }
 
         run_interface(ALL_OBJECTS, snes=False, n64=True, codes=codes,
@@ -2781,6 +2794,15 @@ if __name__ == '__main__':
 
         if 'enemizer' in get_activated_codes():
             randomize_enemies()
+
+        if 'debugmenu' in get_activated_codes():
+            if get_global_label() == 'MN64_JP':
+                patch_filename = 'patch_debug_menu.txt'
+            elif get_global_label() == 'MN64_EN':
+                patch_filename = 'patch_debug_menu_en.txt'
+            else:
+                raise Exception('Unknown ROM version.')
+            write_patch(get_outfile(), patch_filename)
 
         decouple_fire_ryo()
         clean_and_write(ALL_OBJECTS)
