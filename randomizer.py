@@ -2623,6 +2623,10 @@ def randomize_doors(config_filename=None):
             FESTIVAL_WATERFALL_BLOCKER)
     festival_blocker.remove()
 
+    random.seed(dr.seed)
+    add_roommates()
+
+
 def generate_locks(dr):
     BANNED_DOORS = {'15e-002'}
     preliminary_lockable = set()
@@ -2749,6 +2753,28 @@ def generate_locks(dr):
         assert dr.goal_reached
         dr.verify()
     return lock_key_pairs, key_type_pairs
+
+
+def add_roommates():
+    NPC_FILES = [0x1a]
+    candidates = {c for c in MapMetaObject.ENTITY_FILES
+                  if MapMetaObject.ENTITY_FILES[c] in NPC_FILES
+                  and c in MapMetaObject.ENTITY_STRUCTURES}
+    mmo = MapMetaObject.get_by_warp_index(0x1d1)
+
+    x_values = [0xffe8, 0xfff4, 0, 0xc]
+    chosen = [random.choice(sorted(candidates)) for x in x_values]
+    while chosen:
+        actor_id = chosen.pop()
+        definition = mmo.add_new_definition(b'\x00' * 0x10)
+        definition.set_main_property(actor_id)
+        instance = mmo.EntityInstance(b'\x00' * 0x14, mmo)
+        instance.set_main_property(definition.index)
+        instance.clean()
+        instance.set_property('x', x_values.pop())
+        instance.set_property('y', 0xfff0)
+        instance.set_property('z', 0xfff0)
+        mmo.spawn_groups[(-1,-1,-1)].append(instance)
 
 
 if __name__ == '__main__':
