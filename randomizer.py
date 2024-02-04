@@ -2624,11 +2624,14 @@ def randomize_doors(config_filename=None):
     festival_blocker.remove()
 
 def generate_locks(dr):
+    BANNED_DOORS = {'15e-002'}
     preliminary_lockable = set()
     preliminary_keyable = {
             n for n in dr.rooted if '-x' not in n.label and
             MapMetaObject.get_entity_by_signature(n.label).is_pickup}
     for i, edge in enumerate(dr.all_edges):
+        if edge.source.label in BANNED_DOORS:
+            continue
         if '-x' in edge.source.label:
             continue
         if '-x' in edge.destination.label:
