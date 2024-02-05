@@ -2843,6 +2843,32 @@ def add_roommates():
         mmo.spawn_groups[(-1,-1,-1)].append(instance)
 
 
+def export_data():
+    if DEBUG_MODE:
+        try:
+            mkdir('export')
+        except FileExistsError:
+            pass
+        for mmo in MapMetaObject.every:
+            filename = f'{mmo.index:0>3x}.bin'
+            mmo.write_decompressed_to_file(path.join('export',
+                                                     filename))
+    if 'MN64_EXPORT' in environ:
+        export_filename = environ['MN64_EXPORT']
+    else:
+        export_filename = f'{get_outfile()}.export.txt'
+    print(f'EXPORTING to {export_filename}')
+    with open(export_filename, 'w+') as f:
+        s =  (f'# Seed:   {get_seed()}\n')
+        s += (f'# Flags:  {get_flags()}\n')
+        done_codes = ','.join(get_activated_codes())
+        s += (f'# Codes:  {done_codes}\n')
+        s += (f'# Import: {import_filename}\n')
+        f.write(s + '\n')
+        for mmo in MapMetaObject.sorted_rooms:
+            f.write(str(mmo) + '\n\n')
+
+
 if __name__ == '__main__':
     try:
         print('You are using the Ancient Cave Starring Goemon '
@@ -2901,32 +2927,22 @@ if __name__ == '__main__':
             write_patch(get_outfile(), patch_filename)
 
         decouple_fire_ryo()
-        clean_and_write(ALL_OBJECTS)
 
-        if 'export' in get_activated_codes():
-            if DEBUG_MODE:
-                try:
-                    mkdir('export')
-                except FileExistsError:
-                    pass
-                for mmo in MapMetaObject.every:
-                    filename = f'{mmo.index:0>3x}.bin'
-                    mmo.write_decompressed_to_file(path.join('export',
-                                                             filename))
-            if 'MN64_EXPORT' in environ:
-                export_filename = environ['MN64_EXPORT']
-            else:
-                export_filename = f'{get_outfile()}.export.txt'
-            print(f'EXPORTING to {export_filename}')
-            with open(export_filename, 'w+') as f:
-                s =  (f'# Seed:   {get_seed()}\n')
-                s += (f'# Flags:  {get_flags()}\n')
-                done_codes = ','.join(get_activated_codes())
-                s += (f'# Codes:  {done_codes}\n')
-                s += (f'# Import: {import_filename}\n')
-                f.write(s + '\n')
-                for mmo in MapMetaObject.sorted_rooms:
-                    f.write(str(mmo) + '\n\n')
+        modified = ('import' in get_activated_codes() or
+                    'enemizer' in get_activated_codes() or
+                    'norandom' not in get_activated_codes())
+
+        if modified:
+            clean_and_write(ALL_OBJECTS)
+            if 'export' in get_activated_codes():
+                export_data()
+        else:
+            if 'export' in get_activated_codes():
+                print('No modifications made; generating clean export.')
+                export_data()
+                finish_interface()
+                exit(0)
+            clean_and_write(ALL_OBJECTS)
 
         checksum(get_open_file(get_outfile()))
         finish_interface()
