@@ -6,7 +6,7 @@
 .def yae            167-002
 .def ushikawa       173-002
 .def benkei         171-002
-.def achilles_heel  ushikawa&168-002&16b-002&16e-004&171-002&172-002
+.def achilles_heel  benkei&ushikawa&168-002&16b-002&16e-004&172-002
 .def turtle_rock    137-002
 .def yamato_opened  turtle_rock
 .def turtle_torii   turtle_rock
@@ -22,7 +22,6 @@
 .def ice_kunai      sasuke&06e-001
 .def tsurami        071-001
 .def kyushu         tsurami&153-002
-#.def sudden_impact  1cf-001
 .def sudden_impact  kyushu&1c4-001
 .def silver_weapons pipe_maker&179-002
 .def witch          1d4-001
@@ -536,17 +535,21 @@
 090-005=090-003                         # pack
 
 # 091 Gourmet Sub 1F-3F Entrance / Elevator
-.guarantee  091-001 camera
-.guarantee  091-003 camera
-.guarantee  091-009 camera
-.guarantee  091-00b camera
+.def softlock_091   camera
+.guarantee  091-001 softlock_091
+.guarantee  091-003 softlock_091
+.guarantee  091-009 softlock_091
+.guarantee  091-00b softlock_091
 091-009=091-009 mermaid
 091-00b=091-00b mini_ebisu
 091-00e=091-00e mermaid
 091-00f=091-00f mermaid
-091-001=091-003 camera
-091-001=091-009 camera&mermaid
-091-001=091-00b camera&mini_ebisu
+091-001>091-003 softlock_091
+091-001>091-009 softlock_091&mermaid
+091-001>091-00b softlock_091&mini_ebisu
+091-001<091-003 camera
+091-001<091-009 camera&mermaid
+091-001<091-00b camera&mini_ebisu
 091-003=091-009 mermaid
 091-003=091-00b mini_ebisu
 091-005=091-007
@@ -911,14 +914,13 @@
 141-005=141-006 mini_ebisu
 
 # 142 Iyo - Hot Springs
-.guarantee  142-00c chain_pipe|super_jump|mini_ebisu
+.def softlock_142   chain_pipe|super_jump
 142-003=142-003 mini_ebisu
 142-003<142-004 mini_ebisu
-142-003=142-004 mini_ebisu&chain_pipe
-142-003=142-004 mini_ebisu&super_jump
+142-003=142-004 mini_ebisu&softlock_142
 142-00c=142-003 mini_ebisu              # cat
 142-00c<142-004                         # cat
-142-00c>142-004 chain_pipe|super_jump   # cat
+142-00c>142-004 softlock_142            # cat
 
 # 143 Bizen
 .guarantee  143-008 special_key&143-x08

@@ -2406,6 +2406,9 @@ def randomize_doors(config_filename=None):
 
     write_patch(get_outfile(), patch_filename, parameters=parameters)
 
+    if config['fix_bad_maps']:
+        definition_overrides = fix_softlockable_rooms(definition_overrides)
+
     preset_connections = defaultdict(set)
 
     for mmo in MapMetaObject.sorted_rooms:
@@ -2753,6 +2756,50 @@ def generate_locks(dr):
         assert dr.goal_reached
         dr.verify()
     return lock_key_pairs, key_type_pairs
+
+
+def fix_softlockable_rooms(definition_overrides):
+    DRUM_PLATFORM_ID = 0x1a1
+    mmo = MapMetaObject.get_by_warp_index(0x91)
+    definition = mmo.add_new_definition(b'\x00' * 0x10)
+    definition.set_main_property(DRUM_PLATFORM_ID)
+    instance = mmo.EntityInstance(b'\x00' * 0x14, mmo)
+    instance.set_main_property(definition.index)
+    instance.clean()
+    x, y, z = 0xc4, 0xffd8, 0xff90
+    instance.set_property('x', x)
+    instance.set_property('y', y)
+    instance.set_property('z', z)
+    mmo.spawn_groups[(-1,-1,-1)].append(instance)
+    definition_overrides['softlock_091'] = 'start'
+
+    mmo = MapMetaObject.get_by_warp_index(0x142)
+    SHORT_LADDER_ID = 0x33b
+    definition = [d for d in mmo.definitions
+                  if d.actor_id == SHORT_LADDER_ID][0]
+    instance = mmo.EntityInstance(b'\x00' * 0x14, mmo)
+    instance.set_main_property(definition.index)
+    instance.clean()
+    x, y, z = 0x9f, 0xff3c, 0xff9c
+    instance.set_property('x', x)
+    instance.set_property('y', y)
+    instance.set_property('z', z)
+    mmo.spawn_groups[(-1,-1,-1)].append(instance)
+
+    LONG_LADDER_ID = 0x33c
+    definition = mmo.add_new_definition(b'\x00' * 0x10)
+    definition.set_main_property(LONG_LADDER_ID)
+    instance = mmo.EntityInstance(b'\x00' * 0x14, mmo)
+    instance.set_main_property(definition.index)
+    instance.clean()
+    x, y, z = 0x9f, 0xfebc, 0x14
+    instance.set_property('x', x)
+    instance.set_property('y', y)
+    instance.set_property('z', z)
+    mmo.spawn_groups[(-1,-1,-1)].append(instance)
+    definition_overrides['softlock_142'] = 'start'
+
+    return definition_overrides
 
 
 def add_roommates():
