@@ -28,6 +28,7 @@ from decompress_mn64 import (
 VERSION = "0"
 ALL_OBJECTS = None
 DEBUG_MODE = False
+VERBOSE = False
 
 
 def hexify(s):
@@ -166,6 +167,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     ENTITY_FOOTER_LENGTH = 0x1c
 
     ENTITY_FILES = {}
+    EXTRA_DEPENDENCIES = {
+            0x1b6: {0x20},
+            0x354: {0x20},
+            0x3ef: {0x27},
+        }
 
     with open(ENTITY_STRUCTURES_FILENAME) as f:
         ENTITY_STRUCTURES = yaml.load(f.read(),
@@ -1082,15 +1088,15 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             assert not mmo.is_rom_split
 
             if mmo.data_has_changed:
-                mmo.validate_entity_files()
                 mmo.validate_budget()
+                mmo.validate_entity_files()
             values = []
             for l in mmo.loading_files:
                 if l in mmo.misc_data.loading_files:
                     raise Exception(f'File {l:0>3x} specified in both meta '
                                     f'and misc loading data for room '
                                     f'{warp_index:0>3x}.')
-                if l in values:
+                if l in values and (VERBOSE or DEBUG_MODE):
                     print(f'Warning: Removing duplicate file {l:0>3x} from '
                           f'room {warp_index:0>3x}')
                     continue
@@ -1836,18 +1842,45 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     def validate_budget(self):
         # Some actors depend on files of other actors (i.e. pink robot spawner)
         # So you can't just remove files blindly
-        return
+        # We add these files back in EXTRA_DEPENDENCIES
         used_files = {self.ENTITY_FILES[i.definition.actor_id]
                       for i in self.instances}
         maybe_cut = set(self.loading_files) & \
                 (self.ENEMY_FILES | self.PICKUP_FILES)
         for index in sorted(maybe_cut - used_files):
-            print(f'REMOVING {index:0>3x} from {self.warp_index:0>3x}.')
+            if VERBOSE or DEBUG_MODE:
+                print(f'REMOVING {index:0>3x} from {self.warp_index:0>3x}.')
             for d in self.definitions:
                 if self.ENTITY_FILES[d.actor_id] == index:
-                    print(f'REMOVING {d.signature} from {self.warp_index:0>3x}.')
+                    if VERBOSE or DEBUG_MODE:
+                        print(f'REMOVING {d.signature} from '
+                              f'{self.warp_index:0>3x}.')
                     d.remove()
             self.loading_files.remove(index)
+
+    def validate_entity_files(self):
+        for e in self.instances:
+            if e.is_null:
+                continue
+            actor_id = e.definition.actor_id
+            if actor_id not in self.ENTITY_FILES:
+                continue
+            file_index = self.ENTITY_FILES[actor_id]
+            if file_index == 0:
+                continue
+            if file_index not in self.loading_files:
+                if VERBOSE or DEBUG_MODE:
+                    print(f'Warning: Entity {e.definition.signature} requires '
+                          f'file {file_index:0>3x}; adding automatically.')
+                self.loading_files.append(file_index)
+            if actor_id in self.EXTRA_DEPENDENCIES:
+                for file_index in self.EXTRA_DEPENDENCIES[actor_id]:
+                    if file_index not in self.loading_files:
+                        if VERBOSE or DEBUG_MODE:
+                            print(f'Warning: Entity {e.definition.signature} '
+                                  f'requires extra file {file_index:0>3x}; '
+                                  f'adding automatically.')
+                        self.loading_files.append(file_index)
 
     def validate_entities(self):
         assert self.is_room
@@ -1861,21 +1894,6 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
         for e in self.entities:
             e.validate_data()
-
-    def validate_entity_files(self):
-        for e in self.instances:
-            if e.is_null:
-                continue
-            actor_id = e.definition.actor_id
-            if actor_id not in self.ENTITY_FILES:
-                continue
-            file_index = self.ENTITY_FILES[actor_id]
-            if file_index == 0:
-                continue
-            if file_index not in self.loading_files:
-                print(f'Warning: Entity {e.definition.signature} requires '
-                      f'file {file_index:0>3x}; adding automatically.')
-                self.loading_files.append(file_index)
 
     def matches_bgm(self, other):
         assert self.is_room
@@ -1905,8 +1923,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             self.validate_entities()
         if (self.index == MapCategoryData.ROOM_DATA_INDEX
                 and self.data_has_changed):
-            print(f'WARNING: Modifying miscellaneous data in file '
-                  f'{self.index:0>3x} may result in instability.')
+            if any(mmo.misc_data.has_changed
+                   for mmo in MapMetaObject.every if mmo.is_room):
+                print(f'WARNING: Modifying miscellaneous data in file '
+                      f'{self.index:0>3x} may result in instability.')
         if self.index >= MapCategoryData.ROOM_DATA_INDEX:
             self.compress_and_write()
             # for whatever reason, pointers must be in ascending order
@@ -2568,7 +2588,6 @@ def randomize_doors(config_filename=None):
     solution_filename = f'{get_outfile()}.spoiler.txt'
     with open(solution_filename, 'w+') as f:
         f.write(f'{dr.description}\n\n{s}')
-    print(s)
 
     m2key = MapMetaObject.get_entity_by_signature(MUSICAL_2_KEY_TRIGGER)
     old_flag = m2key.get_property_value('key_index', old=True)
@@ -2866,7 +2885,8 @@ if __name__ == '__main__':
                     name = f'ROOM {mmo.warp_index:0>3X} {mmo.room_name}'
                 else:
                     name = f'FILE {mmo.index:0>3X}'
-                print('Updated:', name)
+                if VERBOSE or DEBUG_MODE:
+                    print('Updated:', name)
 
         if 'enemizer' in get_activated_codes():
             randomize_enemies()

@@ -1,4 +1,3 @@
-# SOURCE DATA COMPRESSED???
 # RAM address 1dc30c
 # File address 00a:010eac
 010eac: 0c 01 4b 94     # JAL       0x80052e50
