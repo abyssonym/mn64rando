@@ -151,6 +151,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         0x190:  'SHOP',
         }
 
+    MUSASHI_IGA_TUNNEL = 0x131
+
     METADATA_STRUCTURE = {
             'unknown_pointer1': (0x00, 0x04),
             'unknown_pointer2': (0x04, 0x08),
@@ -1055,6 +1057,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                         break
                     warp_loads.append(value)
                 mmo.loading_files = warp_loads
+                mmo.old_loading_files = list(mmo.loading_files)
                 mmo.total_budget = max(mmo.total_size, mmo.MINIMUM_SAFE_BUDGET)
                 mmo.enemy_budget = mmo.enemy_size
                 mmo.pickup_budget = mmo.pickup_size
@@ -1835,6 +1838,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         # Some actors depend on files of other actors (i.e. pink robot spawner)
         # So you can't just remove files blindly
         # We add these files back in EXTRA_DEPENDENCIES
+        if 'enemizer' not in get_activated_codes():
+            return
         used_files = {self.ENTITY_FILES[i.definition.actor_id]
                       for i in self.instances}
         maybe_cut = set(self.loading_files) & \
@@ -1848,6 +1853,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                         print(f'REMOVING {d.signature} from '
                               f'{self.warp_index:0>3x}.')
                     d.remove()
+            if index in self.old_loading_files and \
+                    index not in self.old_instance_loading_files:
+                continue
             self.loading_files.remove(index)
 
     def validate_entity_files(self):
@@ -1873,6 +1881,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                                   f'requires extra file {file_index:0>3x}; '
                                   f'adding automatically.')
                         self.loading_files.append(file_index)
+        if self.warp_index == self.MUSASHI_IGA_TUNNEL \
+                and get_global_label() == 'MN64_EN':
+            assert 0x20 in self.loading_files
 
     def validate_entities(self):
         assert self.is_room
@@ -1904,6 +1915,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
         if self.is_room:
             self.get_entities()
+            self.old_instance_loading_files = set()
+            for i in self.instances:
+                loading_file = self.ENTITY_FILES[i.definition.actor_id]
+                if loading_file != 0:
+                    self.old_instance_loading_files.add(loading_file)
             assert not self.data_has_changed
 
     def preclean(self):
@@ -1974,6 +1990,13 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         cls.write_loading_files()  # must do this before cleaning/writing 00b
         print('Recompressing data; this may take some time.')
         super().full_cleanup()
+
+        if get_global_label() == 'MN64_EN':
+            mmo = MapMetaObject.get_by_warp_index(cls.MUSASHI_IGA_TUNNEL)
+            if 0x20 not in mmo.loading_files:
+                print(f'WARNING: DOUCHU 5 requires loading file 020 on the '
+                      f'English version of Mystical Ninja Starring Goemon.')
+
         # for whatever reason, pointers must be in ascending order
         reference_pointers = [mmo.reference_pointer & 0x7fffffff for
                               mmo in cls.every if mmo.is_old_rom]
@@ -2377,6 +2400,8 @@ def randomize_doors():
     BIZEN_LOCK_LABEL = '143-009'
     MUSICAL_2_KEY_TRIGGER = '0bd-00f'
     FESTIVAL_WATERFALL_BLOCKER = '06f-00a'
+    #SELF_LOOP_LABELS = ['14e-003', '14e-005']
+    SELF_LOOP_LABELS = []
 
     MapMetaObject.set_pemopemo_destination(0xc1, 0xfe8a, 0xff60, 0x0, 0x100)
 
@@ -2446,6 +2471,9 @@ def randomize_doors():
                 preset_connections[x].add((y, frozenset()))
                 preset_connections[y].add((x, frozenset()))
     preset_connections[FINAL_ROOM_LABEL].add((PEMOPEMO_LABEL, frozenset()))
+    for label in SELF_LOOP_LABELS:
+        assert label not in preset_connections
+        preset_connections[label].add((label, frozenset()))
 
     if config['cluster_bgm']:
         def bgm_validator(node1, node2):
@@ -2458,6 +2486,9 @@ def randomize_doors():
     else:
         def bgm_validator(node1, node2):
             return True
+
+    if 'seed' not in config:
+        config['seed'] = get_seed()
 
     dr = DoorRouter(config=config, preset_connections=preset_connections,
                     strict_validator=None, lenient_validator=bgm_validator,
@@ -2515,6 +2546,7 @@ def randomize_doors():
     if num_key_trials:
         trials = {}
         trial_types = {}
+        trial_scores = {}
         dr.commit()
         counter = 0
         while True:
@@ -2524,6 +2556,14 @@ def randomize_doors():
             try:
                 trial_key = f'lock{counter}'
                 trials[trial_key], trial_types[trial_key] = generate_locks(dr)
+                key_assignments = trials[trial_key]
+                keys_and_locks = key_assignments.keys() | \
+                        key_assignments.values()
+                goal_guaranteed = {n for g in dr.goal_nodes
+                                   for n in g.guaranteed}
+                goal_trial = goal_guaranteed & keys_and_locks
+                score = len(goal_trial)
+                trial_scores[trial_key] = score
                 dr.commit(trial_key)
             except DoorRouterException:
                 print(f'Error: Generation failed.')
@@ -2532,7 +2572,8 @@ def randomize_doors():
             if trials and counter >= num_key_trials:
                 break
 
-        trial_keys = sorted(trials, key=lambda tk: (len(trials[tk]), tk))
+        trial_keys = sorted(trials,
+                key=lambda tk: (trial_scores[tk], len(trials[tk]), tk))
         trial_key = trial_keys[-1]
         dr.rollback(trial_key)
         dr.commit()
@@ -2724,7 +2765,14 @@ def generate_locks(dr):
                 break
             orphan_pool = sorted(o for s in starters
                                  for o in s.get_guaranteed_orphanable())
-            orphan = random.choice(orphan_pool)
+            goal_pool = dr.goal_nodes & set(orphan_pool)
+            keyable_pool = set(orphan_pool) & \
+                    (preliminary_keyable | dr.conditional_nodes)
+            if goal_pool:
+                orphan_pool = [o for o in orphan_pool if o in goal_pool]
+            elif keyable_pool:
+                orphan_pool = [o for o in orphan_pool if o in keyable_pool]
+            orphan = random.choice(sorted(orphan_pool))
             starters = {s for s in starters if
                         orphan in s.get_guaranteed_orphanable()}
             assert starters
@@ -2732,6 +2780,12 @@ def generate_locks(dr):
             chosen = random.choice(starters)
             chosen_keyable = preliminary_keyable - \
                     (chosen.get_guaranteed_orphanable() | used_key_locations)
+            for c in list(chosen_keyable):
+                c.get_guaranteed_reachable_only()
+                for n in c.guar_to[chosen.source]:
+                    if n.orphanless:
+                        chosen_keyable.remove(c)
+                        break
             if not chosen_keyable:
                 bad_starters.add(chosen)
                 continue

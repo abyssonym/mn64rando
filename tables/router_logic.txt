@@ -744,7 +744,7 @@
 0ba-010>0ba-001                         # dango
 
 # 0BB Musical Castle 2 Metal Box Lava Room
-0bb-001=0bb-003 suggest:sudden_impact
+0bb-001=>0bb-003 suggest:sudden_impact
 
 # 0BC Musical Castle 2 Gold Cat Hallway
 0bc-001=0bc-003
