@@ -1317,10 +1317,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
         if get_global_label() == 'MN64_JP':
             write_patch(f, 'patch_pemopemo_destination_042.txt',
-                        parameters=parameters)
+                        parameters=parameters, noverify=True)
         elif get_global_label() == 'MN64_EN':
             write_patch(f, 'patch_pemopemo_destination_042_en.txt',
-                        parameters=parameters)
+                        parameters=parameters, noverify=True)
 
         f.seek(0)
         mmo._data = f.read()
@@ -2578,8 +2578,16 @@ def randomize_doors(config_filename=None):
         s += '\n'.join(pathlines) + '\n'
     s = s.strip()
     solution_filename = f'{get_outfile()}.spoiler.txt'
+    timestamp = int(round(time()))
+    header = (f'MN64 Randomizer v{VERSION}\n'
+              f'Seed        {get_seed()}\n'
+              f'Timestamp   {timestamp}\n')
+    s = f'{header.strip()}\n\n{dr.description}\n\n{s}'
     with open(solution_filename, 'w+') as f:
-        f.write(f'{dr.description}\n\n{s}')
+        f.write(s)
+    f = get_open_file(get_outfile())
+    f.seek(addresses.seed_info_address)
+    f.write(s.encode('ascii'))
 
     m2key = MapMetaObject.get_entity_by_signature(MUSICAL_2_KEY_TRIGGER)
     old_flag = m2key.get_property_value('key_index', old=True)
@@ -2861,6 +2869,16 @@ def export_data():
             f.write(str(mmo) + '\n\n')
 
 
+def write_abridged_metadata():
+    timestamp = int(round(time()))
+    header = (f'MN64 Randomizer v{VERSION}\n'
+              f'Seed        {get_seed()}\n'
+              f'Timestamp   {timestamp}\n')
+    f = get_open_file(get_outfile())
+    f.seek(addresses.seed_info_address)
+    f.write(header.strip().encode('ascii'))
+
+
 if __name__ == '__main__':
     try:
         print('You are using the Ancient Cave Starring Goemon '
@@ -2896,6 +2914,8 @@ if __name__ == '__main__':
 
         if 'norandom' not in get_activated_codes():
             randomize_doors()
+        else:
+            write_abridged_metadata()
 
         for mmo in MapMetaObject.every:
             if mmo.data_has_changed:

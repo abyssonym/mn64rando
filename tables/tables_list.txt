@@ -9,5 +9,6 @@ $file00b_loading_bank       230000  # Bank of each room's loading files
 $file00b_pointer_offset     235fe8  # Pointers to room metadata
 $expected_data_end          f9e8a4
 $free_space_start           fa0000
-$free_space_end             ffffff
+$free_space_end             ff7fff
+$seed_info_address          ff8000
 #.patch                      patch_no_checksum.txt
