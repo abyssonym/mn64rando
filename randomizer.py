@@ -11,6 +11,7 @@ from randomtools.interface import (
     get_sourcefile)
 
 from collections import Counter, defaultdict
+from datetime import datetime
 from functools import lru_cache, total_ordering
 from io import BytesIO
 from itertools import product
@@ -2585,7 +2586,7 @@ def randomize_doors():
         s += '\n'.join(pathlines) + '\n'
     s = s.strip()
     solution_filename = f'{get_outfile()}.spoiler.txt'
-    timestamp = int(round(time()))
+    timestamp = datetime.strftime(datetime.now(), '%Y%m%d%H')
     header = (f'MN64 Randomizer v{VERSION}\n'
               f'Seed        {get_seed()}\n'
               f'Timestamp   {timestamp}\n')
@@ -2877,7 +2878,7 @@ def export_data():
 
 
 def write_abridged_metadata():
-    timestamp = int(round(time()))
+    timestamp = datetime.strftime(datetime.now(), '%Y%m%d%H')
     header = (f'MN64 Randomizer v{VERSION}\n'
               f'Seed        {get_seed()}\n'
               f'Timestamp   {timestamp}\n')
