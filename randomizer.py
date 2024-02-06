@@ -2356,10 +2356,18 @@ def randomize_enemies():
                 break
 
 
-def randomize_doors(config_filename=None):
+def randomize_doors():
     from randomtools.doorrouter import DoorRouter, DoorRouterException
-    if config_filename is None:
-        config_filename = 'mn64_settings.yaml'
+    DEFAULT_CONFIG = 'mn64_settings.yaml'
+
+    if 'MN64_CONFIG' in environ:
+        config_filename = environ['MN64_CONFIG']
+    else:
+        print('A config file is required. Specify a filename.')
+        config_filename = input(f'(Default: {DEFAULT_CONFIG})  ')
+        if not config_filename.strip():
+            config_filename = DEFAULT_CONFIG
+
     with open(config_filename) as f:
         config = yaml.safe_load(f.read())
 
