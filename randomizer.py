@@ -19,7 +19,7 @@ from time import time, gmtime
 from traceback import format_exc
 
 import re
-import yaml
+from randomtools.utils import fake_yaml as yaml
 
 from decompress_mn64 import (
     checksum, decompress_from_file, decompress, recompress)
@@ -174,8 +174,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         }
 
     with open(ENTITY_STRUCTURES_FILENAME) as f:
-        ENTITY_STRUCTURES = yaml.load(f.read(),
-                                      Loader=yaml.SafeLoader)
+        ENTITY_STRUCTURES = yaml.safe_load(f.read())
 
     structure_names = set()
     for __index, __structure in ENTITY_STRUCTURES.items():
@@ -2362,7 +2361,7 @@ def randomize_doors(config_filename=None):
     if config_filename is None:
         config_filename = 'mn64_settings.yaml'
     with open(config_filename) as f:
-        config = yaml.load(f.read(), Loader=yaml.SafeLoader)
+        config = yaml.safe_load(f.read())
 
     PEMOPEMO_LABEL = '14c-002'
     FINAL_ROOM_LABEL = '0c1-001'
