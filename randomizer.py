@@ -1297,39 +1297,31 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     def set_pemopemo_destination(self, room, x, z, y, direction):
         PEMOPEMO_ENTITY = 0x335
         PEMOPEMO_FILE_INDEX = self.ENTITY_FILES[PEMOPEMO_ENTITY]-1
-        PEMOPEMO_LOAD_COORDS_POINTER = addresses.file042_pemopemo_offset
-        DIRECTION_REGISTER = addresses.file042_direction_register
-        VERIFY = b''
-        SUBVERIFY = b'\xaf' + bytes([DIRECTION_REGISTER | 0xa0]) + b'\x00\x10'
-        VERIFY += b'\x24' + bytes([DIRECTION_REGISTER]) + b'\x02\x00'
-        VERIFY += SUBVERIFY
-        VERIFY += (
-                   b'\x24\x04\x00\xa8'
-                   b'\x00\x00\x28\x25'
-                   b'\x24\x06\xff\xb5'
-                   b'\x24\x07\x01\xb3')
         assert PEMOPEMO_FILE_INDEX == 0x42
         mmo = MapMetaObject.get(PEMOPEMO_FILE_INDEX)
-        f = BytesIO(mmo.get_decompressed())
-        f.seek(PEMOPEMO_LOAD_COORDS_POINTER)
-        test = f.read(len(VERIFY))
-        assert test == VERIFY
-        registers = [4, 5, 6, 7]
-        values = [room, x, z, y]
-        new_data = b''
-        register = 0xa
-        value = direction << 8
-        new_data += b'\x24'
-        new_data += DIRECTION_REGISTER.to_bytes(length=1, byteorder='big')
-        new_data += value.to_bytes(length=2, byteorder='big')
-        new_data += SUBVERIFY
-        for register, value in zip(registers, values):
-            new_data += b'\x24'
-            new_data += register.to_bytes(length=1, byteorder='big')
-            new_data += value.to_bytes(length=2, byteorder='big')
-        f.seek(PEMOPEMO_LOAD_COORDS_POINTER)
-        assert len(new_data) == len(VERIFY)
-        f.write(new_data)
+
+        if hasattr(mmo, '_data'):
+            data = mmo._data
+        else:
+            data = mmo.get_decompressed()
+        f = BytesIO(data)
+
+        def format_two_bytes(value):
+            return f'{value>>8:0>2x} {value&0xff:0>2x}'
+
+        parameters = {
+            'direction': direction, 'room': room,
+            'x': x, 'z': z, 'y': y,
+            }
+        parameters = {k: format_two_bytes(v) for (k, v) in parameters.items()}
+
+        if get_global_label() == 'MN64_JP':
+            write_patch(f, 'patch_pemopemo_destination_042.txt',
+                        parameters=parameters)
+        elif get_global_label() == 'MN64_EN':
+            write_patch(f, 'patch_pemopemo_destination_042_en.txt',
+                        parameters=parameters)
+
         f.seek(0)
         mmo._data = f.read()
         f.close()
@@ -2378,7 +2370,7 @@ def randomize_doors(config_filename=None):
     MUSICAL_2_KEY_TRIGGER = '0bd-00f'
     FESTIVAL_WATERFALL_BLOCKER = '06f-00a'
 
-    MapMetaObject.set_pemopemo_destination(0xc1, 0xfe8a, 0xff60, 0x0, 0x1)
+    MapMetaObject.set_pemopemo_destination(0xc1, 0xfe8a, 0xff60, 0x0, 0x100)
 
     if get_global_label() == 'MN64_JP':
         patch_filename = 'patch_initialize_variables.txt'
