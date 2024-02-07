@@ -1013,7 +1013,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                     continue
                 f.seek(self.convert_pointer(pointer))
                 metadata = f.read(self.METADATA_LENGTH)
-                mmo_index = int.from_bytes(metadata[0x14:0x16]) - 1
+                mmo_index = int.from_bytes(metadata[0x14:0x16],
+                                           byteorder='big') - 1
                 if mmo_index < 0:
                     assert set(metadata[4:-4]) == {0}
                     continue

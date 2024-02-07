@@ -1,6 +1,9 @@
 from sys import argv
 from textwrap import wrap
-from colorama import Fore, Style
+try:
+    from colorama import Fore, Style
+except ImportError:
+    pass
 from subprocess import call
 from os import listdir
 
