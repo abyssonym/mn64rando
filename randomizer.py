@@ -2574,7 +2574,8 @@ def randomize_doors():
                 break
 
         trial_keys = sorted(trials,
-                key=lambda tk: (trial_scores[tk], len(trials[tk]), tk))
+                key=lambda tk: (trial_scores[tk] * len(trials[tk]),
+                                trial_scores[tk], len(trials[tk]), tk))
         trial_key = trial_keys[-1]
         dr.rollback(trial_key)
         dr.commit()
@@ -2739,7 +2740,6 @@ def generate_locks(dr):
     key_type_pairs = {}
     for key_type in ['Silver', 'Gold', 'Diamond']:
         print(f'Generating {key_type.lower()} keys...')
-        dr.commit(key_type)
         hierarchy = {}
         reverse_hierarchy = defaultdict(set)
         lockable = set(preliminary_lockable) - used_lock_locations
@@ -2757,7 +2757,8 @@ def generate_locks(dr):
         key_chain = []
         keyable_dict = {}
         while True:
-            starters = {e for e in lockable if e not in key_chain and
+            starters = {e for e in lockable & valid_edges
+                        if e not in key_chain and
                         len(reverse_hierarchy[e] & valid_edges) == 0}
             starters = starters - bad_starters
             if key_chain:
@@ -2769,7 +2770,7 @@ def generate_locks(dr):
             goal_pool = dr.goal_nodes & set(orphan_pool)
             keyable_pool = set(orphan_pool) & \
                     (preliminary_keyable | dr.conditional_nodes)
-            if goal_pool:
+            if goal_pool and key_type in ['Gold', 'Diamond']:
                 orphan_pool = [o for o in orphan_pool if o in goal_pool]
             elif keyable_pool:
                 orphan_pool = [o for o in orphan_pool if o in keyable_pool]
@@ -2789,6 +2790,7 @@ def generate_locks(dr):
                         break
             if not chosen_keyable:
                 bad_starters.add(chosen)
+                valid_edges.remove(chosen)
                 continue
             rfc = chosen.source.get_naive_avoid_reachable(
                     avoid_edges={chosen}, seek_nodes={dr.root})
@@ -2814,7 +2816,8 @@ def generate_locks(dr):
             candidates = set()
             for (a, b) in zip(key_chain, key_chain[1:]):
                 keyable_ranges[b] = keyable_dict[b] - keyable_dict[a]
-                if len(keyable_ranges[b]) == 0:
+                threshold = random.choice([0, 1])
+                if len(keyable_ranges[b]) <= threshold:
                     candidates |= {a, b}
             if not candidates:
                 break
