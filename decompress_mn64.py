@@ -8,7 +8,7 @@ from subprocess import call
 from os import listdir
 
 
-DEBUG = True
+DEBUG = False
 if DEBUG:
     logfile = open('decompress_debug.log', 'w+')
 
