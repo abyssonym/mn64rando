@@ -2592,6 +2592,10 @@ def randomize_doors():
             key.become_key(key_type=key_type)
             lock.door.become_locked_door(key=key)
 
+            # SIRO 54 - Game crashes if locked door has x = 0163
+            for i in lock.door.instances:
+                i.set_property('rotx', i.get_property_value('rotx') | 1)
+
     random.seed(dr.seed)
     solutions = dr.generate_solutions()
     s = ''
@@ -2701,7 +2705,11 @@ def randomize_doors():
 
 
 def generate_locks(dr):
-    BANNED_DOORS = {'15e-002'}
+    BANNED_DOORS = {'15e-002', '1b8-001', '1b9-001',
+                    '028-001', '049-001', '071-001', '09d-001',
+                    '137-002', '138-002', '139-002',
+                    '14c-002', '0c1-001', '143-008',
+                    '039-004',}
     preliminary_lockable = set()
     preliminary_keyable = {
             n for n in dr.rooted if '-x' not in n.label and
@@ -2757,6 +2765,7 @@ def generate_locks(dr):
         key_chain = []
         keyable_dict = {}
         while True:
+            valid_edges = valid_edges - bad_starters
             starters = {e for e in lockable & valid_edges
                         if e not in key_chain and
                         len(reverse_hierarchy[e] & valid_edges) == 0}
@@ -2765,6 +2774,10 @@ def generate_locks(dr):
                 starters &= hierarchy[key_chain[-1]]
             if not starters:
                 break
+            good_starters = {e for e in starters
+                             if len(hierarchy[e] & valid_edges) > 0}
+            if good_starters and key_type in ['Silver']:
+                starters &= good_starters
             orphan_pool = sorted(o for s in starters
                                  for o in s.get_guaranteed_orphanable())
             goal_pool = dr.goal_nodes & set(orphan_pool)
@@ -2774,6 +2787,12 @@ def generate_locks(dr):
                 orphan_pool = [o for o in orphan_pool if o in goal_pool]
             elif keyable_pool:
                 orphan_pool = [o for o in orphan_pool if o in keyable_pool]
+            good_orphan_pool = sorted(o for s in good_starters
+                                      for o in s.get_guaranteed_orphanable()
+                                      if o in orphan_pool)
+            if good_orphan_pool and key_type in ['Silver', 'Gold']:
+                starters = good_starters
+                orphan_pool = good_orphan_pool
             orphan = random.choice(sorted(orphan_pool))
             starters = {s for s in starters if
                         orphan in s.get_guaranteed_orphanable()}
@@ -2790,7 +2809,6 @@ def generate_locks(dr):
                         break
             if not chosen_keyable:
                 bad_starters.add(chosen)
-                valid_edges.remove(chosen)
                 continue
             rfc = chosen.source.get_naive_avoid_reachable(
                     avoid_edges={chosen}, seek_nodes={dr.root})

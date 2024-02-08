@@ -16,8 +16,8 @@
 .def golden_temple  16d-002
 .def mini_ebisu     ushikawa&golden_temple&1b5-001
 .def camera         031-003
-.def darumanyo      049-001
-.def bizen_opened   darumanyo&camera
+.def darumanyo      049-001&camera
+.def bizen_opened   darumanyo
 .def sasuke         camera&14a-002&149-002
 .def ice_kunai      sasuke&06e-001
 .def tsurami        071-001
@@ -31,7 +31,7 @@
 .def special_key    thaisamba&benkei&kappa&golden_temple
 .def super_jump     sasuke&1d0-001
 .def miracle_moon   congo
-.def miracle_flower darumanyo&camera
+.def miracle_flower darumanyo
 .def miracle_star   tsurami
 .def miracle_snow   thaisamba&benkei&super_jump&kappa&16f-002
 .def pemopemo_god   miracle_moon&miracle_flower&miracle_star&miracle_snow&14c-002
@@ -261,7 +261,7 @@
 046-005=046-001                         # dango
 
 # 049 Ghost Toys 2F-3F Elevator / Darumanyo Boss Room
-049-001>>142-004
+049-001>>142-004 camera
 
 # 05A Festival Temple West Main Entrance
 05a-001=05a-002
