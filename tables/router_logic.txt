@@ -196,8 +196,9 @@
 036-00b=036-005                         # cat
 
 # 039 Ghost Toys 1F Invisible Ghost Room
+.def kill_ghosts camera
 .guarantee  039-003 camera&039-001
-039-001=>039-003 camera
+039-001=>039-003 kill_ghosts
 039-007=039-001                         # mr. arrow
 
 # 03A Ghost Toys 1F Spike Darumanyo Room
@@ -207,7 +208,7 @@
 
 # 03B Ghost Toys 1F Invisible Ghost Key Room
 .guarantee  03b-001 camera
-03b-005=03b-001 camera                  # key
+03b-005=03b-001 kill_ghosts             # key
 
 # 03C Ghost Toys 1F-2F Elevator / Tiny Darumanyo Room
 03c-002=03c-004                         # 2.1b2.silver
@@ -235,7 +236,7 @@
 
 # 040 Ghost Toys 2F Invisible Darumanyo Key Room
 .guarantee  040-001 camera
-040-005=040-001 camera                  # key
+040-005=040-001 kill_ghosts             # key
 
 # 041 Ghost Toys 2F Jump Rope Room
 041-001=041-003

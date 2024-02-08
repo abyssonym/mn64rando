@@ -837,7 +837,9 @@
   name:       Festival Temple Fish Kite
 
 0x321:
-  name:       Sliding Door (Ghost Toys)
+  name:       Door That Opens When Enemies Are Killed (Ghost Toys)
+  door_design:
+    index:      4
   enemies:
     index:      5
   exit_id:

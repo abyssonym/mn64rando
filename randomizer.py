@@ -176,6 +176,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             0x3ef: {0x27},
         }
 
+    NO_ENEMY_RANDOMIZE = [0x39, 0x3b, 0x40]
+
     with open(ENTITY_STRUCTURES_FILENAME) as f:
         ENTITY_STRUCTURES = yaml.safe_load(f.read())
 
@@ -2281,14 +2283,18 @@ def randomize_enemies():
     file_counts = []
     all_enemies = []
     for mmo in enemy_maps:
+        if mmo.warp_index in mmo.NO_ENEMY_RANDOMIZE:
+            continue
         files = {MapMetaObject.ENTITY_FILES[e.definition.actor_id]
                  for e in mmo.enemies}
         file_counts.append(len(files))
         enemy_files.extend(sorted(files))
         all_enemies.extend(mmo.enemies)
         for d in mmo.definitions:
-            if 'enemies' in d.structure:
+            if 'enemies' in d.structure and d.get_property_value('enemies'):
                 d.set_property('enemies', 0)
+                if 'door_design' in d.structure:
+                    d.set_property('door_design', 0)
     file_counts = sorted(file_counts)
     enemy_files = sorted(enemy_files)
 
@@ -2322,6 +2328,8 @@ def randomize_enemies():
         mean_relative_z[actor_id] = value
 
     for mmo in enemy_maps:
+        if mmo.warp_index in mmo.NO_ENEMY_RANDOMIZE:
+            continue
         mmo.reseed('enemizer')
         old_files = {MapMetaObject.ENTITY_FILES[e.definition.actor_id]
                      for e in mmo.enemies}
@@ -2418,11 +2426,14 @@ def randomize_doors():
     parameters = {}
     definition_overrides = {}
 
+    if config['enable_debug']:
+        activate_code('debugmenu')
+
     if config['randomize_enemies']:
         activate_code('enemizer')
 
-    if config['enable_debug']:
-        activate_code('debugmenu')
+    #if 'enemizer' in get_activated_codes():
+    #    definition_overrides['kill_ghosts'] = 'start'
 
     if config['start_camera']:
         parameters['start_camera'] = 'c8'
