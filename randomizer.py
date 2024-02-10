@@ -122,11 +122,12 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     comes up. Two such indexes are:
         336 - Room 001 - Alternate Oedo Castle Tile Room (unused)
         46d - Room 1ce - Unknown Training Gym (unused, no exits or actors)
+        482 - Room 1e3 - Unknown (goes to credits sequence, unused?)
     '''
     MAIN_CODE_INDEX = 0xb
-    MAX_WARP_INDEX = 0x1e4
+    MAX_WARP_INDEX = 0x1e3
     FORCE_OLD_POINTER = (list(range(0x335)) +
-                         list(range(0x4a6, 0x520)))
+                         list(range(0x482, 0x520)))
 
     ROM_SPLIT_THRESHOLD_LOW = 0x336
     ROM_SPLIT_THRESHOLD_HI = 0x46d
