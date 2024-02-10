@@ -2741,7 +2741,7 @@ def generate_locks(dr):
                     '028-001', '049-001', '071-001', '09d-001',
                     '137-002', '138-002', '139-002',
                     '14c-002', '0c1-001', '143-008',
-                    '039-004',}
+                    '039-003', '03b-001', '040-001'}
     preliminary_lockable = set()
     preliminary_keyable = {
             n for n in dr.rooted if '-x' not in n.label and
