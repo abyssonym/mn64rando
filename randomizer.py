@@ -208,7 +208,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             room_names[__data_index] = __name
             warp_names[__warp_index] = __name
 
-    available_memory_flags = set()
+    INITIAL_FREE_MEMORY_FLAGS = frozenset(range(0x138, 0x158))
+
+    available_memory_flags = set(INITIAL_FREE_MEMORY_FLAGS)
     entity_signatures = {}
 
     class EntityMixin:
@@ -2536,6 +2538,8 @@ def randomize_doors():
         for x in source.instances:
             x.spawn_door_blocker()
         if source.door is not None:
+            if source.door.is_lock:
+                source.door.become_regular_door()
             source.door.remove()
         source.remove()
 
@@ -2554,6 +2558,7 @@ def randomize_doors():
             if e.is_gold_cat:
                 gold_cats.add(e.get_property_value('flag'))
 
+    key_assignments = {}
     num_key_trials = int(dr.config['randomize_keys'])
     if num_key_trials:
         trials = {}
@@ -2592,6 +2597,22 @@ def randomize_doors():
         dr.commit()
         key_assignments = trials[trial_key]
         key_type_pairs = trial_types[trial_key]
+
+        num_available = (len(MapMetaObject.available_memory_flags) >> 1) - 1
+        random.seed(dr.seed)
+        while len(key_assignments) >= num_available:
+            counted = Counter(key_type_pairs.values()).most_common()
+            highest = counted[0][1]
+            candidates = [key_type for (key_type, count) in counted
+                          if count == highest]
+            chosen = random.choice(sorted(candidates))
+            candidates = {lock for (lock, key_type) in key_type_pairs.items()
+                          if key_type == chosen}
+            chosen = random.choice(sorted(candidates))
+            del(key_type_pairs[chosen])
+            chosen = [k for (k, v) in key_assignments.items() if v == chosen]
+            for c in chosen:
+                del(key_assignments[c])
 
         for lock, key in key_assignments.items():
             key_type = key_type_pairs[key]
@@ -2749,19 +2770,32 @@ def generate_locks(dr):
             continue
         if not (edge.source.rooted and edge.destination.rooted):
             continue
-        if not edge.get_guaranteed_orphanable():
-            continue
         preliminary_lockable.add(edge)
 
+    requirement_nodes = {n for n in dr.reachable_from_root if n.required_nodes}
     used_key_locations = set()
     used_lock_locations = set()
     lock_key_pairs = {}
     key_type_pairs = {}
     for key_type in ['Silver', 'Gold', 'Diamond']:
         print(f'Generating {key_type.lower()} keys...')
+        dr.commit(key_type)
+        lockable = set()
+        for e in preliminary_lockable:
+            if e in used_lock_locations:
+                continue
+            orphans = e.get_guaranteed_orphanable()
+            if not orphans:
+                continue
+            nonorphans = dr.reachable_from_root - orphans
+            for n in nonorphans:
+                if n.required_nodes & orphans:
+                    break
+            else:
+                lockable.add(e)
+
         hierarchy = {}
         reverse_hierarchy = defaultdict(set)
-        lockable = set(preliminary_lockable) - used_lock_locations
         for e in preliminary_lockable:
             orphans = e.get_guaranteed_orphanable()
             orphan_edges = {e2 for e2 in preliminary_lockable
@@ -2826,6 +2860,24 @@ def generate_locks(dr):
             if dr.root not in rfc:
                 bad_starters.add(chosen)
                 continue
+
+            orphans = chosen.get_guaranteed_orphanable()
+            nonorphans = dr.reachable_from_root - orphans
+            requirements_pass = True
+            for n in requirement_nodes & nonorphans:
+                rs = n.required_nodes & nonorphans
+                if not rs:
+                    continue
+                rfr_n = dr.root.get_naive_avoid_reachable(
+                        avoid_edges={chosen}, avoid_nodes={n})
+                if rs - rfr_n:
+                    requirements_pass = False
+                    break
+
+            if not requirements_pass:
+                bad_starters.add(chosen)
+                continue
+
             orphans = chosen.get_guaranteed_orphanable()
             assert orphans and rfc and not rfc & orphans
             valid_edges &= hierarchy[chosen]
@@ -2869,6 +2921,7 @@ def generate_locks(dr):
         assert not (dr.reachable_from_root - dr.root_reachable_from)
         assert dr.goal_reached
         dr.verify()
+
     return lock_key_pairs, key_type_pairs
 
 
