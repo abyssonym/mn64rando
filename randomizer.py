@@ -209,7 +209,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             room_names[__data_index] = __name
             warp_names[__warp_index] = __name
 
-    INITIAL_FREE_MEMORY_FLAGS = frozenset(range(0x138, 0x158))
+    INITIAL_FREE_MEMORY_FLAGS = frozenset(range(0x140, 0x158))
 
     available_memory_flags = set(INITIAL_FREE_MEMORY_FLAGS)
     entity_signatures = {}
