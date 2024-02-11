@@ -740,7 +740,7 @@
 
 # 0BA Musical Castle 2 Left Entrance Treadmill Room
 0ba-001<0ba-003
-0ba-003=>0ba-005
+0ba-003=>0ba-005 super_jump
 0ba-010=0ba-003 chain_pipe|super_jump   # dango
 0ba-010>0ba-001                         # dango
 
