@@ -983,8 +983,8 @@
 14b-002=14b-004
 14b-002<14b-006
 14b-004<14b-006
-14b-002=14b-006 silver_weapons
-14b-004=14b-006 silver_weapons
+14b-002=14b-006 silver_weapons|gold_weapons
+14b-004=14b-006 silver_weapons|gold_weapons
 
 # 14D Mutsu - Shoreline
 14d-006=14d-006 mermaid
