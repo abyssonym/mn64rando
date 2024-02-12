@@ -84,7 +84,7 @@
   dest_y:
     index:      [10, 11]
   direction:
-    index:      12
+    index:      [12, 13]
     0x00:       East
     0x01:       North
     0x02:       West
@@ -696,7 +696,7 @@
   name:       Credits Sequence
 
 0x2ee:
-  name:       Unknown (Related to main town maps?)
+  name:       Message & Get Warp Point (Other -> MACHI/SHOP)
   town:
     index:      11
     0x8b:       Oedo
@@ -929,7 +929,7 @@
   name:       Ladder 33c
 
 0x33d:
-  name:       Unknown (Castle Entrances?)
+  name:       Message & Get Warp Point (Other -> SIRO)
   castle:
     index:    11
     0x90:     Oedo
@@ -985,7 +985,7 @@
     index:      13
 
 0x34e:
-  name:       Unknown 34e (Goemon's House)
+  name:       Goemon's House Message & Get Warp Point
 
 0x34f:
   name:       Unknown (Darumanyo Boss Room)

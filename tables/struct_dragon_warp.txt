@@ -1,0 +1,7 @@
+dest_room_str,2,str
+dest_x_str,2,str
+dest_z_str,2,str
+dest_y_str,2,str
+direction_str,2,str
+misc_exit_id,1
+misc_unknown,1

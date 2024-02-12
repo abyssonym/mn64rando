@@ -1,5 +1,6 @@
 MetaSizeObject          struct_meta_size.txt            556cc   1312
 MapMetaObject           struct_map_meta_pointer.txt     57fd8   1312
+DragonWarpObject        struct_dragon_warp.txt          6e010   16
 $file00a_ram_offset         1cb460  # Location in RAM where file 00a is
 $file00a_pointer_offset     2098dc  # Location of pointers to misc room data
 $file00a_idle_offset        209d24  # Location of table for map idle animations

@@ -2266,6 +2266,23 @@ class MapCategoryData(ConvertPointerMixin):
         self.data.close()
 
 
+class DragonWarpObject(TableObject):
+    def __repr__(self):
+        s = f'{self.description}\n'
+        for attr in ['dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction']:
+            value = getattr(self, f'{attr}_str')
+            value = int.from_bytes(value, byteorder='big')
+            if attr == 'dest_room':
+                room_name = MapMetaObject.get_by_warp_index(value).room_name
+                s += f'  {attr}: {value:0>4x} {room_name}\n'
+            else:
+                s += f'  {attr}: {value:0>4x}\n'
+        for attr in ['misc_exit_id', 'misc_unknown']:
+            value = getattr(self, attr)
+            s += f'  {attr}: {value:0>2x}\n'
+        return s.strip()
+
+
 def decouple_fire_ryo():
     # This patches code in file 00a, which is compressed
     # It allows you to charge the Karakuri Camera without obtaining Fire Ryo.
@@ -2277,6 +2294,67 @@ def decouple_fire_ryo():
         write_patch(data, 'patch_decouple_fire_ryo_00a_en.txt', noverify=True)
         write_patch(get_outfile(), 'patch_decouple_fire_ryo_en.txt')
     MapCategoryData.data = data
+
+
+def setup_dragon_warps(dr):
+    WARP_DICT = {
+        0:   '1d1-001',
+        1:   '1b1-001',
+        3:   '1a2-001',
+        4:   '1b3-001',
+        5:   '1a3-001',
+        6:   '1b4-001',
+        7:   '1b5-001',
+        9:   '1b6-001',
+        0xb: '1a4-001',
+        #0xc: '1d4-001',  # Witch's Hut requires reorganizing dragon map
+        }
+
+    INN_DICT = {
+        '1a2-001': 0x8c,
+        '1a3-001': 0x8d,
+        '1a4-001': 0x8e,
+        }
+
+    for mmo in MapMetaObject.every:
+        if not mmo.is_room:
+            continue
+        for d in list(mmo.definitions):
+            if d.actor_id in (0x2ee, 0x33d):
+                d.remove()
+
+    for dragon_index, signature in sorted(WARP_DICT.items()):
+        dwo = DragonWarpObject.get(dragon_index)
+        room_exit = MapMetaObject.get_entity_by_signature(signature)
+        node = dr.by_label(signature)
+        assert len(node.edges) == 1
+        node_exit = list(node.edges)[0]
+        for attr in ['dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction']:
+            value = room_exit.get_property_value(attr)
+            value = value.to_bytes(length=2, byteorder='big')
+            dwo_attr = f'{attr}_str'
+            assert hasattr(dwo, dwo_attr)
+            setattr(dwo, dwo_attr, value)
+
+        if signature in INN_DICT:
+            pair_exit = MapMetaObject.get_entity_by_signature(
+                    node_exit.destination.label)
+            test = pair_exit.parent.debug_index
+            if test.startswith('MACHI') or test.startswith('SHOP'):
+                actor_id = 0x33d
+                attr = 'castle'
+            else:
+                assert test.startswith('SIRO') or test.startswith('DOUCHU')
+                actor_id = 0x2ee
+                attr = 'town'
+            definition = room_exit.parent.add_new_definition(b'\x00' * 0x10)
+            definition.set_main_property(actor_id)
+            definition.set_property(attr, INN_DICT[signature])
+            instance = room_exit.parent.EntityInstance(
+                    b'\x00' * 0x14, room_exit.parent)
+            instance.set_main_property(definition.index)
+            instance.clean()
+            room_exit.parent.spawn_groups[(-1,-1,-1)].append(instance)
 
 
 def randomize_enemies():
@@ -2454,6 +2532,7 @@ def randomize_doors():
         parameters['start_yae'] = 'a0'
         parameters['start_flute'] = 'c0'
         definition_overrides['yae'] = 'start'
+        definition_overrides['flute'] = 'start'
     else:
         parameters['start_yae'] = '94'
         parameters['start_flute'] = '94'
@@ -2510,6 +2589,8 @@ def randomize_doors():
                     definition_overrides=definition_overrides)
 
     dr.build_graph()
+    random.seed(dr.seed)
+    setup_dragon_warps(dr)
     random.seed(dr.seed)
 
     def label_to_mmo(label):

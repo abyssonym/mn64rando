@@ -12,6 +12,7 @@
 .def turtle_torii   turtle_rock
 .def tourism        1b8-001|1b9-001
 .def dragon         tourism&13c-002
+.def flute          yae&dragon
 .def fire_ryo       140-003
 .def golden_temple  16d-002
 .def mini_ebisu     ushikawa&golden_temple&1b5-001
@@ -598,6 +599,7 @@
 099-00a=099-005                         # dango
 
 # 09D Gourmet Sub 4F Thaisamba Boss Room
+.guarantee 09d-001 mini_ebisu
 09d-001>>14d-002
 
 # 0A8 Musical Castle 1 Entrance
@@ -1245,6 +1247,7 @@
 
 # 171 Zazen - Bridge to Yamato (Benkei)
 .guarantee  171-004 achilles_heel&171-x04
+.guarantee  1b5-001 mini_ebisu|171-004
 #171-002=>171-004 achilles_heel
 171-002=171-x04
 171-002=171-006
@@ -1383,3 +1386,216 @@
 # 1B9 Kii-Awaji Tourism Center
 1b9-001=1b8-001 dragon
 1b9-001>>13c-002
+
+# Dragon Warps
+12c-002>1d1-001 flute
+12c-004>1d1-001 flute
+12c-006>1d1-001 flute
+12d-002>1d1-001 flute
+12d-004>1d1-001 flute
+12d-005>1d1-001 flute
+12d-006>1d1-001 flute
+12d-007>1d1-001 flute
+12d-008>1d1-001 flute
+12d-009>1d1-001 flute
+12e-002>1d1-001 flute
+12e-003>1d1-001 flute
+12f-002>1d1-001 flute
+12f-003>1d1-001 flute
+12f-004>1d1-001 flute
+12f-005>1d1-001 flute
+12f-006>1d1-001 flute
+130-003>1d1-001 flute
+130-005>1d1-001 flute
+130-007>1d1-001 flute
+131-002>1d1-001 flute
+131-004>1d1-001 flute
+132-002>1d1-001 flute
+132-004>1d1-001 flute
+133-002>1d1-001 flute
+133-004>1d1-001 flute
+133-005>1d1-001 flute
+133-006>1d1-001 flute
+134-003>1d1-001 flute
+136-002>1d1-001 flute
+136-003>1d1-001 flute
+137-002>1d1-001 flute
+138-002>1d1-001 flute
+138-003>1d1-001 flute
+138-005>1d1-001 flute
+13a-002>1d1-001 flute
+13a-004>1d1-001 flute
+13b-002>1d1-001 flute
+13b-004>1d1-001 flute
+13c-002>1d1-001 flute
+13c-004>1d1-001 flute
+13d-002>1d1-001 flute
+13d-004>1d1-001 flute
+13e-002>1d1-001 flute
+13e-004>1d1-001 flute
+13e-005>1d1-001 flute
+13f-002>1d1-001 flute
+13f-003>1d1-001 flute
+140-003>1d1-001 flute
+140-004>1d1-001 flute
+140-006>1d1-001 flute
+141-003>1d1-001 flute
+141-006>1d1-001 flute
+142-003>1d1-001 flute
+142-004>1d1-001 flute
+143-002>1d1-001 flute
+143-004>1d1-001 flute
+143-006>1d1-001 flute
+143-008>1d1-001 flute
+144-002>1d1-001 flute
+144-004>1d1-001 flute
+145-002>1d1-001 flute
+145-004>1d1-001 flute
+145-006>1d1-001 flute
+146-002>1d1-001 flute
+146-004>1d1-001 flute
+146-006>1d1-001 flute
+147-002>1d1-001 flute
+147-004>1d1-001 flute
+148-002>1d1-001 flute
+148-004>1d1-001 flute
+148-006>1d1-001 flute
+148-008>1d1-001 flute
+148-00a>1d1-001 flute
+149-002>1d1-001 flute
+14a-002>1d1-001 flute
+14b-002>1d1-001 flute
+14b-004>1d1-001 flute
+14b-006>1d1-001 flute
+14c-002>1d1-001 flute
+14d-002>1d1-001 flute
+14d-004>1d1-001 flute
+14f-002>1d1-001 flute
+14f-004>1d1-001 flute
+150-002>1d1-001 flute
+150-003>1d1-001 flute
+151-002>1d1-001 flute
+151-004>1d1-001 flute
+151-006>1d1-001 flute
+152-002>1d1-001 flute
+152-004>1d1-001 flute
+153-002>1d1-001 flute
+154-002>1d1-001 flute
+15e-002>1d1-001 flute
+15e-004>1d1-001 flute
+15e-006>1d1-001 flute
+15f-002>1d1-001 flute
+15f-004>1d1-001 flute
+15f-006>1d1-001 flute
+15f-007>1d1-001 flute
+15f-009>1d1-001 flute
+15f-00a>1d1-001 flute
+15f-00b>1d1-001 flute
+15f-00c>1d1-001 flute
+15f-00d>1d1-001 flute
+160-002>1d1-001 flute
+160-004>1d1-001 flute
+160-005>1d1-001 flute
+160-007>1d1-001 flute
+160-009>1d1-001 flute
+160-00b>1d1-001 flute
+160-00d>1d1-001 flute
+161-002>1d1-001 flute
+161-003>1d1-001 flute
+161-004>1d1-001 flute
+161-006>1d1-001 flute
+161-008>1d1-001 flute
+161-00a>1d1-001 flute
+161-00c>1d1-001 flute
+161-00e>1d1-001 flute
+162-002>1d1-001 flute
+162-004>1d1-001 flute
+162-006>1d1-001 flute
+162-007>1d1-001 flute
+163-002>1d1-001 flute
+163-004>1d1-001 flute
+163-006>1d1-001 flute
+164-002>1d1-001 flute
+164-004>1d1-001 flute
+164-006>1d1-001 flute
+165-002>1d1-001 flute
+165-004>1d1-001 flute
+166-002>1d1-001 flute
+166-004>1d1-001 flute
+167-002>1d1-001 flute
+167-004>1d1-001 flute
+168-002>1d1-001 flute
+168-004>1d1-001 flute
+168-006>1d1-001 flute
+168-007>1d1-001 flute
+169-002>1d1-001 flute
+169-004>1d1-001 flute
+169-006>1d1-001 flute
+169-008>1d1-001 flute
+169-009>1d1-001 flute
+169-00a>1d1-001 flute
+169-00b>1d1-001 flute
+16a-002>1d1-001 flute
+16a-004>1d1-001 flute
+16b-002>1d1-001 flute
+16b-003>1d1-001 flute
+16c-002>1d1-001 flute
+16c-004>1d1-001 flute
+16c-006>1d1-001 flute
+16c-008>1d1-001 flute
+16c-00a>1d1-001 flute
+16c-00c>1d1-001 flute
+16c-00e>1d1-001 flute
+16c-00f>1d1-001 flute
+16d-002>1d1-001 flute
+16e-002>1d1-001 flute
+16e-004>1d1-001 flute
+16e-006>1d1-001 flute
+16f-002>1d1-001 flute
+16f-004>1d1-001 flute
+170-002>1d1-001 flute
+171-002>1d1-001 flute
+171-004>1d1-001 flute
+171-006>1d1-001 flute
+171-007>1d1-001 flute
+172-002>1d1-001 flute
+172-004>1d1-001 flute
+173-002>1d1-001 flute
+173-003>1d1-001 flute
+175-002>1d1-001 flute
+175-004>1d1-001 flute
+175-006>1d1-001 flute
+176-002>1d1-001 flute
+176-004>1d1-001 flute
+176-006>1d1-001 flute
+176-007>1d1-001 flute
+176-009>1d1-001 flute
+176-00b>1d1-001 flute
+176-00d>1d1-001 flute
+177-002>1d1-001 flute
+177-004>1d1-001 flute
+177-006>1d1-001 flute
+177-008>1d1-001 flute
+177-009>1d1-001 flute
+177-00a>1d1-001 flute
+178-002>1d1-001 flute
+178-004>1d1-001 flute
+178-006>1d1-001 flute
+178-007>1d1-001 flute
+179-002>1d1-001 flute
+179-004>1d1-001 flute
+179-006>1d1-001 flute
+179-008>1d1-001 flute
+17a-002>1d1-001 flute
+17a-004>1d1-001 flute
+17a-006>1d1-001 flute
+17a-008>1d1-001 flute
+17a-009>1d1-001 flute
+17a-00a>1d1-001 flute
+17a-00c>1d1-001 flute
+17a-00e>1d1-001 flute
+17b-002>1d1-001 flute
+17c-002>1d1-001 flute
+17c-004>1d1-001 flute
+17c-006>1d1-001 flute
+17d-003>1d1-001 flute
