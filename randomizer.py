@@ -2930,11 +2930,12 @@ def generate_locks(dr):
             chosen_keyable = preliminary_keyable - \
                     (chosen.get_guaranteed_orphanable() | used_key_locations)
             for c in list(chosen_keyable):
+                c.get_guaranteed_reachable_only(seek_nodes={chosen.source})
+                if not any(n.orphanless for n in c.guar_to[chosen.source]):
+                    continue
                 c.get_guaranteed_reachable_only()
-                for n in c.guar_to[chosen.source]:
-                    if n.orphanless:
-                        chosen_keyable.remove(c)
-                        break
+                if any(n.orphanless for n in c.guar_to[chosen.source]):
+                    chosen_keyable.remove(c)
             if not chosen_keyable:
                 bad_starters.add(chosen)
                 continue
@@ -2949,13 +2950,16 @@ def generate_locks(dr):
             requirements_pass = True
             for n in requirement_nodes & nonorphans:
                 rs = n.required_nodes & nonorphans
+                rs = {r for r in rs
+                      if r.rank > min(n.rank, chosen.destination.rank)}
                 if not rs:
                     continue
-                rfr_n = dr.root.get_naive_avoid_reachable(
-                        avoid_edges={chosen}, avoid_nodes={n})
-                if rs - rfr_n:
-                    requirements_pass = False
-                    break
+                for r in rs:
+                    path = r.get_shortest_path(avoid_nodes={n},
+                                               avoid_edges={chosen})
+                    if not path:
+                        requirements_pass = False
+                        break
 
             if not requirements_pass:
                 bad_starters.add(chosen)
@@ -3000,10 +3004,35 @@ def generate_locks(dr):
             lock_key_pairs[to_lock.source] = to_key
             key_type_pairs[to_key] = key_type
 
-        dr.clear_rooted_cache()
-        assert not (dr.reachable_from_root - dr.root_reachable_from)
-        assert dr.goal_reached
-        dr.verify()
+        to_cleanup = set()
+        original_key_chain_length = len(key_chain)
+        while True:
+            try:
+                dr.clear_rooted_cache()
+                assert not (dr.reachable_from_root - dr.root_reachable_from)
+                assert dr.goal_reached
+                dr.verify()
+                break
+            except Exception:
+                #print(f'Generation failure. Attempting to correct. '
+                #      f'({len(key_chain)}/{original_key_chain_length})')
+                print(f'Generation failure. Attempting to correct...')
+                to_lock = random.choice(key_chain)
+                key_chain.remove(to_lock)
+                to_key = lock_key_pairs[to_lock.source]
+                locked = [e for e in to_lock.source.edges
+                          if e.destination is to_lock.destination
+                          and e.true_condition == {to_key}][0]
+                to_cleanup.add(locked)
+                to_lock.source.add_edge(
+                        to_lock.destination, procedural=to_lock.generated)
+                del(lock_key_pairs[to_lock.source])
+                del(key_type_pairs[to_key])
+                used_lock_locations.remove(to_lock)
+                used_key_locations.remove(to_key)
+        for locked in to_cleanup:
+            locked.remove()
+        dr.rooted
 
     return lock_key_pairs, key_type_pairs
 
