@@ -1,3 +1,6 @@
+# Note:
+#   Multi-line .guarantee statements are joined by OR logic
+#   Multi-line .missable statements are joined by AND logic
 .def start          1d1-001
 .def pipe_maker     1d2-001
 .def chain_pipe     pipe_maker
@@ -599,7 +602,9 @@
 099-00a=099-005                         # dango
 
 # 09D Gourmet Sub 4F Thaisamba Boss Room
-.guarantee 09d-001 mini_ebisu
+#.guarantee 09d-001 mini_ebisu
+.missable 09d-001 mini_ebisu
+.missable 09d-001 171-004
 09d-001>>14d-002
 
 # 0A8 Musical Castle 1 Entrance
@@ -1247,7 +1252,8 @@
 
 # 171 Zazen - Bridge to Yamato (Benkei)
 .guarantee  171-004 achilles_heel&171-x04
-.guarantee  1b5-001 mini_ebisu|171-004
+#.guarantee  1b5-001 171-004
+.missable 1b5-001 171-004
 #171-002=>171-004 achilles_heel
 171-002=171-x04
 171-002=171-006
