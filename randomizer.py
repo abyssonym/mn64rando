@@ -72,6 +72,29 @@ def pretty_hexify(s, newlines=True):
         return ' '.join(result)
 
 
+def consolidate_free_space(free_space):
+    while True:
+        updated = False
+        for (a1, b1) in sorted(free_space):
+            if updated:
+                break
+            for (a2, b2) in sorted(free_space):
+                if updated:
+                    break
+                if (a1, b1) == (a2, b2):
+                    continue
+                if a2 < a1:
+                    continue
+                if a1 <= a2 <= b1:
+                    free_space.remove((a1, b1))
+                    free_space.remove((a2, b2))
+                    free_space.add((a1, max(b1, b2)))
+                    updated = True
+        if not updated:
+            break
+    return free_space
+
+
 class ConvertPointerMixin:
     @classmethod
     def convert_pointer(self, pointer):
@@ -983,6 +1006,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             assert self.definition.index == self.definition_index
 
     @classproperty
+    def after_order(self):
+        return [MessagePointerObject]
+
+    @classproperty
     def VIRTUAL_RAM_OFFSET(self):
         return addresses.file00b_ram_offset
 
@@ -1307,8 +1334,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         PEMOPEMO_ENTITY = 0x335
         PEMOPEMO_FILE_INDEX = self.ENTITY_FILES[PEMOPEMO_ENTITY]-1
         assert PEMOPEMO_FILE_INDEX == 0x42
-        mmo = MapMetaObject.get(PEMOPEMO_FILE_INDEX)
 
+        mmo = MapMetaObject.get(PEMOPEMO_FILE_INDEX)
         if hasattr(mmo, '_data'):
             data = mmo._data
         else:
@@ -1803,6 +1830,9 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 self.relocated = True
                 return
             else:
+                #if not self.is_room:
+                #    print(f'NOTICE: Force writing new data to '
+                #          f'file {self.index+1:0>3x}.')
                 return self.force_write()
 
         if self.data_has_changed and self.is_room:
@@ -2283,6 +2313,227 @@ class DragonWarpObject(TableObject):
         return s.strip()
 
 
+class MessageFileObject(TableObject):
+    def get_file_index(self):
+        return int.from_bytes(self.file_index_str, byteorder='big')
+
+    def set_file_index(self, value):
+        self.file_index_str = value.to_bytes(length=2, byteorder='big')
+
+    def del_file_index(self):
+        self.file_index_str = self.old_data['file_index_str']
+
+    file_index = property(get_file_index, set_file_index, del_file_index)
+
+
+class MessagePointerObject(TableObject):
+    NUM_PARAMETERS = {
+            0x08: 0,
+            0x10: 1,
+            0x11: 0,
+            0x12: 0,
+            0x22: 2,
+        }
+    MESSAGE_TERMINATE_OPCODE = 0x08
+    MESSAGE_TEXT_OPCODE = 0x10
+    COMMENTS = {
+            0x04: 'At RAM address {0:0>8x}...',
+            0x08: 'End Message',
+            0x09: 'Store Value: {0:0>8x}',
+            0x10: 'Print Text',
+            0x22: 'If Flag {0:0>4x}, Jump To {1:0>8x}',
+        }
+
+    def __repr__(self):
+        return self.get_pretty()
+
+    @classmethod
+    def decode(self, word):
+        manual_map = {
+            0x0000: ' ',
+            0x0001: '!',
+            0x0007: "'",
+            0x000c: ',',
+            0x000e: '.',
+            0x000f: '/',
+            }
+        value = int.from_bytes(word, byteorder='big')
+        if value in manual_map:
+            return manual_map[value]
+        if not value:
+            return ' '
+        if value & 0xFF00 == 0:
+            if 65 <= value <= 90:
+                return chr(value).lower()
+            elif 65 <= value + 0x20 <= 90:
+                return chr(value + 0x20)
+            elif 0x11 <= value <= 0x19:
+                return str(value - 0x10)
+        s = '{%s}' % f'{value:0>4x}'
+        if value == 0xffc4 and False:
+            return '\n' + s
+        if value == 0xffff:
+            return s + '\n'
+        return s
+
+    @classmethod
+    def get_text(self, f, pointer=None):
+        old_pointer = f.tell()
+        if pointer is not None:
+            pointer &= 0xffffff
+            f.seek(pointer)
+        s = ''
+        while True:
+            word = f.read(2)
+            if len(word) < 2:
+                break
+            if word == b'\xff\xff':
+                break
+            s += self.decode(word)
+        f.seek(old_pointer)
+        return s
+
+    def get_message_pointer(self):
+        return int.from_bytes(self.message_pointer_str, byteorder='big')
+
+    def set_message_pointer(self, value):
+        self.message_pointer_str = value.to_bytes(length=3, byteorder='big')
+
+    def del_message_pointer(self):
+        self.message_pointer_str = self.old_data['message_pointer_str']
+
+    message_pointer = property(
+            get_message_pointer, set_message_pointer, del_message_pointer)
+
+    @property
+    def file_index(self):
+        return MessageFileObject.get(self.index).file_index
+
+    @property
+    def header(self):
+        return (f'MESSAGE {self.index:0>3x}: '
+                f'{self.file_index:0>3x}-{self.message_pointer:0>4x}')
+
+    def get_message(self):
+        self.message = []
+        self.message_texts = {}
+        if self.file_index == 0:
+            return
+
+        mmo = MapMetaObject.get(self.file_index-1)
+        if hasattr(mmo, '_data'):
+            data = mmo._data
+        else:
+            data = mmo.get_decompressed()
+        f = BytesIO(data)
+        f.seek(self.message_pointer)
+        while True:
+            opcode = f.read(4)
+            if not opcode:
+                break
+            if opcode == b'\x00\x00\x00\x00':
+                break
+            assert opcode[:3] == b'\x00\x00\x80'
+            opcode = opcode[-1]
+            if opcode in self.NUM_PARAMETERS:
+                num_parameters = self.NUM_PARAMETERS[opcode]
+            else:
+                num_parameters = 1
+            arguments = tuple([int.from_bytes(f.read(4))
+                               for _ in range(num_parameters)])
+            self.message.append((opcode, arguments))
+            if opcode == self.MESSAGE_TERMINATE_OPCODE:
+                break
+            if opcode == self.MESSAGE_TEXT_OPCODE:
+                assert len(arguments) == 1
+                pointer = arguments[0]
+                assert pointer >> 24 in (0, 8, 9)
+                text = self.get_text(f, pointer)
+                self.message_texts[pointer] = text
+        f.close()
+
+    def get_pretty(self):
+        s = ''
+        for opcode, arguments in self.message:
+            argstr = ','.join([f'{a:0>8x}' for a in arguments])
+            line = f'{opcode:0>2x}: {argstr}'
+            if opcode in self.COMMENTS:
+                comment = self.COMMENTS[opcode].format(*arguments)
+                line = f'{line:23}# {comment}'
+            s += line + '\n'
+            if opcode == self.MESSAGE_TEXT_OPCODE:
+                text = self.message_texts[arguments[0]]
+                text = f'|{text}|'
+                text = text.replace('\n', '\n      ')
+                text = '      ' + text.strip()
+                s += text + '\n'
+        s = s.strip()
+        s = '  ' + s.replace('\n', '\n  ')
+        s = f'{self.header}\n{s}'
+        return s.strip()
+
+    def get_bytecode(self):
+        s = b''
+        for opcode, arguments in self.message:
+            s += (opcode | 0x8000).to_bytes(length=4, byteorder='big')
+            for a in arguments:
+                s += a.to_bytes(length=4, byteorder='big')
+        return s
+
+    def preprocess(self):
+        self.reallocate = False
+        self.get_message()
+        self.old_bytecode = self.get_bytecode()
+
+    def cleanup(self):
+        if not self.reallocate:
+            assert self.message_pointer_str == \
+                    self.old_data['message_pointer_str']
+            assert self.get_bytecode() == self.old_bytecode
+
+    @classmethod
+    def full_cleanup(self):
+        super().full_cleanup()
+
+        file_indexes = {mpo.file_index for mpo in MessagePointerObject.every}
+        file_indexes.discard(0)
+        for file_index in sorted(file_indexes):
+            mpos = [mpo for mpo in MessagePointerObject.every
+                    if mpo.file_index == file_index
+                    and mpo.reallocate is True]
+            if not mpos:
+                continue
+            free_space = set()
+            for mpo in mpos:
+                free_space.add((mpo.message_pointer,
+                                mpo.message_pointer + len(mpo.old_bytecode)))
+            free_space = consolidate_free_space(free_space)
+            mmo = MapMetaObject.get(file_index-1)
+            if hasattr(mmo, '_data'):
+                data = mmo._data
+            else:
+                data = mmo.get_decompressed()
+            f = BytesIO(data)
+            for mpo in mpos:
+                bytecode = mpo.get_bytecode()
+                candidates = [(a, b) for (a, b) in free_space
+                              if (b-a) >= len(bytecode)]
+                candidates = sorted(candidates,
+                                    key=lambda x: (x[1]-x[0], x[0]))
+                start, finish = candidates[0]
+                free_space.remove((start, finish))
+                new_start = start + len(bytecode)
+                if new_start < finish:
+                    free_space.add((new_start, finish))
+                mpo.message_pointer_str = start.to_bytes(
+                        length=3, byteorder='big')
+                f.seek(start)
+                f.write(bytecode)
+            f.seek(0)
+            mmo._data = f.read()
+            f.close()
+
+
 def decouple_fire_ryo():
     # This patches code in file 00a, which is compressed
     # It allows you to charge the Karakuri Camera without obtaining Fire Ryo.
@@ -2297,31 +2548,64 @@ def decouple_fire_ryo():
 
 
 def setup_dragon_warps(dr):
+    DRAGON_ATLAS_INDEX = 0x10
+
     WARP_DICT = {
-        0:   '1d1-001',
-        1:   '1b1-001',
-        3:   '1a2-001',
-        4:   '1b3-001',
-        5:   '1a3-001',
-        6:   '1b4-001',
-        7:   '1b5-001',
-        9:   '1b6-001',
-        0xb: '1a4-001',
+        0:   '1a1-001',  # Oedo Inn
+        1:   '1b1-001',  # Kai Teahouse
+        2:   '1d1-001',  # Oedo Castle becomes Goemon's House
+        3:   '1a2-001',  # Zazen Inn
+        4:   '1b3-001',  # Kii-Awaji Teahouse
+        5:   '1a3-001',  # Folkypoke Inn
+        6:   '1b4-001',  # Kompira Teahouse
+        7:   '1b5-001',  # Iyo Teahouse
+        9:   '1b6-001',  # Izumo Teahouse
+        0xb: '1a4-001',  # Festival Village Inn
         #0xc: '1d4-001',  # Witch's Hut requires reorganizing dragon map
+        0xd: '1a5-001',  # Gourmet Sub becomes Sogen Inn warp
         }
 
     INN_DICT = {
+        '1d1-001': 0x90,
+        '1a1-001': 0x8b,
         '1a2-001': 0x8c,
         '1a3-001': 0x8d,
         '1a4-001': 0x8e,
+        '1a5-001': 0x93,
         }
+
+    for index in range(0x8b, 0x90):
+        MessagePointerObject.get(index).reallocate=True
+    mpo = MessagePointerObject.get(0x8f)
+    mpo.message = mpo.get(0x8f).message[-1:]
+    mpo = MessagePointerObject.get(0x8b)
+    if get_global_label() == 'MN64_JP':
+        OEDO_WARP_ADDRESS = 0x8016209c
+    elif get_global_label() == 'MN64_EN':
+        OEDO_WARP_ADDRESS = 0x8015c8ac
+    mpo.message.insert(0, (4, (OEDO_WARP_ADDRESS,)))
+    mpo.message.insert(1, (9, (1,)))
 
     for mmo in MapMetaObject.every:
         if not mmo.is_room:
             continue
         for d in list(mmo.definitions):
-            if d.actor_id in (0x2ee, 0x33d):
+            if d.actor_id in (0x2ee, 0x33d, 0x34e):
                 d.remove()
+
+    mmo = MapMetaObject.get(DRAGON_ATLAS_INDEX)
+    if hasattr(mmo, '_data'):
+        data = mmo._data
+    else:
+        data = mmo.get_decompressed()
+    f = BytesIO(data)
+    if get_global_label() == 'MN64_JP':
+        write_patch(f, 'patch_dragon_atlas_010.txt', noverify=True)
+    elif get_global_label() == 'MN64_EN':
+        write_patch(f, 'patch_dragon_atlas_010_en.txt', noverify=True)
+    f.seek(0)
+    mmo._data = f.read()
+    f.close()
 
     for dragon_index, signature in sorted(WARP_DICT.items()):
         dwo = DragonWarpObject.get(dragon_index)
@@ -2340,13 +2624,8 @@ def setup_dragon_warps(dr):
             pair_exit = MapMetaObject.get_entity_by_signature(
                     node_exit.destination.label)
             test = pair_exit.parent.debug_index
-            if test.startswith('MACHI') or test.startswith('SHOP'):
-                actor_id = 0x33d
-                attr = 'castle'
-            else:
-                assert test.startswith('SIRO') or test.startswith('DOUCHU')
-                actor_id = 0x2ee
-                attr = 'town'
+            actor_id = 0x31d
+            attr = 'message'
             definition = room_exit.parent.add_new_definition(b'\x00' * 0x10)
             definition.set_main_property(actor_id)
             definition.set_property(attr, INN_DICT[signature])
@@ -2989,7 +3268,8 @@ def generate_locks(dr):
                     candidates |= {a, b}
             if not candidates:
                 break
-            key_chain.remove(random.choice(sorted(candidates)))
+            chosen = random.choice(sorted(candidates))
+            key_chain.remove(chosen)
 
         for to_lock in key_chain:
             to_key = random.choice(sorted(keyable_ranges[to_lock]))

@@ -1,0 +1,8 @@
+002018: 24 0e 00 0c                 # Set Oedo Castle as initial warp point
+
+VALIDATION
+
+002018: 24 0e 00 0d
+
+009b2c: 08 28 00 03 00 03
+        00 12 00 30 00 1e 00 3d 01 13 00 00 00 00 00 00

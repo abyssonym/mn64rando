@@ -696,8 +696,8 @@
   name:       Credits Sequence
 
 0x2ee:
-  name:       Message & Get Warp Point (Other -> MACHI/SHOP)
-  town:
+  name:       Message on Transition (Other -> MACHI/SHOP)
+  message:
     index:      11
     0x8b:       Oedo
     0x8c:       Zazen
@@ -929,8 +929,8 @@
   name:       Ladder 33c
 
 0x33d:
-  name:       Message & Get Warp Point (Other -> SIRO)
-  castle:
+  name:       Message on Transition (Other -> SIRO)
+  message:
     index:    11
     0x90:     Oedo
     0x91:     Ghost Toys
@@ -985,7 +985,7 @@
     index:      13
 
 0x34e:
-  name:       Goemon's House Message & Get Warp Point
+  name:       Goemon's House Message
 
 0x34f:
   name:       Unknown (Darumanyo Boss Room)
