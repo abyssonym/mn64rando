@@ -26,7 +26,7 @@ from decompress_mn64 import (
     checksum, decompress_from_file, decompress, recompress)
 
 
-VERSION = "0"
+VERSION = "1"
 ALL_OBJECTS = None
 DEBUG_MODE = False
 VERBOSE = False
@@ -2439,7 +2439,7 @@ class MessagePointerObject(TableObject):
                 num_parameters = self.NUM_PARAMETERS[opcode]
             else:
                 num_parameters = 1
-            arguments = tuple([int.from_bytes(f.read(4))
+            arguments = tuple([int.from_bytes(f.read(4), byteorder='big')
                                for _ in range(num_parameters)])
             self.message.append((opcode, arguments))
             if opcode == self.MESSAGE_TERMINATE_OPCODE:
@@ -2863,6 +2863,10 @@ def randomize_doors():
     if 'seed' not in config:
         config['seed'] = get_seed()
 
+    print('\nNow beginning the maze generation process. This can take around\n'
+          '20 minutes depending on your settings and your system specs.\n'
+          'While you wait, check out ko-fi.com/abyssonym for additional\n'
+          'dev notes and exclusive content!\n')
     dr = DoorRouter(config=config, preset_connections=preset_connections,
                     strict_validator=None, lenient_validator=bgm_validator,
                     definition_overrides=definition_overrides)
