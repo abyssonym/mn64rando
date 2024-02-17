@@ -85,10 +85,10 @@
     index:      [10, 11]
   direction:
     index:      [12, 13]
-    0x00:       East
-    0x01:       North
-    0x02:       West
-    0x03:       South
+    0x000:      East
+    0x100:      North
+    0x200:      West
+    0x300:      South
   misc_exit_id:
     index:      14
   misc_unknown:
