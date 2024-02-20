@@ -26,7 +26,7 @@ from decompress_mn64 import (
     checksum, decompress_from_file, decompress, recompress)
 
 
-VERSION = "1"
+VERSION = "1.1"
 ALL_OBJECTS = None
 DEBUG_MODE = False
 VERBOSE = False

@@ -98,6 +98,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     enable_debug            Value: True or False (default True)
     Enables the use of Mystical Ninja Starring Goemon's native debug menu by pressing `L` at any time. This will allow you to get out of various softlocks and is recommended while the randomizer is still in its experimental stage. However, it may cause the ending credits to be interrupted.
 
+    fg_cache_limit          Value: 0 or more (default 10000)
+    This setting is used purely to optimize maze generation. The default value 10000 is a sane limit; any benefit from increasing or decreasing this value will be negligible or negative.
+
     fix_bad_maps            Value: True or False (default True)
     Changes two maps that are prone to softlocks and difficult to route around. The two maps are the entrance to Ghost Toys Castle (requires chain pipe) and the long invisible path in the Gourmet Sub. Enabling this option improves seed generation speeds.
 
@@ -106,6 +109,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
 
     goal_based_missables    Value: True or False (default False)
     This determines how the randomizer handles skippable events. If True, it will only force the player's path through those events if they are required to reach the goal. However, this is computationally expensive during the lock randomization phase, where the conditions for reaching the goal can change. Therefore, it is recommended to leave this setting off.
+
+    ice_kunai_logic         Value: True or False (default True)
+    When this setting is enabled, the maze generator will assume that the player cannot cross hot platforms without the ice kunai. It is recommended for inexperienced players to leave this setting enabled.
 
     lazy_complex_nodes      Value: True or False (default False)
     Lazily evaluates complex nodes during maze generation. Complex nodes are nodes that have strict requirements on how they can be reached, i.e. must be reached from a specific direction or while holding a specific item to prevent softlocks. Enabling this option will speed up maze generation, but will create the potential for softlock scenarios.
@@ -138,6 +144,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     retry_limit_close       Value: 0 or more (default 1000)
     This limit establishes an "overtime" contingency for seeds that appear close to completion, i.e. all of the victory conditions have been met, but there are still softlock scenarios in the maze layout. It should be a higher number than `retry_limit`.
 
+    ryo_hover_logic         Value: True or False (default False)
+    When this setting is enabled, the maze generator will assume that the player is capable of using Ryo Hover to cross large gaps. This logic is still experimental, so it may not be correct for all cases where Ryo Hover might be used. It is recommended for inexperienced players to leave this setting disabled.
+
     skip_complex_nodes      Value: 0 to 1 (default 0.5)
     Removes complex nodes from the maze generation pool at the specified rate (in other words, a value of 0.5 will remove a random 50% of complex nodes from the pool). Complex nodes are nodes that have strict requirements on how they can be reached, i.e. must be reached from a specific direction or while holding a specific item to prevent softlocks. Increasing this value will speed up maze generaton on average, but will result in certain rooms being excluded from seeds at a high rate.
 
@@ -161,6 +170,17 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
 
 # IV. FLAGS AND COMMAND LINE OPTIONS
 
+    Command line arguments are specified in the following format:
+    `python randomizer.py <ROM_FILENAME> <CODES> <SEED NUMBER>`
+
+    For example, to obtain a clean dump of the ROM, you would use the command:
+    `python randomizer.py mn64.z64 export.norandom 0`
+
+    To import a modified dump to a clean rom, you would use the command:
+    `python randomizer.py mn64.z64 import.norandom.debugmenu 0`
+
+    The available command line codes are as follows:
+
     debugmenu - Has the same effect as `enable_debug` in the config file. Enables the use of Mystical Ninja Starring Goemon's native debug menu by pressing `L` at any time, even when not generating a randomized maze.
 
     enemizer - Has the same effect as `randomize_enemies` in the config file. Allows enemy randomization even when not generating a randomized maze.
@@ -179,6 +199,7 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
 
     github.com/Fluvian
         - Information about Konami compression scheme (lzkn64)
+        - Information about room metadata
 
     Sterbenz, Parasyte, & spinout
         - Information about N64 checksum scheme (n64crc)
