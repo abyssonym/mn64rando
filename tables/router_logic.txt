@@ -24,6 +24,7 @@
 .def bizen_opened   darumanyo
 .def sasuke         camera&14a-002&149-002
 .def ice_kunai      sasuke&06e-001
+.def ice_kunai_optional     ice_kunai
 .def tsurami        071-001
 .def kyushu         tsurami&153-002
 .def sudden_impact  kyushu&1c4-001
@@ -34,6 +35,7 @@
 .def kappa          16a-002
 .def special_key    thaisamba&benkei&kappa&golden_temple
 .def super_jump     sasuke&1d0-001
+.def ryo_hover      chain_pipe&super_jump
 .def miracle_moon   congo
 .def miracle_flower darumanyo
 .def miracle_star   tsurami
@@ -67,10 +69,10 @@
 
 # 005 Oedo Castle 1F Chain Pipe Fork
 005-001=005-003                         # 0.10d.gold
-005-001=005-005 chain_pipe|super_jump
-005-001=005-007 chain_pipe|super_jump
-005-003=005-005 chain_pipe|super_jump   # 0.10d.gold
-005-003=005-007 chain_pipe|super_jump   # 0.10d.gold
+005-001=005-005 chain_pipe|super_jump|ryo_hover
+005-001=005-007 chain_pipe|super_jump|ryo_hover
+005-003=005-005 chain_pipe|super_jump|ryo_hover   # 0.10d.gold
+005-003=005-007 chain_pipe|super_jump|ryo_hover   # 0.10d.gold
 005-005=005-007
 
 # 006 Oedo Castle 1F Congo's Feet
@@ -78,8 +80,8 @@
 
 # 007 Oedo Castle 1F Chain Pipe Key Room
 007-001=007-003                         # 0.10f.silver
-007-005=007-001 chain_pipe|super_jump   # key
-007-005=007-003 chain_pipe|super_jump   # key
+007-005=007-001 chain_pipe|super_jump|ryo_hover   # key
+007-005=007-003 chain_pipe|super_jump|ryo_hover   # key
 
 # 008 Oedo Castle 1F Swatting Robot Gold Key Room
 008-003=008-001                         # key
@@ -130,7 +132,7 @@
 010-001=010-003
 
 # 011 Oedo Castle 2F Chain Pipe Moat
-011-001=011-003 chain_pipe|super_jump
+011-001=011-003 chain_pipe|super_jump|ryo_hover
 
 # 012 Oedo Castle 2F Silver Key Room
 012-006=012-001                         # key
@@ -139,8 +141,10 @@
 014-001=014-003
 014-001=014-005 congo&chain_pipe
 014-001=014-005 congo&super_jump
+014-001=014-005 congo&ryo_hover
 014-003=014-005 congo&chain_pipe
 014-003=014-005 congo&super_jump
+014-003=014-005 congo&ryo_hover
 
 # 015 Oedo Castle 2F Blocked Silver Cat Room
 015-003=015-001                         # cat
@@ -284,30 +288,35 @@
 
 # 05C Festival Temple West Hot Platform Drummer Fox Room
 05c-001>05c-003
+05c-001=05c-003 super_jump
 05c-001=05c-005
 05c-001>05c-007
+05c-001=05c-007 super_jump
 05c-003<05c-005
-05c-003=05c-007 ice_kunai|super_jump
+05c-003=05c-005 super_jump
+05c-003=05c-007 ice_kunai_optional|super_jump
 05c-005>05c-007
+05c-005=05c-007 super_jump
 
 # 05D Festival Temple West Hot Platform Samurai Room
-05d-001=05d-003 ice_kunai|super_jump
-05d-001=05d-005 ice_kunai|super_jump
+.def ice_kunai_partial ice_kunai_optional&06e-001
+05d-001=05d-003 ice_kunai|ice_kunai_partial|super_jump
+05d-001=05d-005 ice_kunai|ice_kunai_partial|super_jump
 05d-001>05d-003
 05d-001>05d-005
 05d-003=05d-005
-05d-00c=05d-001 ice_kunai|super_jump    # dango
+05d-00c=05d-001 ice_kunai|ice_kunai_partial|super_jump|ryo_hover    # dango
 #05d-00c<05d-003                         # dango
-05d-00c=05d-003 ice_kunai|super_jump    # dango
+05d-00c=05d-003 ice_kunai|ice_kunai_partial|super_jump    # dango
 05d-00c>05d-003                         # dango
-05d-00c=05d-005 ice_kunai|super_jump    # dango
+05d-00c=05d-005 ice_kunai|ice_kunai_partial|super_jump    # dango
 05d-00c>05d-005                         # dango
 
 # 05E Festival Temple West Hot Platform Gold Key Room
 05e-001=05e-003
 05e-001<05e-005
 05e-003<05e-005
-05e-007=05e-005 ice_kunai|super_jump    # key
+05e-007=05e-005 ice_kunai_optional|super_jump|ryo_hover   # key
 05e-007>05e-005                         # key
 
 # 05F Festival Temple West Spike Chain Elly Fant Room
@@ -330,21 +339,21 @@
 # 061 Festival Temple East Chain Pipe Room
 061-001<061-003
 061-001<061-007
-061-001=061-003 chain_pipe|super_jump
-061-001=061-007 chain_pipe|super_jump
-061-003=061-007 chain_pipe|super_jump
+061-001=061-003 chain_pipe|super_jump|ryo_hover
+061-001=061-007 chain_pipe|super_jump|ryo_hover
+061-003=061-007 chain_pipe|super_jump|ryo_hover
 
 # 062 Festival Temple East Meatsaw Hammer Room
 062-001>062-003
-062-001=062-003 ice_kunai|super_jump
+062-001=062-003 ice_kunai_optional|super_jump|ryo_hover
 062-003=062-005
 062-003<062-007
-062-003=062-007 ice_kunai|super_jump
+062-003=062-007 ice_kunai_optional|super_jump|ryo_hover
 062-001>062-005
-062-001=062-005 ice_kunai|super_jump
-062-001=062-007 ice_kunai|super_jump
+062-001=062-005 ice_kunai_optional|super_jump|ryo_hover
+062-001=062-007 ice_kunai_optional|super_jump|ryo_hover
 062-005<062-007
-062-005=062-007 ice_kunai|super_jump
+062-005=062-007 ice_kunai_optional|super_jump|ryo_hover
 
 # 063 Festival Temple East Samurai Barrel Arrow Room
 063-003=063-00b
@@ -399,7 +408,7 @@
 
 # 06A Festival Temple Central Samurai Tank Room
 06a-001>06a-003
-06a-001=06a-003 chain_pipe|super_jump
+06a-001=06a-003 chain_pipe|super_jump|ryo_hover
 
 # 06B Festival Temple Central Accordion Room
 06b-001=06b-003
@@ -412,9 +421,9 @@
 06c-003<06c-005
 06c-005>06c-007
 06c-005>06c-009
-06c-003=06c-005 super_jump
-06c-005=06c-007 super_jump
-06c-005=06c-009 super_jump
+#06c-003=06c-005 super_jump
+#06c-005=06c-007 super_jump
+#06c-005=06c-009 super_jump
 06c-007=06c-009
 06c-00d=06c-00b                         # key
 06c-010=06c-005                         # cat
@@ -747,8 +756,9 @@
 
 # 0BA Musical Castle 2 Left Entrance Treadmill Room
 0ba-001<0ba-003
-0ba-003=>0ba-005 super_jump
-0ba-010=0ba-003 chain_pipe|super_jump   # dango
+0ba-001=0ba-003 super_jump
+0ba-003=>0ba-005 super_jump|ryo_hover
+0ba-010=0ba-003 chain_pipe|super_jump|ryo_hover   # dango
 0ba-010>0ba-001                         # dango
 
 # 0BB Musical Castle 2 Metal Box Lava Room
@@ -922,7 +932,7 @@
 141-005=141-006 mini_ebisu
 
 # 142 Iyo - Hot Springs
-.def softlock_142   chain_pipe|super_jump
+.def softlock_142   chain_pipe|super_jump|ryo_hover
 142-003=142-003 mini_ebisu
 142-003<142-004 mini_ebisu
 142-003=142-004 mini_ebisu&softlock_142
@@ -1160,11 +1170,11 @@
 164-002<164-004
 164-002=164-006
 164-004>164-006
-164-002=164-004 chain_pipe|super_jump
-164-004=164-006 chain_pipe|super_jump
-164-00a=164-002 chain_pipe|super_jump   # cat
-164-00a=164-004 chain_pipe|super_jump   # cat
-164-00a=164-006 chain_pipe|super_jump   # cat
+164-002=164-004 chain_pipe|super_jump|ryo_hover
+164-004=164-006 chain_pipe|super_jump|ryo_hover
+164-00a=164-002 chain_pipe|super_jump|ryo_hover   # cat
+164-00a=164-004 chain_pipe|super_jump|ryo_hover   # cat
+164-00a=164-006 chain_pipe|super_jump|ryo_hover   # cat
 164-00a>164-006                         # cat
 
 # 165 Stairway to Oedo Castle

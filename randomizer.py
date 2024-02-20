@@ -2752,6 +2752,7 @@ def randomize_enemies():
 def randomize_doors():
     from randomtools.doorrouter import DoorRouter, DoorRouterException
     DEFAULT_CONFIG = 'mn64_settings.yaml'
+    BACKUP_CONFIG = path.join(tblpath, 'default.mn64_settings.yaml')
 
     if 'MN64_CONFIG' in environ:
         config_filename = environ['MN64_CONFIG']
@@ -2763,6 +2764,15 @@ def randomize_doors():
 
     with open(config_filename) as f:
         config = yaml.safe_load(f.read())
+
+    with open(BACKUP_CONFIG) as f:
+        backup_config = yaml.safe_load(f.read())
+
+    for key in sorted(backup_config):
+        if key not in config:
+            print(f'Using default value {backup_config[key]} for "{key}".')
+            config[key] = backup_config[key]
+
 
     PEMOPEMO_LABEL = '14c-002'
     FINAL_ROOM_LABEL = '0c1-001'
@@ -2821,6 +2831,12 @@ def randomize_doors():
         definition_overrides['miracle_snow'] = 'start'
     else:
         parameters['start_snow'] = '00 94'
+
+    if not config['ice_kunai_logic']:
+        definition_overrides['ice_kunai_optional'] = 'start'
+
+    if config['ryo_hover_logic']:
+        definition_overrides['ryo_hover'] = 'start'
 
     write_patch(get_outfile(), patch_filename, parameters=parameters)
 
@@ -2997,7 +3013,7 @@ def randomize_doors():
     solutions = dr.generate_solutions()
     s = ''
     previous_line = None
-    for node, path in solutions:
+    for node, solpath in solutions:
         warp_index = node.label.split('-')[0]
         extra = None
         if node in key_assignments.values():
@@ -3009,7 +3025,7 @@ def randomize_doors():
             s += f'\n{warp_index} {mmo.room_name}\n'
         else:
             s += f'\n{warp_index} {mmo.room_name} **{extra}**\n'
-        nodes = [p.destination for p in path]
+        nodes = [p.destination for p in solpath]
         previous_line = None
         pathlines = []
         for n in nodes:
@@ -3238,9 +3254,9 @@ def generate_locks(dr):
                 if not rs:
                     continue
                 for r in rs:
-                    path = r.get_shortest_path(avoid_nodes={n},
-                                               avoid_edges={chosen})
-                    if not path:
+                    solpath = r.get_shortest_path(avoid_nodes={n},
+                                                  avoid_edges={chosen})
+                    if not solpath:
                         requirements_pass = False
                         break
 
