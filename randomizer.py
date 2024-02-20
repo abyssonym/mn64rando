@@ -178,7 +178,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     MUSASHI_IGA_TUNNEL = 0x131
 
     METADATA_STRUCTURE = {
-            'unknown_pointer1': (0x00, 0x04),
+            'global_actor_ptr': (0x00, 0x04),
             'unknown_pointer2': (0x04, 0x08),
             'meta_eight1':      (0x08, 0x0a),
             'instance_offset':  (0x0a, 0x0c),
@@ -2066,19 +2066,19 @@ class MapCategoryData(ConvertPointerMixin):
         ]
 
     STRUCTURE = {
-        'unknown0':         (0, (0, 8)),
-        'unk0_loading':     [(0, ( 8, 12)),
+        'graphics1':        (0, (0, 8)),
+        'loading_unknown':  [(0, ( 8, 12)),
                              (0, (12, 16)),
                              (0, (16, 20))],
-        'unknown1':         (1, (0, 8)),
+        'graphics2':        (1, (0, 8)),
         'loading_files':    [(2, (0, 2)),
                              (2, (2, 4)),
                              (2, (4, 6)),
                              (2, (6, 8))],
-        'unknown3':         (3, (0, 4)),
-        'unknown4':         (4, (0, 4)),
+        'bsp_plane_data':   (3, (0, 4)),
+        'bsp_tree':         (4, (0, 4)),
         'bgm':              (5, (0, 2)),
-        'unknown6':         (6, (0, 2)),
+        'skybox_index':     (6, (0, 2)),
         }
 
     datas_by_warp_index = {}
