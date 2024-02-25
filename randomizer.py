@@ -2823,6 +2823,9 @@ def randomize_doors():
     #if 'enemizer' in get_activated_codes():
     #    definition_overrides['kill_ghosts'] = 'start'
 
+    if config['completionist']:
+        definition_overrides['goal'] = 'pemopemo_god&everything'
+
     if config['start_camera']:
         parameters['start_camera'] = 'c8'
         definition_overrides['camera'] = 'start'

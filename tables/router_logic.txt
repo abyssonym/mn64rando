@@ -6,6 +6,7 @@
 .def chain_pipe                 pipe_maker
 .def congo                      016-001
 .def super_pass                 028-001
+.def triton_shell               132-002
 .def yae                        167-002
 .def ushikawa                   173-002
 .def benkei                     171-002
@@ -26,12 +27,14 @@
 .def sasuke                     camera&14a-002&149-002
 .def ice_kunai                  sasuke&06e-001
 .def ice_kunai_optional         ice_kunai
+.def meatsaw_hammer             062-00c
 .def tsurami                    071-001
 .def kyushu                     tsurami&153-002
 .def sudden_impact              kyushu&1c4-001
 .def silver_weapons             pipe_maker&179-002
 .def witch                      1d4-001
 .def mermaid                    yae&witch&154-002
+.def bazooka                    081-001
 .def thaisamba                  09d-001
 .def kappa                      16a-002
 .def special_key                thaisamba&benkei&kappa&golden_temple
@@ -43,9 +46,11 @@
 .def miracle_snow               thaisamba&benkei&super_jump&kappa&16f-002
 .def pemopemo_god   miracle_moon&miracle_flower&miracle_star&miracle_snow&14c-002
 .def gold_weapons               19f-001&194-001
+.def everything                 pemopemo_god&silver_weapons&gold_weapons&sudden_impact&mini_ebisu&super_jump&mermaid&chain_pipe&meatsaw_hammer&camera&ice_kunai&flute&bazooka&triton_shell&super_pass&achilles_heel&special_key
+.def goal                       pemopemo_god
 
 .start      start
-.goal       pemopemo_god
+.goal       goal
 
 #.unreachable 061-005
 #.unreachable 065-003
@@ -355,6 +360,7 @@
 062-001=062-007 ice_kunai_optional|super_jump|ryo_hover
 062-005<062-007
 062-005=062-007 ice_kunai_optional|super_jump|ryo_hover
+062-001=062-00c
 
 # 063 Festival Temple East Samurai Barrel Arrow Room
 063-003=063-00b
