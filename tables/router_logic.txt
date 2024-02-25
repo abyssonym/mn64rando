@@ -873,7 +873,7 @@
 133-005=133-006 yamato_opened
 133-005=133-008 mermaid
 133-006=133-008 yamato_opened&mermaid
-133-006=134-003 yamato_opened
+133-006=134-003
 
 # 134 Yamato Shrine
 134-007=134-003                         # cat

@@ -26,7 +26,7 @@ from decompress_mn64 import (
     checksum, decompress_from_file, decompress, recompress)
 
 
-VERSION = "1.1"
+VERSION = "1.2"
 ALL_OBJECTS = None
 DEBUG_MODE = False
 VERBOSE = False
@@ -178,17 +178,17 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     MUSASHI_IGA_TUNNEL = 0x131
 
     METADATA_STRUCTURE = {
-            'global_actor_ptr': (0x00, 0x04),
-            'unknown_pointer2': (0x04, 0x08),
-            'meta_eight1':      (0x08, 0x0a),
-            'instance_offset':  (0x0a, 0x0c),
-            'meta_eight2':      (0x0c, 0x0e),
-            'ending_offset':    (0x0e, 0x10),
-            'meta_eight3':      (0x10, 0x12),
-            'footer_offset':    (0x12, 0x14),
-            'file_index':       (0x14, 0x16),
-            'meta_null':        (0x16, 0x18),
-            'loading_pointer':  (0x18, 0x1c),
+            'persist_actor_ptr':    (0x00, 0x04),
+            'event_source_ptr':     (0x04, 0x08),
+            'meta_eight1':          (0x08, 0x0a),
+            'instance_offset':      (0x0a, 0x0c),
+            'meta_eight2':          (0x0c, 0x0e),
+            'ending_offset':        (0x0e, 0x10),
+            'meta_eight3':          (0x10, 0x12),
+            'footer_offset':        (0x12, 0x14),
+            'file_index':           (0x14, 0x16),
+            'meta_null':            (0x16, 0x18),
+            'loading_pointer':      (0x18, 0x1c),
         }
     METADATA_LENGTH = 0x1c
     ENTITY_FOOTER_LENGTH = 0x1c
@@ -1406,7 +1406,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             value = ('{0:0>%sx}' % length).format(getattr(self, attr))
             header += f'\n# {attr:25} {value}'
 
-        for attr in ('file_index', 'unknown_pointer1', 'unknown_pointer2'):
+        for attr in ('file_index', 'persist_actor_ptr', 'event_source_ptr'):
             if not hasattr(self, attr):
                 continue
             a, b = self.METADATA_STRUCTURE[attr]

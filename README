@@ -1,6 +1,6 @@
 ANCIENT CAVE STARRING GOEMON - RANDOMIZER MANUAL
-Version:    1
-Date:       February 16, 2024
+Version:    1.2
+Date:       February 25, 2024
 URL:        https://github.com/abyssonym/mn64rando/releases/latest/
 Contact:    https://twitter.com/abyssonym
             https://ko-fi.com/abyssonym
@@ -95,6 +95,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     cluster_bgm             Value: True or False (default True)
     Attempts to connect rooms that share a BGM, if the original exit also connected rooms that share a BGM. This option makes the maze somewhat easier to navigate and a great deal easier to listen to.
 
+    completionist           Value: True or False (default False)
+    When enabled, ensures that all key items are accessible in the maze, even if they are not required to reach the goal. This includes weapon upgrades, each character's weapons and magic, the triton shell, the super pass, the achilles heel, and the special key. Note that it does NOT guarantee all silver cat dolls; check the randomizer output for a warning that the cat dolls could not be allocated. This setting is disabled by default because it somewhat increases seed generation times.
+
     enable_debug            Value: True or False (default True)
     Enables the use of Mystical Ninja Starring Goemon's native debug menu by pressing `L` at any time. This will allow you to get out of various softlocks and is recommended while the randomizer is still in its experimental stage. However, it may cause the ending credits to be interrupted.
 
@@ -107,11 +110,17 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     fixed_singletons        Value: 0 to 1 (default 1)
     Connects singleton rooms to their vanilla exits at the specified rate, i.e. a rate of 0.5 will connect roughly 50% of singleton rooms this way. A singleton room is a room with only one exit, for example, a shop or someone's house. Excluding these rooms from the randomization makes the maze MUCH easier to navigate and it is recommended to set this setting to the MAXIMUM value, unless you are specifically looking for a painful experience.
 
+    flute_anywhere          Value: True or False (default True)
+    Allows the flute to be used in any room, including in castles and shops. If `start_flute` is enabled, this will slightly improve seed generation times. If `start_flute` is disabled, it will greatly increase seed generation times. It is recommended to enable both `start_flute` and `flute_anywhere` together.
+
     goal_based_missables    Value: True or False (default False)
     This determines how the randomizer handles skippable events. If True, it will only force the player's path through those events if they are required to reach the goal. However, this is computationally expensive during the lock randomization phase, where the conditions for reaching the goal can change. Therefore, it is recommended to leave this setting off.
 
     ice_kunai_logic         Value: True or False (default True)
     When this setting is enabled, the maze generator will assume that the player cannot cross hot platforms without the ice kunai. It is recommended for inexperienced players to leave this setting enabled.
+
+    jp_super_jump_logic     Value: True or False (default False)
+    When enabled, this adds several super jump checks to logic that are only reachable on the Japanese version. This setting has no effect when randomizing the English version. This setting is experimental; I am not aware of all the locations where the Japanese super jump has an advantage. The setting is off by default to maintain consistency in generated seeds between the English and Japanese versions.
 
     lazy_complex_nodes      Value: True or False (default False)
     Lazily evaluates complex nodes during maze generation. Complex nodes are nodes that have strict requirements on how they can be reached, i.e. must be reached from a specific direction or while holding a specific item to prevent softlocks. Enabling this option will speed up maze generation, but will create the potential for softlock scenarios.
@@ -145,7 +154,8 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     This limit establishes an "overtime" contingency for seeds that appear close to completion, i.e. all of the victory conditions have been met, but there are still softlock scenarios in the maze layout. It should be a higher number than `retry_limit`.
 
     ryo_hover_logic         Value: True or False (default False)
-    When this setting is enabled, the maze generator will assume that the player is capable of using Ryo Hover to cross large gaps. This logic is still experimental, so it may not be correct for all cases where Ryo Hover might be used. It is recommended for inexperienced players to leave this setting disabled.
+    When this setting is enabled, the maze generator will assume that the player is capable of using Ryo Hover to cross large gaps. This logic is still experimental, so it may not be correct for all cases where Ryo Hover might be used. Furthermore, some of the Ryo Hover checks are quite precise, so it is recommended for inexperienced players to leave this setting disabled.
+    Specifically, this setting adds the path to Oedo Castle to logic, which is technically reachable via Ryo Hover but is also reachable using easier tricks. This setting does NOT add the Gourmet Sub Camera Room Ryo Hover to logic, because of inconsistent lag in this room and because I wasn't able to pull it off even once on the English version in an emulator.
 
     skip_complex_nodes      Value: 0 to 1 (default 0.5)
     Removes complex nodes from the maze generation pool at the specified rate (in other words, a value of 0.5 will remove a random 50% of complex nodes from the pool). Complex nodes are nodes that have strict requirements on how they can be reached, i.e. must be reached from a specific direction or while holding a specific item to prevent softlocks. Increasing this value will speed up maze generaton on average, but will result in certain rooms being excluded from seeds at a high rate.
@@ -155,6 +165,7 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
 
     start_flute             Value: True or False (default True)
     Begin the game with Yae already recruited and Yae's flute already in your possession, with the maze logic updated accordingly. This option is recommended because there can be a frustrating degree of backtracking in many seeds, and the flute is not guaranteed to be obtainable otherwise. Note that Castles are no longer warp locations; you can only warp to Goemon's house, the teahouses, and the inns.
+    This setting drastically improves seed generation times, so it is highly recommended to leave this enabled for large or complex maze settings.
 
     start_minimaru          Value: True or False (default False)
     Begin the game with Ebisumaru's Chibi-Ebisu magic already learned, with the maze logic updated accordingly. Note that the maze logic does NOT reflect the use of the Ebisumaru Slide, so using it may result in sequence breaks or softlocks, but the option is there if you want it.
