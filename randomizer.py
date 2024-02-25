@@ -2629,6 +2629,8 @@ def setup_dragon_warps(dr):
         room_exit = MapMetaObject.get_entity_by_signature(signature)
         node = dr.by_label(signature)
         edges = {e for e in node.edges if e.destination is not dr.root}
+        if not edges:
+            continue
         assert len(edges) == 1
         node_exit = list(node.edges)[0]
         for attr in ['dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction']:
