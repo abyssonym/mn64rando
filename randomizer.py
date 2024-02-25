@@ -216,6 +216,13 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     ENEMY_FILES = {0x20, 0x21, 0x23, 0x24, 0x25, 0x26, 0x27}
     PICKUP_FILES = {0x1a, 0x1c, 0x2b}
 
+    JP_EN_NODE_MAPPING = {
+        '13b-00e': '13b-00c',
+        '152-014': '152-010',
+        '16b-00a': '16b-00b',
+        }
+    EN_JP_NODE_MAPPING = {v: k for (k, v) in JP_EN_NODE_MAPPING.items()}
+
     room_names = {}
     warp_names = {}
     for __line in read_lines_nocomment(ROOM_INDEXES_FILENAME):
@@ -1215,8 +1222,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         return choices[0]
 
     @classmethod
-    def get_entity_by_signature(self, signature):
+    def get_entity_by_signature(self, signature, convert=True):
         assert self is MapMetaObject
+        if convert and get_global_label() == 'MN64_EN' and \
+                signature in self.JP_EN_NODE_MAPPING:
+            signature = self.JP_EN_NODE_MAPPING[signature]
         if signature in MapMetaObject.entity_signatures:
             return MapMetaObject.entity_signatures[signature]
         warp_index = signature.split('-')[0]
@@ -2547,6 +2557,13 @@ def decouple_fire_ryo():
     MapCategoryData.data = data
 
 
+def do_flute_anywhere():
+    if get_global_label() == 'MN64_JP':
+        write_patch(get_outfile(), 'patch_flute_anywhere.txt')
+    elif get_global_label() == 'MN64_EN':
+        write_patch(get_outfile(), 'patch_flute_anywhere_en.txt')
+
+
 def setup_dragon_warps(dr):
     DRAGON_ATLAS_INDEX = 0x10
 
@@ -2611,7 +2628,8 @@ def setup_dragon_warps(dr):
         dwo = DragonWarpObject.get(dragon_index)
         room_exit = MapMetaObject.get_entity_by_signature(signature)
         node = dr.by_label(signature)
-        assert len(node.edges) == 1
+        edges = {e for e in node.edges if e.destination is not dr.root}
+        assert len(edges) == 1
         node_exit = list(node.edges)[0]
         for attr in ['dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction']:
             value = room_exit.get_property_value(attr)
@@ -2825,6 +2843,10 @@ def randomize_doors():
     else:
         parameters['start_yae'] = '94'
         parameters['start_flute'] = '94'
+
+    if config['flute_anywhere']:
+        definition_overrides['flute_anywhere'] = 'flute'
+        do_flute_anywhere()
 
     if config['start_snow']:
         parameters['start_snow'] = '02 5c'

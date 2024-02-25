@@ -1,47 +1,48 @@
 # Note:
 #   Multi-line .guarantee statements are joined by OR logic
 #   Multi-line .missable statements are joined by AND logic
-.def start          1d1-001
-.def pipe_maker     1d2-001
-.def chain_pipe     pipe_maker
-.def congo          016-001
-.def super_pass     028-001
-.def yae            167-002
-.def ushikawa       173-002
-.def benkei         171-002
-.def achilles_heel  benkei&ushikawa&168-002&16b-002&16e-004&172-002
-.def turtle_rock    137-002
-.def yamato_opened  turtle_rock
-.def turtle_torii   turtle_rock
-.def tourism        1b8-001|1b9-001
-.def dragon         tourism&13c-002
-.def flute          yae&dragon
-.def fire_ryo       140-003
-.def golden_temple  16d-002
-.def mini_ebisu     ushikawa&golden_temple&1b5-001
-.def camera         031-003
-.def darumanyo      049-001&camera
-.def bizen_opened   darumanyo
-.def sasuke         camera&14a-002&149-002
-.def ice_kunai      sasuke&06e-001
-.def ice_kunai_optional     ice_kunai
-.def tsurami        071-001
-.def kyushu         tsurami&153-002
-.def sudden_impact  kyushu&1c4-001
-.def silver_weapons pipe_maker&179-002
-.def witch          1d4-001
-.def mermaid        yae&witch&154-002
-.def thaisamba      09d-001
-.def kappa          16a-002
-.def special_key    thaisamba&benkei&kappa&golden_temple
-.def super_jump     sasuke&1d0-001
-.def ryo_hover      chain_pipe&super_jump
-.def miracle_moon   congo
-.def miracle_flower darumanyo
-.def miracle_star   tsurami
-.def miracle_snow   thaisamba&benkei&super_jump&kappa&16f-002
+.def start                      1d1-001
+.def pipe_maker                 1d2-001
+.def chain_pipe                 pipe_maker
+.def congo                      016-001
+.def super_pass                 028-001
+.def yae                        167-002
+.def ushikawa                   173-002
+.def benkei                     171-002
+.def achilles_heel              benkei&ushikawa&168-002&16b-002&16e-004&172-002
+.def turtle_rock                137-002
+.def yamato_opened              turtle_rock
+.def turtle_torii               turtle_rock
+.def tourism                    1b8-001|1b9-001
+.def dragon                     tourism&13c-002
+.def flute                      yae&dragon
+.def flute_anywhere             `NEVER`
+.def fire_ryo                   140-003
+.def golden_temple              16d-002
+.def mini_ebisu                 ushikawa&golden_temple&1b5-001
+.def camera                     031-003
+.def darumanyo                  049-001&camera
+.def bizen_opened               darumanyo
+.def sasuke                     camera&14a-002&149-002
+.def ice_kunai                  sasuke&06e-001
+.def ice_kunai_optional         ice_kunai
+.def tsurami                    071-001
+.def kyushu                     tsurami&153-002
+.def sudden_impact              kyushu&1c4-001
+.def silver_weapons             pipe_maker&179-002
+.def witch                      1d4-001
+.def mermaid                    yae&witch&154-002
+.def thaisamba                  09d-001
+.def kappa                      16a-002
+.def special_key                thaisamba&benkei&kappa&golden_temple
+.def super_jump                 sasuke&1d0-001
+.def ryo_hover                  chain_pipe&super_jump
+.def miracle_moon               congo
+.def miracle_flower             darumanyo
+.def miracle_star               tsurami
+.def miracle_snow               thaisamba&benkei&super_jump&kappa&16f-002
 .def pemopemo_god   miracle_moon&miracle_flower&miracle_star&miracle_snow&14c-002
-.def gold_weapons   19f-001&194-001
+.def gold_weapons               19f-001&194-001
 
 .start      start
 .goal       pemopemo_god
@@ -1404,214 +1405,243 @@
 1b9-001>>13c-002
 
 # Dragon Warps
-12c-002>1d1-001 flute
-12c-004>1d1-001 flute
-12c-006>1d1-001 flute
-12d-002>1d1-001 flute
-12d-004>1d1-001 flute
-12d-005>1d1-001 flute
-12d-006>1d1-001 flute
-12d-007>1d1-001 flute
-12d-008>1d1-001 flute
-12d-009>1d1-001 flute
-12e-002>1d1-001 flute
-12e-003>1d1-001 flute
-12f-002>1d1-001 flute
-12f-003>1d1-001 flute
-12f-004>1d1-001 flute
-12f-005>1d1-001 flute
-12f-006>1d1-001 flute
-130-003>1d1-001 flute
-130-005>1d1-001 flute
-130-007>1d1-001 flute
-131-002>1d1-001 flute
-131-004>1d1-001 flute
-132-002>1d1-001 flute
-132-004>1d1-001 flute
-133-002>1d1-001 flute
-133-004>1d1-001 flute
-133-005>1d1-001 flute
-133-006>1d1-001 flute
-134-003>1d1-001 flute
-136-002>1d1-001 flute
-136-003>1d1-001 flute
-137-002>1d1-001 flute
-138-002>1d1-001 flute
-138-003>1d1-001 flute
-138-005>1d1-001 flute
-13a-002>1d1-001 flute
-13a-004>1d1-001 flute
-13b-002>1d1-001 flute
-13b-004>1d1-001 flute
-13c-002>1d1-001 flute
-13c-004>1d1-001 flute
-13d-002>1d1-001 flute
-13d-004>1d1-001 flute
-13e-002>1d1-001 flute
-13e-004>1d1-001 flute
-13e-005>1d1-001 flute
-13f-002>1d1-001 flute
-13f-003>1d1-001 flute
-140-003>1d1-001 flute
-140-004>1d1-001 flute
-140-006>1d1-001 flute
-141-003>1d1-001 flute
-141-006>1d1-001 flute
-142-003>1d1-001 flute
-142-004>1d1-001 flute
-143-002>1d1-001 flute
-143-004>1d1-001 flute
-143-006>1d1-001 flute
-143-008>1d1-001 flute
-144-002>1d1-001 flute
-144-004>1d1-001 flute
-145-002>1d1-001 flute
-145-004>1d1-001 flute
-145-006>1d1-001 flute
-146-002>1d1-001 flute
-146-004>1d1-001 flute
-146-006>1d1-001 flute
-147-002>1d1-001 flute
-147-004>1d1-001 flute
-148-002>1d1-001 flute
-148-004>1d1-001 flute
-148-006>1d1-001 flute
-148-008>1d1-001 flute
-148-00a>1d1-001 flute
-149-002>1d1-001 flute
-14a-002>1d1-001 flute
-14b-002>1d1-001 flute
-14b-004>1d1-001 flute
-14b-006>1d1-001 flute
-14c-002>1d1-001 flute
-14d-002>1d1-001 flute
-14d-004>1d1-001 flute
-14f-002>1d1-001 flute
-14f-004>1d1-001 flute
-150-002>1d1-001 flute
-150-003>1d1-001 flute
-151-002>1d1-001 flute
-151-004>1d1-001 flute
-151-006>1d1-001 flute
-152-002>1d1-001 flute
-152-004>1d1-001 flute
-153-002>1d1-001 flute
-154-002>1d1-001 flute
-15e-002>1d1-001 flute
-15e-004>1d1-001 flute
-15e-006>1d1-001 flute
-15f-002>1d1-001 flute
-15f-004>1d1-001 flute
-15f-006>1d1-001 flute
-15f-007>1d1-001 flute
-15f-009>1d1-001 flute
-15f-00a>1d1-001 flute
-15f-00b>1d1-001 flute
-15f-00c>1d1-001 flute
-15f-00d>1d1-001 flute
-160-002>1d1-001 flute
-160-004>1d1-001 flute
-160-005>1d1-001 flute
-160-007>1d1-001 flute
-160-009>1d1-001 flute
-160-00b>1d1-001 flute
-160-00d>1d1-001 flute
-161-002>1d1-001 flute
-161-003>1d1-001 flute
-161-004>1d1-001 flute
-161-006>1d1-001 flute
-161-008>1d1-001 flute
-161-00a>1d1-001 flute
-161-00c>1d1-001 flute
-161-00e>1d1-001 flute
-162-002>1d1-001 flute
-162-004>1d1-001 flute
-162-006>1d1-001 flute
-162-007>1d1-001 flute
-163-002>1d1-001 flute
-163-004>1d1-001 flute
-163-006>1d1-001 flute
-164-002>1d1-001 flute
-164-004>1d1-001 flute
-164-006>1d1-001 flute
-165-002>1d1-001 flute
-165-004>1d1-001 flute
-166-002>1d1-001 flute
-166-004>1d1-001 flute
-167-002>1d1-001 flute
-167-004>1d1-001 flute
-168-002>1d1-001 flute
-168-004>1d1-001 flute
-168-006>1d1-001 flute
-168-007>1d1-001 flute
-169-002>1d1-001 flute
-169-004>1d1-001 flute
-169-006>1d1-001 flute
-169-008>1d1-001 flute
-169-009>1d1-001 flute
-169-00a>1d1-001 flute
-169-00b>1d1-001 flute
-16a-002>1d1-001 flute
-16a-004>1d1-001 flute
-16b-002>1d1-001 flute
-16b-003>1d1-001 flute
-16c-002>1d1-001 flute
-16c-004>1d1-001 flute
-16c-006>1d1-001 flute
-16c-008>1d1-001 flute
-16c-00a>1d1-001 flute
-16c-00c>1d1-001 flute
-16c-00e>1d1-001 flute
-16c-00f>1d1-001 flute
-16d-002>1d1-001 flute
-16e-002>1d1-001 flute
-16e-004>1d1-001 flute
-16e-006>1d1-001 flute
-16f-002>1d1-001 flute
-16f-004>1d1-001 flute
-170-002>1d1-001 flute
-171-002>1d1-001 flute
-171-004>1d1-001 flute
-171-006>1d1-001 flute
-171-007>1d1-001 flute
-172-002>1d1-001 flute
-172-004>1d1-001 flute
-173-002>1d1-001 flute
-173-003>1d1-001 flute
-175-002>1d1-001 flute
-175-004>1d1-001 flute
-175-006>1d1-001 flute
-176-002>1d1-001 flute
-176-004>1d1-001 flute
-176-006>1d1-001 flute
-176-007>1d1-001 flute
-176-009>1d1-001 flute
-176-00b>1d1-001 flute
-176-00d>1d1-001 flute
-177-002>1d1-001 flute
-177-004>1d1-001 flute
-177-006>1d1-001 flute
-177-008>1d1-001 flute
-177-009>1d1-001 flute
-177-00a>1d1-001 flute
-178-002>1d1-001 flute
-178-004>1d1-001 flute
-178-006>1d1-001 flute
-178-007>1d1-001 flute
-179-002>1d1-001 flute
-179-004>1d1-001 flute
-179-006>1d1-001 flute
-179-008>1d1-001 flute
-17a-002>1d1-001 flute
-17a-004>1d1-001 flute
-17a-006>1d1-001 flute
-17a-008>1d1-001 flute
-17a-009>1d1-001 flute
-17a-00a>1d1-001 flute
-17a-00c>1d1-001 flute
-17a-00e>1d1-001 flute
-17b-002>1d1-001 flute
-17c-002>1d1-001 flute
-17c-004>1d1-001 flute
-17c-006>1d1-001 flute
-17d-003>1d1-001 flute
+12c-0*>start flute
+12d-0*>start flute
+12e-0*>start flute
+12f-0*>start flute
+130-0*>start flute
+131-0*>start flute
+132-0*>start flute
+133-0*>start flute
+134-0*>start flute
+136-0*>start flute
+137-0*>start flute
+138-0*>start flute
+13a-0*>start flute
+13b-0*>start flute
+13c-0*>start flute
+13d-0*>start flute
+13e-0*>start flute
+13f-0*>start flute
+140-0*>start flute
+141-0*>start flute
+142-0*>start flute
+143-0*>start flute
+144-0*>start flute
+145-0*>start flute
+146-0*>start flute
+147-0*>start flute
+148-0*>start flute
+149-0*>start flute
+14a-0*>start flute
+14b-0*>start flute
+14c-0*>start flute
+14d-0*>start flute
+14f-0*>start flute
+150-0*>start flute
+151-0*>start flute
+152-0*>start flute
+153-0*>start flute
+154-0*>start flute
+15e-0*>start flute
+15f-0*>start flute
+160-0*>start flute
+161-0*>start flute
+162-0*>start flute
+163-0*>start flute
+164-0*>start flute
+165-0*>start flute
+166-0*>start flute
+167-0*>start flute
+168-0*>start flute
+169-0*>start flute
+16a-0*>start flute
+16b-0*>start flute
+16c-0*>start flute
+16d-0*>start flute
+16e-0*>start flute
+16f-0*>start flute
+170-0*>start flute
+171-0*>start flute
+172-0*>start flute
+173-0*>start flute
+175-0*>start flute
+176-0*>start flute
+177-0*>start flute
+178-0*>start flute
+179-0*>start flute
+17a-0*>start flute
+17b-0*>start flute
+17c-0*>start flute
+17d-0*>start flute
+
+# Dragon Warps (Flute Anywhere)
+000-0*>start flute_anywhere
+002-0*>start flute_anywhere
+003-0*>start flute_anywhere
+004-0*>start flute_anywhere
+005-0*>start flute_anywhere
+006-0*>start flute_anywhere
+007-0*>start flute_anywhere
+008-0*>start flute_anywhere
+009-0*>start flute_anywhere
+00a-0*>start flute_anywhere
+00b-0*>start flute_anywhere
+00c-0*>start flute_anywhere
+00d-0*>start flute_anywhere
+00e-0*>start flute_anywhere
+00f-0*>start flute_anywhere
+010-0*>start flute_anywhere
+011-0*>start flute_anywhere
+012-0*>start flute_anywhere
+014-0*>start flute_anywhere
+015-0*>start flute_anywhere
+016-0*>start flute_anywhere
+01a-0*>start flute_anywhere
+028-0*>start flute_anywhere
+02f-0*>start flute_anywhere
+030-0*>start flute_anywhere
+031-0*>start flute_anywhere
+032-0*>start flute_anywhere
+033-0*>start flute_anywhere
+034-0*>start flute_anywhere
+035-0*>start flute_anywhere
+036-0*>start flute_anywhere
+039-0*>start flute_anywhere
+03a-0*>start flute_anywhere
+03b-0*>start flute_anywhere
+03c-0*>start flute_anywhere
+03e-0*>start flute_anywhere
+03f-0*>start flute_anywhere
+040-0*>start flute_anywhere
+041-0*>start flute_anywhere
+042-0*>start flute_anywhere
+043-0*>start flute_anywhere
+044-0*>start flute_anywhere
+045-0*>start flute_anywhere
+046-0*>start flute_anywhere
+049-0*>start flute_anywhere
+05a-0*>start flute_anywhere
+05b-0*>start flute_anywhere
+05c-0*>start flute_anywhere
+05d-0*>start flute_anywhere
+05e-0*>start flute_anywhere
+05f-0*>start flute_anywhere
+060-0*>start flute_anywhere
+061-0*>start flute_anywhere
+062-0*>start flute_anywhere
+063-0*>start flute_anywhere
+064-0*>start flute_anywhere
+065-0*>start flute_anywhere
+066-0*>start flute_anywhere
+067-0*>start flute_anywhere
+068-0*>start flute_anywhere
+069-0*>start flute_anywhere
+06a-0*>start flute_anywhere
+06b-0*>start flute_anywhere
+06c-0*>start flute_anywhere
+06d-0*>start flute_anywhere
+06e-0*>start flute_anywhere
+06f-0*>start flute_anywhere
+070-0*>start flute_anywhere
+071-0*>start flute_anywhere
+081-0*>start flute_anywhere
+082-0*>start flute_anywhere
+083-0*>start flute_anywhere
+085-0*>start flute_anywhere
+08a-0*>start flute_anywhere
+08b-0*>start flute_anywhere
+08c-0*>start flute_anywhere
+08d-0*>start flute_anywhere
+08e-0*>start flute_anywhere
+090-0*>start flute_anywhere
+091-0*>start flute_anywhere
+094-0*>start flute_anywhere
+095-0*>start flute_anywhere
+096-0*>start flute_anywhere
+097-0*>start flute_anywhere
+098-0*>start flute_anywhere
+099-0*>start flute_anywhere
+09d-0*>start flute_anywhere
+0a8-0*>start flute_anywhere
+0a9-0*>start flute_anywhere
+0aa-0*>start flute_anywhere
+0ab-0*>start flute_anywhere
+0ac-0*>start flute_anywhere
+0ad-0*>start flute_anywhere
+0ae-0*>start flute_anywhere
+0af-0*>start flute_anywhere
+0b0-0*>start flute_anywhere
+0b1-0*>start flute_anywhere
+0b2-0*>start flute_anywhere
+0b3-0*>start flute_anywhere
+0b4-0*>start flute_anywhere
+0b5-0*>start flute_anywhere
+0b6-0*>start flute_anywhere
+0b7-0*>start flute_anywhere
+0b8-0*>start flute_anywhere
+0b9-0*>start flute_anywhere
+0ba-0*>start flute_anywhere
+0bb-0*>start flute_anywhere
+0bc-0*>start flute_anywhere
+0bd-0*>start flute_anywhere
+0be-0*>start flute_anywhere
+0bf-0*>start flute_anywhere
+0c0-0*>start flute_anywhere
+0c1-0*>start flute_anywhere
+190-0*>start flute_anywhere
+191-0*>start flute_anywhere
+192-0*>start flute_anywhere
+193-0*>start flute_anywhere
+194-0*>start flute_anywhere
+196-0*>start flute_anywhere
+197-0*>start flute_anywhere
+198-0*>start flute_anywhere
+199-0*>start flute_anywhere
+19a-0*>start flute_anywhere
+19b-0*>start flute_anywhere
+19c-0*>start flute_anywhere
+19d-0*>start flute_anywhere
+19e-0*>start flute_anywhere
+19f-0*>start flute_anywhere
+1a1-0*>start flute_anywhere
+1a2-0*>start flute_anywhere
+1a3-0*>start flute_anywhere
+1a4-0*>start flute_anywhere
+1a5-0*>start flute_anywhere
+1a7-0*>start flute_anywhere
+1a8-0*>start flute_anywhere
+1a9-0*>start flute_anywhere
+1aa-0*>start flute_anywhere
+1ad-0*>start flute_anywhere
+1ae-0*>start flute_anywhere
+1b0-0*>start flute_anywhere
+1b1-0*>start flute_anywhere
+1b3-0*>start flute_anywhere
+1b4-0*>start flute_anywhere
+1b5-0*>start flute_anywhere
+1b6-0*>start flute_anywhere
+1b8-0*>start flute_anywhere
+1b9-0*>start flute_anywhere
+1bb-0*>start flute_anywhere
+1bc-0*>start flute_anywhere
+1bd-0*>start flute_anywhere
+1be-0*>start flute_anywhere
+1bf-0*>start flute_anywhere
+1c1-0*>start flute_anywhere
+1c2-0*>start flute_anywhere
+1c3-0*>start flute_anywhere
+1c4-0*>start flute_anywhere
+1c5-0*>start flute_anywhere
+1c6-0*>start flute_anywhere
+1c7-0*>start flute_anywhere
+1c8-0*>start flute_anywhere
+1c9-0*>start flute_anywhere
+1ca-0*>start flute_anywhere
+1cb-0*>start flute_anywhere
+1cc-0*>start flute_anywhere
+1cd-0*>start flute_anywhere
+1d0-0*>start flute_anywhere
+1d2-0*>start flute_anywhere
+1d3-0*>start flute_anywhere
+1d4-0*>start flute_anywhere
