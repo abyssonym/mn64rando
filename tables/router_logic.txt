@@ -39,7 +39,8 @@
 .def kappa                      16a-002
 .def special_key                thaisamba&benkei&kappa&golden_temple
 .def super_jump                 sasuke&1d0-001
-.def ryo_hover                  chain_pipe&super_jump
+.def super_jump_jp              `NEVER`
+.def ryo_hover                  `NEVER`
 .def miracle_moon               congo
 .def miracle_flower             darumanyo
 .def miracle_star               tsurami
@@ -138,7 +139,7 @@
 010-001=010-003
 
 # 011 Oedo Castle 2F Chain Pipe Moat
-011-001=011-003 chain_pipe|super_jump|ryo_hover
+011-001=011-003 chain_pipe|super_jump
 
 # 012 Oedo Castle 2F Silver Key Room
 012-006=012-001                         # key
@@ -294,15 +295,19 @@
 
 # 05C Festival Temple West Hot Platform Drummer Fox Room
 05c-001>05c-003
-05c-001=05c-003 super_jump
+05c-001=05c-003 ice_kunai_optional&super_jump
+05c-001=05c-003 super_jump_jp
 05c-001=05c-005
 05c-001>05c-007
-05c-001=05c-007 super_jump
+05c-001=05c-007 ice_kunai_optional&super_jump
+05c-001=05c-007 super_jump_jp
 05c-003<05c-005
-05c-003=05c-005 super_jump
+05c-003=05c-005 ice_kunai_optional&super_jump
+05c-003=05c-005 super_jump_jp
 05c-003=05c-007 ice_kunai_optional|super_jump
 05c-005>05c-007
-05c-005=05c-007 super_jump
+05c-005=05c-007 ice_kunai_optional&super_jump
+05c-005=05c-007 super_jump_jp
 
 # 05D Festival Temple West Hot Platform Samurai Room
 .def ice_kunai_partial ice_kunai_optional&06e-001
@@ -345,21 +350,21 @@
 # 061 Festival Temple East Chain Pipe Room
 061-001<061-003
 061-001<061-007
-061-001=061-003 chain_pipe|super_jump|ryo_hover
-061-001=061-007 chain_pipe|super_jump|ryo_hover
+061-001=061-003 chain_pipe|super_jump
+061-001=061-007 chain_pipe|super_jump
 061-003=061-007 chain_pipe|super_jump|ryo_hover
 
 # 062 Festival Temple East Meatsaw Hammer Room
 062-001>062-003
-062-001=062-003 ice_kunai_optional|super_jump|ryo_hover
+062-001=062-003 ice_kunai_optional|super_jump
 062-003=062-005
 062-003<062-007
-062-003=062-007 ice_kunai_optional|super_jump|ryo_hover
+062-003=062-007 ice_kunai_optional|super_jump
 062-001>062-005
-062-001=062-005 ice_kunai_optional|super_jump|ryo_hover
-062-001=062-007 ice_kunai_optional|super_jump|ryo_hover
+062-001=062-005 ice_kunai_optional|super_jump
+062-001=062-007 ice_kunai_optional|super_jump
 062-005<062-007
-062-005=062-007 ice_kunai_optional|super_jump|ryo_hover
+062-005=062-007 ice_kunai_optional|super_jump
 062-001=062-00c
 
 # 063 Festival Temple East Samurai Barrel Arrow Room
@@ -384,13 +389,13 @@
 066-002<066-008
 066-004<066-006
 066-004<066-008
-066-002=066-006 super_jump
-066-002=066-008 super_jump
-066-004=066-006 super_jump
-066-004=066-008 super_jump
+066-002=066-006 super_jump_jp
+066-002=066-008 super_jump_jp
+066-004=066-006 super_jump_jp
+066-004=066-008 super_jump_jp
 066-006=066-008
-#066-00a=066-002 super_jump              # dango
-#066-00a=066-004 super_jump              # dango
+#066-00a=066-002 super_jump_jp           # dango
+#066-00a=066-004 super_jump_jp           # dango
 #066-00a=066-006                         # dango
 #066-00a=066-008                         # dango
 
@@ -428,9 +433,9 @@
 06c-003<06c-005
 06c-005>06c-007
 06c-005>06c-009
-#06c-003=06c-005 super_jump
-#06c-005=06c-007 super_jump
-#06c-005=06c-009 super_jump
+06c-003=06c-005 super_jump_jp
+06c-005=06c-007 super_jump_jp
+06c-005=06c-009 super_jump_jp
 06c-007=06c-009
 06c-00d=06c-00b                         # key
 06c-010=06c-005                         # cat
@@ -556,7 +561,7 @@
 090-005=090-003                         # pack
 
 # 091 Gourmet Sub 1F-3F Entrance / Elevator
-.def softlock_091   camera
+.def softlock_091   camera|super_jump|ryo_hover
 .guarantee  091-001 softlock_091
 .guarantee  091-003 softlock_091
 .guarantee  091-009 softlock_091
@@ -566,11 +571,7 @@
 091-00e=091-00e mermaid
 091-00f=091-00f mermaid
 091-001>091-003 softlock_091
-091-001>091-009 softlock_091&mermaid
-091-001>091-00b softlock_091&mini_ebisu
-091-001<091-003 camera
-091-001<091-009 camera&mermaid
-091-001<091-00b camera&mini_ebisu
+091-001<091-003 camera|super_jump
 091-003=091-009 mermaid
 091-003=091-00b mini_ebisu
 091-005=091-007
@@ -580,10 +581,8 @@
 091-007=091-00f mermaid
 091-009=091-00b mermaid&mini_ebisu
 091-00e=091-00f mermaid
-091-018=091-001 camera                  # dango
-091-018=091-003 camera                  # dango
-091-018=091-009 camera&mermaid          # dango
-091-018=091-00b camera&mini_ebisu       # dango
+091-018=091-001 camera|super_jump       # dango
+091-018=091-003 camera|super_jump       # dango
 091-017=091-005                         # elly fant
 091-017=091-007                         # elly fant
 091-017=091-00e mermaid                 # elly fant
@@ -667,7 +666,8 @@
 0ae-00c=0ae-003 super_jump              # key
 0ae-00c=0ae-003 sudden_impact           # key
 0ae-00c=0ae-005 super_jump              # key
-#0ae-00c>0ae-001 super_jump              # key
+0ae-00c>0ae-001                         # key
+0ae-00c>0ae-003                         # key
 0ae-00e=0ae-001 super_jump              # elly fant
 0ae-00e=0ae-003                         # elly fant
 0ae-00e=0ae-005 super_jump              # elly fant
@@ -811,6 +811,7 @@
 12d-004<12d-007
 12d-004<12d-008
 12d-004<12d-009
+12d-006>12d-009 ryo_hover
 12d-007>12d-008
 12d-007>12d-009
 12d-008=12d-009
@@ -846,8 +847,8 @@
 130-003=130-005
 130-003<130-007
 130-005<130-007
-130-003=130-007 sudden_impact|super_jump
-130-005=130-007 sudden_impact|super_jump
+130-003=130-007 sudden_impact|super_jump_jp
+130-005=130-007 sudden_impact|super_jump_jp
 130-00b=130-003                         # cat
 130-00b=130-005                         # cat
 130-00b<130-007                         # cat

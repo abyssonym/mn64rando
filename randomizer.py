@@ -2863,6 +2863,9 @@ def randomize_doors():
     if config['ryo_hover_logic']:
         definition_overrides['ryo_hover'] = 'start'
 
+    if get_global_label() == 'MN64_JP' and config['jp_super_jump_logic']:
+        definition_overrides['super_jump_jp'] = 'super_jump'
+
     write_patch(get_outfile(), patch_filename, parameters=parameters)
 
     if config['fix_bad_maps']:
@@ -2911,7 +2914,6 @@ def randomize_doors():
     dr = DoorRouter(config=config, preset_connections=preset_connections,
                     strict_validator=None, lenient_validator=bgm_validator,
                     definition_overrides=definition_overrides)
-
     dr.build_graph()
     random.seed(dr.seed)
     setup_dragon_warps(dr)
