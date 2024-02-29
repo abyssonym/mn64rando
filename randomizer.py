@@ -1954,6 +1954,29 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 return True
         return False
 
+    def get_nearest_exit(self, x, y, z):
+        def distance(a, b):
+            x1, y1, z1 = a
+            x2, y2, z2 = b
+            return (((x1-x2)**2) + ((y1-y2)**2) + ((z1-z2)**2)) ** 0.5
+
+        x1 = x if x < 0x8000 else x - 0x10000
+        y1 = y if y < 0x8000 else y - 0x10000
+        z1 = z if z < 0x8000 else z - 0x10000
+        coords = {}
+        for door in self.exits:
+            x2 = door.get_property_value('x')
+            y2 = door.get_property_value('y')
+            z2 = door.get_property_value('z')
+            x2 = x2 if x2 < 0x8000 else x2 - 0x10000
+            y2 = y2 if y2 < 0x8000 else y2 - 0x10000
+            z2 = z2 if z2 < 0x8000 else z2 - 0x10000
+            coords[x2, y2, z2] = door
+
+        sorted_coords = sorted(
+                coords, key=lambda c: (distance((x1, y1, z1), c), c))
+        return coords[sorted_coords[0]]
+
     def preprocess(self):
         self.get_compressed()
         if self.index > 0 and not self.get(self.index-1).is_rom_split:
@@ -2306,14 +2329,19 @@ class MapCategoryData(ConvertPointerMixin):
         self.data.close()
 
 
-class DragonWarpObject(TableObject):
+class WarpObjectMixin:
     def __repr__(self):
+        if not hasattr(self, 'dest_room'):
+            self.__class__.create_properties()
         s = f'{self.description}\n'
         for attr in ['dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction']:
-            value = getattr(self, f'{attr}_str')
-            value = int.from_bytes(value, byteorder='big')
+            value = getattr(self, attr)
             if attr == 'dest_room':
-                room_name = MapMetaObject.get_by_warp_index(value).room_name
+                room = MapMetaObject.get_by_warp_index(value)
+                if room:
+                    room_name = room.room_name
+                else:
+                    room_name = 'None'
                 s += f'  {attr}: {value:0>4x} {room_name}\n'
             else:
                 s += f'  {attr}: {value:0>4x}\n'
@@ -2321,6 +2349,40 @@ class DragonWarpObject(TableObject):
             value = getattr(self, attr)
             s += f'  {attr}: {value:0>2x}\n'
         return s.strip()
+
+    @classmethod
+    def create_properties(self):
+        attrs = ['dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction']
+        if hasattr(self, attrs[0]):
+            return
+        attr_strs = [f'{attr}_str' for attr in attrs]
+        for attr, attr_str in zip(attrs, attr_strs):
+            get_lambda = lambda o, a=attr_str: int.from_bytes(
+                    getattr(o, a), byteorder='big')
+            set_lambda = lambda o, v, a=attr_str: setattr(
+                    o, a, v.to_bytes(length=2, byteorder='big'))
+            setattr(self, attr, property(get_lambda, set_lambda))
+
+    def infer_warp_point(self):
+        if not hasattr(self, 'dest_room'):
+            self.__class__.create_properties()
+        mmo = MapMetaObject.get_by_warp_index(self.dest_room)
+        door = mmo.get_nearest_exit(self.dest_x, self.dest_y, self.dest_z)
+        pair = door.exit_pair
+        assert len(pair.parent.exits) == 1
+        attrs = ['dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction']
+        for attr in attrs:
+            value = pair.definition.get_property_value(attr)
+            setattr(self, attr, value)
+
+    def preclean(self):
+        if not (hasattr(self, 'needs_update') and self.needs_update):
+            return
+        self.infer_warp_point()
+
+
+class SaveWarpObject(WarpObjectMixin, TableObject): pass
+class DragonWarpObject(WarpObjectMixin, TableObject): pass
 
 
 class MessageFileObject(TableObject):
@@ -2564,6 +2626,21 @@ def do_flute_anywhere():
         write_patch(get_outfile(), 'patch_flute_anywhere_en.txt')
 
 
+def setup_save_warps(dr):
+    WARP_DICT = {
+        1:   0x15f,
+        6:   0x169,
+        7:   0x177,
+        0xc: 0x179,
+        0x10: 0xb7,
+        }
+    SaveWarpObject.create_properties()
+    for index in sorted(WARP_DICT):
+        swo = SaveWarpObject.get(index)
+        assert swo.dest_room == WARP_DICT[index]
+        swo.needs_update = True
+
+
 def setup_dragon_warps(dr):
     DRAGON_ATLAS_INDEX = 0x10
 
@@ -2625,22 +2702,24 @@ def setup_dragon_warps(dr):
     f.close()
 
     for dragon_index, signature in sorted(WARP_DICT.items()):
-        dwo = DragonWarpObject.get(dragon_index)
         room_exit = MapMetaObject.get_entity_by_signature(signature)
         node = dr.by_label(signature)
         edges = {e for e in node.edges if e.destination is not dr.root}
         if not edges:
             continue
         assert len(edges) == 1
-        node_exit = list(node.edges)[0]
+
+        dwo = DragonWarpObject.get(dragon_index)
         for attr in ['dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction']:
             value = room_exit.get_property_value(attr)
             value = value.to_bytes(length=2, byteorder='big')
             dwo_attr = f'{attr}_str'
             assert hasattr(dwo, dwo_attr)
             setattr(dwo, dwo_attr, value)
+            dwo.needs_update = True
 
         if signature in INN_DICT:
+            node_exit = list(node.edges)[0]
             pair_exit = MapMetaObject.get_entity_by_signature(
                     node_exit.destination.label)
             test = pair_exit.parent.debug_index
@@ -2826,7 +2905,18 @@ def randomize_doors():
     #    definition_overrides['kill_ghosts'] = 'start'
 
     if config['completionist']:
-        definition_overrides['goal'] = 'pemopemo_god&everything'
+        if 'goal' in definition_overrides:
+            goal = definition_overrides['goal'] + '&everything'
+        else:
+            goal = 'pemopemo_god&everything'
+        definition_overrides['goal'] = goal
+
+    if config['all_warps']:
+        if 'goal' in definition_overrides:
+            goal = definition_overrides['goal'] + '&all_inns&all_teahouses'
+        else:
+            goal = 'pemopemo_god&all_inns&all_teahouses'
+        definition_overrides['goal'] = goal
 
     if config['start_camera']:
         parameters['start_camera'] = 'c8'
@@ -2918,6 +3008,7 @@ def randomize_doors():
                     definition_overrides=definition_overrides)
     dr.build_graph()
     random.seed(dr.seed)
+    setup_save_warps(dr)
     setup_dragon_warps(dr)
     random.seed(dr.seed)
 

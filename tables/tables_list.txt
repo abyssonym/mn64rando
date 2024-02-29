@@ -1,5 +1,6 @@
 MetaSizeObject          struct_meta_size.txt            5594c   1312
 MapMetaObject           struct_map_meta_pointer.txt     58258   1312
+SaveWarpObject          struct_dragon_warp.txt          5c8bc   16
 DragonWarpObject        struct_dragon_warp.txt          73af0   16
 MessagePointerObject    struct_message_pointer.txt      7dfd0   794
 MessageFileObject       struct_message_file.txt         7ec38   794

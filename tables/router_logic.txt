@@ -48,6 +48,8 @@
 .def pemopemo_god   miracle_moon&miracle_flower&miracle_star&miracle_snow&14c-002
 .def gold_weapons               19f-001&194-001
 .def everything                 pemopemo_god&silver_weapons&gold_weapons&sudden_impact&mini_ebisu&super_jump&mermaid&chain_pipe&meatsaw_hammer&camera&ice_kunai&flute&bazooka&triton_shell&super_pass&achilles_heel&special_key
+.def all_inns                   1a1-001&1a2-001&1a3-001&1a4-001&1a5-001
+.def all_teahouses              1b1-001&1b3-001&1b4-001&1b5-001&1b6-001
 .def goal                       pemopemo_god
 
 .start      start
