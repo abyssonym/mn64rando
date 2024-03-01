@@ -2,6 +2,7 @@
 #   Multi-line .guarantee statements are joined by OR logic
 #   Multi-line .missable statements are joined by AND logic
 .def start                      1d1-001
+.def ryo_hover                  `NEVER`
 .def pipe_maker                 1d2-001
 .def chain_pipe                 pipe_maker
 .def congo                      016-001
@@ -40,14 +41,20 @@
 .def special_key                thaisamba&benkei&kappa&golden_temple
 .def super_jump                 sasuke&1d0-001
 .def super_jump_jp              `NEVER`
-.def ryo_hover                  `NEVER`
+.def cucumber                   super_jump&170-002
 .def miracle_moon               congo
 .def miracle_flower             darumanyo
 .def miracle_star               tsurami
-.def miracle_snow               thaisamba&benkei&super_jump&kappa&16f-002
-.def pemopemo_god   miracle_moon&miracle_flower&miracle_star&miracle_snow&14c-002
+.def miracle_snow               thaisamba&benkei&kappa&cucumber
 .def gold_weapons               19f-001&194-001
-.def everything                 pemopemo_god&silver_weapons&gold_weapons&sudden_impact&mini_ebisu&super_jump&mermaid&chain_pipe&meatsaw_hammer&camera&ice_kunai&flute&bazooka&triton_shell&super_pass&achilles_heel&special_key
+.def all_miracle    miracle_moon&miracle_flower&miracle_star&miracle_snow
+.def pemopemo_god   all_miracle&14c-002
+.def all_characters sasuke&yae
+.def all_weapons    chain_pipe&meatsaw_hammer&camera&ice_kunai&flute&bazooka
+.def all_magic      sudden_impact&mini_ebisu&super_jump&mermaid
+.def all_key_items  triton_shell&super_pass&achilles_heel&special_key&cucumber
+.def all_inventory  all_characters&all_weapons&all_magic&all_key_items&all_miracle
+.def everything     pemopemo_god&gold_weapons&all_inventory&kappa&turtle_rock
 .def all_inns                   1a1-001&1a2-001&1a3-001&1a4-001&1a5-001
 .def all_teahouses              1b1-001&1b3-001&1b4-001&1b5-001&1b6-001
 .def goal                       pemopemo_god
@@ -619,8 +626,6 @@
 099-00a=099-005                         # dango
 
 # 09D Gourmet Sub 4F Thaisamba Boss Room
-#.guarantee 09d-001 mini_ebisu
-.missable 09d-001 mini_ebisu
 .missable 09d-001 171-004
 09d-001>>14d-002
 
