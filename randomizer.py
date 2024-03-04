@@ -425,7 +425,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         DOOR_DESIGNS = {
             0x23a: set(),
             0x23b: set(),
-            0x23c: {0},
+            0x23c: {0, 5},
             0x23d: set(),
             0x23f: {6, 7},
             0x240: set(),
@@ -439,6 +439,19 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             0x340: set(),
             0x34b: set(),
             0x3c8: set(),
+            }
+
+        DOOR_SUBDESIGNS = {
+            (0x23c, 0): 0,
+            (0x23c, 1): 5,
+            (0x23f, 0): 6,
+            (0x23f, 1): 6,
+            (0x23f, 2): 7,
+            (0x23f, 3): 7,
+            (0x321, 0): 1,
+            (0x321, 1): 2,
+            (0x32f, 0): 4,
+            (0x32f, 1): 4,
             }
 
         def __hash__(self):
@@ -636,15 +649,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             designs = sorted({k for k in self.DOOR_DESIGNS
                               if self.get_property_value('door_design')
                               in self.DOOR_DESIGNS[k]})
-            if len(designs) == 1:
-                design = designs[0]
-            else:
-                temp = {e.actor_id for e in self.parent.definitions
-                        if e.is_door and e is not self}
-                temp = sorted(temp & set(designs))
-                if temp:
-                    designs = temp
-                design = random.choice(designs)
+            assert len(designs) == 1
+            design = designs[0]
             x = self.exit
             lock_index = self.get_property_value('lock_index')
             self.parent.free_memory_flag(lock_index)
@@ -656,13 +662,13 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             LOCK_INDEX = 0x23e
             assert self.actor_id in self.DOOR_DESIGNS
             options = self.DOOR_DESIGNS[self.actor_id]
-            temp = {e.get_property_value('door_design', old=True)
-                    for e in self.parent.definitions
-                    if e.old_structure and 'door_design' in e.old_structure}
-            temp = temp & options
-            if temp:
-                options = temp
-            door_design = random.choice(sorted(options))
+            if len(options) > 1:
+                door_design = self.get_property_value('door_design')
+                dict_key = (self.actor_id, door_design)
+                if dict_key in self.DOOR_SUBDESIGNS:
+                    options = {self.DOOR_SUBDESIGNS[dict_key]}
+            assert len(options) == 1
+            door_design = set(options).pop()
             exit_id = self.get_property_value('exit_id')
             self.data = b'\x00' * len(self.data)
             self.set_main_property(LOCK_INDEX)
@@ -3243,7 +3249,7 @@ def generate_locks(dr):
                     '137-002', '138-002', '139-002',
                     '14c-002', '0c1-001', '143-008',
                     '039-003', '03b-001', '040-001',
-                    '02f-003', '16e-002',}
+                    '02f-003', '16e-002', '0b8-009'}
     preliminary_lockable = set()
     preliminary_keyable = {
             n for n in dr.rooted if '-x' not in n.label and

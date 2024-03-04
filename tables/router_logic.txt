@@ -9,9 +9,9 @@
 .def super_pass                 028-001
 .def triton_shell               132-002
 .def yae                        167-002
-.def ushikawa                   173-002
+.def ushiwaka                   173-002
 .def benkei                     171-002
-.def achilles_heel              benkei&ushikawa&168-002&16b-002&16e-004&172-002
+.def achilles_heel              benkei&ushiwaka&168-002&16b-002&16e-004&172-002
 .def turtle_rock                137-002
 .def yamato_opened              turtle_rock
 .def turtle_torii               turtle_rock
@@ -21,7 +21,7 @@
 .def flute_anywhere             `NEVER`
 .def fire_ryo                   140-003
 .def golden_temple              16d-002
-.def mini_ebisu                 ushikawa&golden_temple&1b5-001
+.def mini_ebisu                 ushiwaka&golden_temple&1b5-001
 .def camera                     031-003
 .def darumanyo                  049-001&camera
 .def bizen_opened               darumanyo
@@ -1294,7 +1294,7 @@
 # 172 Zazen - Waterfall
 172-002=172-004
 
-# 173 Zazen - Ushikawa
+# 173 Zazen - Ushiwaka
 173-002=173-003
 
 # 175 Folkypoke Village (East)

@@ -157,7 +157,7 @@
   name:       Flatfish (Tosa Bridge)
 
 0x106:
-  name:       Spinning Kite
+  name:       Helicopter Kite
 
 0x107:
   name:       Bamboo Shooter
@@ -407,6 +407,10 @@
 
 0x23c:
   name:       Double Sliding Door (Oedo Castle)
+  door_design:
+    index:      4
+    0x0:        Oedo Castle
+    0x1:        Swing Door
   exit_id:
     index:      13
 
@@ -442,7 +446,14 @@
     index:      13
 
 0x23f:
-  name:       Sliding Door (Musical Castle)
+  name:       Door (Musical Castle)
+  door_design:
+    index:      4
+    0x0:        Musical Castle 1 (Single Slide)
+    0x1:        Musical Castle 1 (Double Slide)
+    0x2:        Musical Castle 2 (Normal)
+    0x3:        Musical Castle 2 (Blue)
+    0x5:        Musical Castle 2 (Portrait)
   exit_id:
     index:      13
 
@@ -517,12 +528,14 @@
   name:       Falling Snow Weather Effect
 
 0x28f:
-  name:       Ushikawa
+  name:       Ushiwaka
   message:
     index:      [10, 11]
 
 0x290:
-  name:       Unknown (Golden Temple)
+  name:       Tiny Ushiwaka (Golden Temple)
+  message:
+    index:      [10, 11]
 
 0x291:
   name:       Priest (Golden Temple)
@@ -837,9 +850,12 @@
   name:       Festival Temple Fish Kite
 
 0x321:
-  name:       Door That Opens When Enemies Are Killed (Ghost Toys)
+  name:       Door (Ghost Toys)
   door_design:
     index:      4
+    0x0:        Blue-Red Dither
+    0x1:        Blue-Yellow
+    0x2:        Red Enemy Unlockable
   enemies:
     index:      5
   exit_id:
@@ -890,6 +906,10 @@
 
 0x32f:
   name:       Automatic Door (Gourmet Sub)
+  door_design:
+    index:      4
+    0x0:        Gourmet Submarine 1 (identical to 2)
+    0x1:        Gourmet Submarine 2 (identical to 1)
   exit_id:
     index:      13
 

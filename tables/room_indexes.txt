@@ -229,7 +229,7 @@
 170 41d Zazen - Mt. Nyoigatake
 171 41e Zazen - Bridge to Yamato (Benkei)
 172 41f Zazen - Waterfall
-173 420 Zazen - Ushikawa
+173 420 Zazen - Ushiwaka
 174 421 Null
 175 422 Folkypoke Village (East)
 176 423 Folkypoke Village (South)
