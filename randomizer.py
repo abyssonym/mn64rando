@@ -213,8 +213,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         structure_names.add(__name)
 
     MINIMUM_SAFE_BUDGET = 0xb0000
-    ENEMY_FILES = {0x20, 0x21, 0x23, 0x24, 0x25, 0x26, 0x27}
     PICKUP_FILES = {0x1a, 0x1c, 0x2b}
+    ENEMY_FILES = {0x20, 0x21, 0x23, 0x24, 0x25, 0x26, 0x27}
+    RESTRICTED_ENEMIES = {
+        0x106, 0x10c, 0x133, 0x13a, 0x13c, 0x13d, 0x13e, 0x144}
+    RESTRICTED_ENEMY_ROOMS = {0}
 
     JP_EN_NODE_MAPPING = {
         '13b-00e': '13b-00c',
@@ -2828,9 +2831,20 @@ def randomize_enemies():
             datas.add(d.data)
         enemy_definitions = [d for d in mmo.definitions if d.is_enemy]
         lowest_z = min(m.get_property_value('z') for m in to_reassign)
+        reassigned = []
+        if mmo.warp_index in mmo.RESTRICTED_ENEMY_ROOMS:
+            random.shuffle(to_reassign)
         for m in to_reassign:
             assert m.old_definition.old_actor_id != 0
-            chosen = random.choice(enemy_definitions)
+            candidates = list(enemy_definitions)
+            if mmo.warp_index in mmo.RESTRICTED_ENEMY_ROOMS:
+                done_restricted = [m for m in reassigned
+                                   if m.definition.actor_id
+                                   in mmo.RESTRICTED_ENEMIES]
+                if len(done_restricted) >= len(to_reassign) // 3:
+                    candidates = [m for m in enemy_definitions
+                                  if m.actor_id not in mmo.RESTRICTED_ENEMIES]
+            chosen = random.choice(candidates)
             old_relative_z = mean_relative_z[m.old_definition.old_actor_id]
             m.set_main_property(chosen.index)
             new_relative_z = mean_relative_z[m.definition.actor_id]
@@ -2845,6 +2859,7 @@ def randomize_enemies():
                     z = 0x10000 + z
                 z = max(z, lowest_z)
                 m.set_property('z', z)
+            reassigned.append(m)
         while True:
             for d in mmo.definitions:
                 if d.is_null:
