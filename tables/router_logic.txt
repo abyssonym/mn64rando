@@ -468,7 +468,7 @@
 06f-00d=06f-003                         # dango
 
 # 070 Festival Temple North Bamboo Path to Boss
-070-001=070-003
+070-001<070-003
 
 # 071 Festival Temple North Tsurami Boss Room
 071-001>>147-002
