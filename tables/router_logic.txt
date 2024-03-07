@@ -669,10 +669,10 @@
 0ae-001=0ae-005
 0ae-003>0ae-005
 0ae-003=0ae-005 super_jump
-0ae-00c=0ae-001 super_jump              # key
+0ae-00c=0ae-001 super_jump|chain_pipe   # key
 0ae-00c=0ae-003 super_jump              # key
 0ae-00c=0ae-003 sudden_impact           # key
-0ae-00c=0ae-005 super_jump              # key
+0ae-00c=0ae-005 super_jump|chain_pipe   # key
 0ae-00c>0ae-001                         # key
 0ae-00c>0ae-003                         # key
 0ae-00e=0ae-001 super_jump              # elly fant
@@ -770,7 +770,7 @@
 
 # 0BA Musical Castle 2 Left Entrance Treadmill Room
 0ba-001<0ba-003
-0ba-001=0ba-003 super_jump
+0ba-001=0ba-003 super_jump|ryo_hover
 0ba-003=>0ba-005 super_jump|ryo_hover
 0ba-010=0ba-003 chain_pipe|super_jump|ryo_hover   # dango
 0ba-010>0ba-001                         # dango
