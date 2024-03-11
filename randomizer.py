@@ -26,7 +26,7 @@ from decompress_mn64 import (
     checksum, decompress_from_file, decompress, recompress)
 
 
-VERSION = "1.3"
+VERSION = "1.3.1"
 ALL_OBJECTS = None
 DEBUG_MODE = False
 VERBOSE = False
@@ -3060,7 +3060,8 @@ def randomize_doors():
         for x in source.instances:
             x.spawn_door_blocker()
         if source.door is not None:
-            if source.door.is_lock:
+            if source.door.is_lock and \
+                    source.door.signature != BIZEN_LOCK_LABEL:
                 source.door.become_regular_door()
             source.door.remove()
         source.remove()
