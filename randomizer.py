@@ -2944,9 +2944,10 @@ def randomize_doors():
 
     if config['all_warps']:
         if 'goal' in definition_overrides:
-            goal = definition_overrides['goal'] + '&all_inns&all_teahouses'
+            goal = definition_overrides['goal'] + \
+                    '&flute&all_inns&all_teahouses'
         else:
-            goal = 'pemopemo_god&all_inns&all_teahouses'
+            goal = 'pemopemo_god&flute&all_inns&all_teahouses'
         definition_overrides['goal'] = goal
 
     if config['start_camera']:
