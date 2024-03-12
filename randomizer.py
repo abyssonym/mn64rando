@@ -334,9 +334,17 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
                 start, finish = self.get_property_indexes(property_name)
                 value = self.get_property_value(property_name)
-                pretty_value = ('{0:0>%sx}' % ((finish-start)*2)).format(value)
+                if 0xf001 <= value <= 0xffff:
+                    value = -(0x10000-value)
+                    pretty_value = f'-{abs(value):0>4x}'
+                else:
+                    pretty_value = ('{0:0>%sx}' %
+                                    ((finish-start)*2)).format(value)
                 pretty_name = f'{property_name}:'
-                pretty_value = f'@ {pretty_name:15} {pretty_value}'
+                if len(pretty_value) % 2:
+                    pretty_value = f'@ {pretty_name:14} {pretty_value}'
+                else:
+                    pretty_value = f'@ {pretty_name:15} {pretty_value}'
                 if value in data:
                     pretty_value = f'{pretty_value:26}# {data[value]}'
 
@@ -402,6 +410,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 else:
                     value = int(value, 0x10)
             value_length = finish - start
+            if value < 0:
+                value = (1 << (8*value_length)) + value
             value = value.to_bytes(length=value_length, byteorder='big')
             data = self.data[:start] + value + self.data[finish:]
             assert len(data) == len(self.data)
