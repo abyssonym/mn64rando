@@ -3664,8 +3664,6 @@ if __name__ == '__main__':
             if 'export' in get_activated_codes():
                 print('No modifications made; generating clean export.')
                 export_data()
-                finish_interface()
-                exit(0)
             clean_and_write(ALL_OBJECTS)
 
         checksum(get_open_file(get_outfile()))
