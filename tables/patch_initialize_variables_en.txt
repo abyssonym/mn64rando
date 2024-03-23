@@ -11,6 +11,7 @@
         ac 82 00 {{start_minimaru:e8}}  # "Have Mini-Ebisu" flag
         ac 82 00 {{start_yae:a0}}       # "Yae in party" flag
         ac 82 00 {{start_flute:c0}}     # "Have Flute" flag
+        ac 82 00 {{start_mermaid:f0}}   # "Have Mermaid" flag
         ac 82 {{start_snow:02 5c}}      # "Have Miracle Snow" flag
         03 e0 00 08     # Return
 

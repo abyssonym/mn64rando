@@ -30,6 +30,7 @@ VERSION = "1.3.1"
 ALL_OBJECTS = None
 DEBUG_MODE = False
 VERBOSE = False
+VISUALIZE = DEBUG_MODE
 
 
 def hexify(s):
@@ -2638,6 +2639,18 @@ def decouple_fire_ryo():
     MapCategoryData.data = data
 
 
+def initialize_variables(parameters=None):
+    if parameters is None:
+        parameters = {}
+    if get_global_label() == 'MN64_JP':
+        patch_filename = 'patch_initialize_variables.txt'
+    elif get_global_label() == 'MN64_EN':
+        patch_filename = 'patch_initialize_variables_en.txt'
+    else:
+        raise Exception('Unknown ROM version.')
+    write_patch(get_outfile(), patch_filename, parameters=parameters)
+
+
 def do_flute_anywhere():
     if get_global_label() == 'MN64_JP':
         write_patch(get_outfile(), 'patch_flute_anywhere.txt')
@@ -2914,13 +2927,6 @@ def randomize_doors():
 
     MapMetaObject.set_pemopemo_destination(0xc1, 0xfe8a, 0xff60, 0x0, 0x100)
 
-    if get_global_label() == 'MN64_JP':
-        patch_filename = 'patch_initialize_variables.txt'
-    elif get_global_label() == 'MN64_EN':
-        patch_filename = 'patch_initialize_variables_en.txt'
-    else:
-        raise Exception('Unknown ROM version.')
-
     decouple_fire_ryo()
 
     parameters = {}
@@ -2990,7 +2996,8 @@ def randomize_doors():
     if get_global_label() == 'MN64_JP' and config['jp_super_jump_logic']:
         definition_overrides['super_jump_jp'] = 'super_jump'
 
-    write_patch(get_outfile(), patch_filename, parameters=parameters)
+    parameters['start_mermaid'] = '94'
+    initialize_variables(parameters)
 
     if config['fix_bad_maps']:
         definition_overrides = fix_softlockable_rooms(definition_overrides)
@@ -3268,6 +3275,20 @@ def randomize_doors():
 
     random.seed(dr.seed)
     add_roommates()
+
+    if VISUALIZE:
+        relabel = {}
+        for n in dr.rooted:
+            warp_index = int(n.label.split('-')[0], 0x10)
+            label = MapMetaObject.get_by_warp_index(warp_index).debug_index
+            relabel[n.label] = label
+        ignore_edges = {e for e in dr.all_edges
+                        if e.destination is dr.root and e.pair is None}
+        if dr.reduced_graph is None:
+            dr.reduced_graph = dr.get_reduced_graph()
+        dr.reduced_graph.visualize(
+                output=f'{get_outfile()}.visualization.html', relabel=relabel,
+                ignore_edges=ignore_edges)
 
 
 def generate_locks(dr):
@@ -3652,6 +3673,8 @@ if __name__ == '__main__':
             write_patch(get_outfile(), patch_filename)
 
         decouple_fire_ryo()
+        if DEBUG_MODE:
+            initialize_variables()
 
         modified = ('import' in get_activated_codes() or
                     'enemizer' in get_activated_codes() or
