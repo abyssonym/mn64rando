@@ -149,6 +149,7 @@
 
 # 011 Oedo Castle 2F Chain Pipe Moat
 011-001=011-003 chain_pipe|super_jump
+011-001<011-003
 
 # 012 Oedo Castle 2F Silver Key Room
 012-006=012-001                         # key
