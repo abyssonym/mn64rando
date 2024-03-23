@@ -99,7 +99,7 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     Attempts to connect rooms that share a BGM, if the original exit also connected rooms that share a BGM. This option makes the maze somewhat easier to navigate and a great deal easier to listen to.
 
     completionist           Value: True or False (default False)
-    When enabled, ensures that all key items are accessible in the maze, even if they are not required to reach the goal. This includes weapon upgrades, each character's weapons and magic, the triton shell, the super pass, the achilles heel, and the special key. Note that it does NOT guarantee all silver cat dolls; check the randomizer output for a warning that the cat dolls could not be allocated. This setting is disabled by default because it somewhat increases seed generation times.
+    When enabled, ensures that all key items are accessible in the maze, even if they are not required to reach the goal. This includes weapon upgrades, each character's weapons and magic, the super pass, the triton shell, the achilles heel, the special key, and the cucumber. Note that it does NOT guarantee all silver cat dolls; check the randomizer output for a warning that the cat dolls could not be allocated. This setting is disabled by default because it somewhat increases seed generation times.
 
     enable_debug            Value: True or False (default True)
     Enables the use of Mystical Ninja Starring Goemon's native debug menu by pressing `L` at any time. This will allow you to get out of various softlocks and is recommended while the randomizer is still in its experimental stage. However, it may cause the ending credits to be interrupted.
@@ -228,6 +228,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
 
     twitch.tv/Stingchameleon
         - Uploaded a youtube video 10 years ago with some useful RAM addresses
+
+    twitch.tv/zar6565
+        - Playtesting
 
     VR43XX 64-Bit Microprocessor User's Manual
         - I speak 65816 I don't understand any of this

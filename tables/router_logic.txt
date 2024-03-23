@@ -50,7 +50,7 @@
 .def all_miracle    miracle_moon&miracle_flower&miracle_star&miracle_snow
 .def pemopemo_god   all_miracle&14c-002
 .def all_characters sasuke&yae
-.def all_weapons    chain_pipe&meatsaw_hammer&camera&ice_kunai&flute&bazooka
+.def all_weapons    chain_pipe&fire_ryo&meatsaw_hammer&camera&ice_kunai&flute&bazooka
 .def all_magic      sudden_impact&mini_ebisu&super_jump&mermaid
 .def all_key_items  triton_shell&super_pass&achilles_heel&special_key&cucumber
 .def all_inventory  all_characters&all_weapons&all_magic&all_key_items&all_miracle
