@@ -6,7 +6,7 @@
 .def pipe_maker                 1d2-001
 .def chain_pipe                 pipe_maker
 .def congo                      016-001
-.def super_pass                 028-001
+.def super_pass                 028-x01
 .def triton_shell               132-002
 .def yae                        167-002
 .def ushiwaka                   173-002
@@ -46,7 +46,8 @@
 .def miracle_flower             darumanyo
 .def miracle_star               tsurami
 .def miracle_snow               thaisamba&benkei&kappa&cucumber
-.def gold_weapons               19f-001&194-001
+.def sogen_armor_shop           19f-001
+.def gold_weapons               194-x01
 .def all_miracle    miracle_moon&miracle_flower&miracle_star&miracle_snow
 .def pemopemo_god   all_miracle&14c-002
 .def all_characters sasuke&yae
@@ -175,7 +176,8 @@
 01a-008=01a-006                         # cat
 
 # 028 Oedo Castle Lord's Room
-028-001>>166-002
+028-001=028-x01 congo
+028-x01>>166-002
 
 # 02F Ghost Toys Entrance
 .guarantee  02f-003 fire_ryo&02f-001
@@ -1412,6 +1414,9 @@
 17d-002=17d-003 mermaid
 17d-005=17d-002 mermaid                 # cat
 17d-005=17d-003                         # cat
+
+# 194 Sogen - Restaurant
+194-001=194-x01 sogen_armor_shop
 
 # 1B8 Folkypoke Tourism Center
 1b8-001=1b9-001 dragon
