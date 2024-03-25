@@ -1032,17 +1032,14 @@
 14d-x06=>14d-006 mermaid
 
 # 14E Japan Sea - Underwater
-.orphanless 14e-x00
-.require 14e-x00 14e-002
+.orphanless 14e-003
+.require 14e-003 14e-002
 14e-002=14e-002 mermaid
 14e-003=14e-003 mermaid
-14e-005=14e-005 mermaid
-14e-x00=14e-002 mermaid
-14e-x00=14e-003 mermaid
-14e-x00=14e-005 mermaid
-14e-x00=14e-009 mermaid                 # cat
-14e-x00=14e-00b mermaid                 # pack
-14e-x00=14e-00a mermaid                 # dango
+14e-002=14e-003 mermaid
+14e-002=14e-009 mermaid                 # cat
+14e-002=14e-00b mermaid                 # pack
+14e-002=14e-00a mermaid                 # dango
 
 
 # 14F Northeast Tunnel to Festival Village 1

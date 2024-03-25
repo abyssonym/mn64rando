@@ -2924,6 +2924,9 @@ def randomize_doors():
     FESTIVAL_WATERFALL_BLOCKER = '06f-00a'
     #SELF_LOOP_LABELS = ['14e-003', '14e-005']
     SELF_LOOP_LABELS = []
+    COPY_EXITS = {'091-00d': '091-00f',
+                  '14e-005': '14e-003',
+                  }
 
     MapMetaObject.set_pemopemo_destination(0xc1, 0xfe8a, 0xff60, 0x0, 0x100)
 
@@ -3065,6 +3068,15 @@ def randomize_doors():
         for attr in ('dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction'):
             value = dest_source.get_property_value(attr, old=True)
             source.set_property(attr, value)
+
+    for copy_to, copy_from in COPY_EXITS.items():
+        test = dr.by_label(copy_from)
+        assert test in dr.connectable
+        copy_to = MapMetaObject.get_entity_by_signature(copy_to)
+        copy_from = MapMetaObject.get_entity_by_signature(copy_from)
+        for attr in ('dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction'):
+            value = copy_from.get_property_value(attr, old=False)
+            copy_to.set_property(attr, value)
 
     # Clear unused exits
     for n in sorted(dr.connectable):
