@@ -9,6 +9,7 @@ from randomtools.interface import (
     get_outfile, get_seed, get_flags, get_activated_codes, activate_code,
     run_interface, rewrite_snes_meta, clean_and_write, finish_interface,
     get_sourcefile)
+from randomtools.scriptparser import Parser
 
 from collections import Counter, defaultdict
 from datetime import datetime
@@ -94,6 +95,39 @@ def consolidate_free_space(free_space):
         if not updated:
             break
     return free_space
+
+
+class GoemonParser(Parser):
+    def get_text(self, pointer):
+        self.data.seek(pointer.pointer & 0xffffff)
+        decoded = ''
+        char_size = self.config['text_char_size']
+        while True:
+            value = self.data.read(char_size)
+            if len(value) < char_size:
+                decoded += '{EOF}'
+                break
+            value = int.from_bytes(value, byteorder=self.config['byte_order'])
+            if value in self.text_decode_table:
+                decoded += self.text_decode_table[value]
+            else:
+                word = ('{0:0>%sx}' % (char_size*2)).format(value)
+                decoded += '{%s}' % word
+            if value in self.config['text_terminators']:
+                break
+        return decoded
+
+    def format_opcode(self, opcode):
+        return '{0:0>2x}'.format(opcode & 0xff)
+
+    def format_parameter(self, instruction, parameter_name):
+        value = instruction.parameters[parameter_name]
+        if parameter_name in ['flag', 'value']:
+            return f'{value:x}'
+        return super().format_parameter(instruction, parameter_name)
+
+    def format_pointer(self, pointer, format_spec=None):
+        return '@{0:x}'.format(pointer.converted)
 
 
 class ConvertPointerMixin:
@@ -2419,71 +2453,20 @@ class MessageFileObject(TableObject):
 
 
 class MessagePointerObject(TableObject):
-    NUM_PARAMETERS = {
-            0x08: 0,
-            0x10: 1,
-            0x11: 0,
-            0x12: 0,
-            0x22: 2,
-        }
-    MESSAGE_TERMINATE_OPCODE = 0x08
-    MESSAGE_TEXT_OPCODE = 0x10
-    COMMENTS = {
-            0x04: 'At RAM address {0:0>8x}...',
-            0x08: 'End Message',
-            0x09: 'Store Value: {0:0>8x}',
-            0x10: 'Print Text',
-            0x22: 'If Flag {0:0>4x}, Jump To {1:0>8x}',
-        }
+    PARSER_CONFIG = path.join(tblpath, 'parser_config.yaml')
+    parsers = {}
 
     def __repr__(self):
-        return self.get_pretty()
+        lines = []
+        for script in sorted(self.get_message()):
+            line = (f'# {self.header}.{script.pointer.converted:0>4x}\n'
+                    f'{script}')
+            lines.append(line)
 
-    @classmethod
-    def decode(self, word):
-        manual_map = {
-            0x0000: ' ',
-            0x0001: '!',
-            0x0007: "'",
-            0x000c: ',',
-            0x000e: '.',
-            0x000f: '/',
-            }
-        value = int.from_bytes(word, byteorder='big')
-        if value in manual_map:
-            return manual_map[value]
-        if not value:
-            return ' '
-        if value & 0xFF00 == 0:
-            if 65 <= value <= 90:
-                return chr(value).lower()
-            elif 65 <= value + 0x20 <= 90:
-                return chr(value + 0x20)
-            elif 0x11 <= value <= 0x19:
-                return str(value - 0x10)
-        s = '{%s}' % f'{value:0>4x}'
-        if value == 0xffc4 and False:
-            return '\n' + s
-        if value == 0xffff:
-            return s + '\n'
-        return s
-
-    @classmethod
-    def get_text(self, f, pointer=None):
-        old_pointer = f.tell()
-        if pointer is not None:
-            pointer &= 0xffffff
-            f.seek(pointer)
-        s = ''
-        while True:
-            word = f.read(2)
-            if len(word) < 2:
-                break
-            if word == b'\xff\xff':
-                break
-            s += self.decode(word)
-        f.seek(old_pointer)
-        return s
+        lines = '\n\n'.join(lines).strip()
+        if lines:
+            return lines
+        return f'# {self.header}'
 
     def get_message_pointer(self):
         return int.from_bytes(self.message_pointer_str, byteorder='big')
@@ -2507,75 +2490,34 @@ class MessagePointerObject(TableObject):
                 f'{self.file_index:0>3x}-{self.message_pointer:0>4x}')
 
     def get_message(self):
-        self.message = []
-        self.message_texts = {}
         if self.file_index == 0:
-            return
-
-        mmo = MapMetaObject.get(self.file_index-1)
-        if hasattr(mmo, '_data'):
-            data = mmo._data
-        else:
-            data = mmo.get_decompressed()
-        f = BytesIO(data)
-        f.seek(self.message_pointer)
+            return set()
+        if self.file_index not in MessagePointerObject.parsers:
+            data = MapMetaObject.get(self.file_index-1).get_decompressed()
+            parser = GoemonParser(self.PARSER_CONFIG, data, set())
+            parser.file_index = self.file_index
+            MessagePointerObject.parsers[self.file_index] = parser
+        parser = MessagePointerObject.parsers[self.file_index]
+        assert parser.file_index == self.file_index
+        script_pointer = self.message_pointer | 0x8000000
+        parser.add_pointer(script_pointer, script=True)
+        parser.read_scripts()
+        scripts = {parser.scripts[script_pointer]}
         while True:
-            opcode = f.read(4)
-            if not opcode:
+            old = set(scripts)
+            for script in old:
+                scripts |= script.referenced_scripts
+            if scripts == old:
                 break
-            if opcode == b'\x00\x00\x00\x00':
-                break
-            assert opcode[:3] == b'\x00\x00\x80'
-            opcode = opcode[-1]
-            if opcode in self.NUM_PARAMETERS:
-                num_parameters = self.NUM_PARAMETERS[opcode]
-            else:
-                num_parameters = 1
-            arguments = tuple([int.from_bytes(f.read(4), byteorder='big')
-                               for _ in range(num_parameters)])
-            self.message.append((opcode, arguments))
-            if opcode == self.MESSAGE_TERMINATE_OPCODE:
-                break
-            if opcode == self.MESSAGE_TEXT_OPCODE:
-                assert len(arguments) == 1
-                pointer = arguments[0]
-                assert pointer >> 24 in (0, 8, 9)
-                text = self.get_text(f, pointer)
-                self.message_texts[pointer] = text
-        f.close()
-
-    def get_pretty(self):
-        s = ''
-        for opcode, arguments in self.message:
-            argstr = ','.join([f'{a:0>8x}' for a in arguments])
-            line = f'{opcode:0>2x}: {argstr}'
-            if opcode in self.COMMENTS:
-                comment = self.COMMENTS[opcode].format(*arguments)
-                line = f'{line:23}# {comment}'
-            s += line + '\n'
-            if opcode == self.MESSAGE_TEXT_OPCODE:
-                text = self.message_texts[arguments[0]]
-                text = f'|{text}|'
-                text = text.replace('\n', '\n      ')
-                text = '      ' + text.strip()
-                s += text + '\n'
-        s = s.strip()
-        s = '  ' + s.replace('\n', '\n  ')
-        s = f'{self.header}\n{s}'
-        return s.strip()
+        return scripts
 
     def get_bytecode(self):
-        s = b''
-        for opcode, arguments in self.message:
-            s += (opcode | 0x8000).to_bytes(length=4, byteorder='big')
-            for a in arguments:
-                s += a.to_bytes(length=4, byteorder='big')
-        return s
+        return None
 
     def preprocess(self):
-        self.reallocate = False
         self.get_message()
         self.old_bytecode = self.get_bytecode()
+        self.reallocate = False
 
     def cleanup(self):
         if not self.reallocate:
@@ -2586,44 +2528,6 @@ class MessagePointerObject(TableObject):
     @classmethod
     def full_cleanup(self):
         super().full_cleanup()
-
-        file_indexes = {mpo.file_index for mpo in MessagePointerObject.every}
-        file_indexes.discard(0)
-        for file_index in sorted(file_indexes):
-            mpos = [mpo for mpo in MessagePointerObject.every
-                    if mpo.file_index == file_index
-                    and mpo.reallocate is True]
-            if not mpos:
-                continue
-            free_space = set()
-            for mpo in mpos:
-                free_space.add((mpo.message_pointer,
-                                mpo.message_pointer + len(mpo.old_bytecode)))
-            free_space = consolidate_free_space(free_space)
-            mmo = MapMetaObject.get(file_index-1)
-            if hasattr(mmo, '_data'):
-                data = mmo._data
-            else:
-                data = mmo.get_decompressed()
-            f = BytesIO(data)
-            for mpo in mpos:
-                bytecode = mpo.get_bytecode()
-                candidates = [(a, b) for (a, b) in free_space
-                              if (b-a) >= len(bytecode)]
-                candidates = sorted(candidates,
-                                    key=lambda x: (x[1]-x[0], x[0]))
-                start, finish = candidates[0]
-                free_space.remove((start, finish))
-                new_start = start + len(bytecode)
-                if new_start < finish:
-                    free_space.add((new_start, finish))
-                mpo.message_pointer_str = start.to_bytes(
-                        length=3, byteorder='big')
-                f.seek(start)
-                f.write(bytecode)
-            f.seek(0)
-            mmo._data = f.read()
-            f.close()
 
 
 def decouple_fire_ryo():
@@ -3646,6 +3550,10 @@ if __name__ == '__main__':
                       custom_degree=False, custom_difficulty=False)
         for code in sorted(get_activated_codes()):
             print('Code "%s" activated.' % code)
+
+        #for mpo in MessagePointerObject.every:
+        #    print(mpo)
+        #    print()
 
         import_filename = None
         if 'import' in get_activated_codes():

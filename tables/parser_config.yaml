@@ -1,0 +1,148 @@
+byte_order:                 "big"
+opcode_size:                4
+pointer_size:               4
+virtual_address:            0x8000000
+terminators:                [0x8008]
+text_terminators:           [0xffff]
+text_char_size:             2
+text_decode_table:
+  0x0000: " "
+  0x0001: "!"
+  0x0007: "'"
+  0x0008: "("
+  0x0009: ")"
+  0x000c: ","
+  0x000d: "-"
+  0x000e: "."
+  0x000f: "/"
+  0x001a: ":"
+  0x001f: "?"
+  0x003b: "["
+  0x003d: "]"
+  0x0041:
+    expansion: "abcdefghijklmnopqrstuvwxyz"
+    increment: 1
+  0x0021:
+    expansion: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    increment: 1
+  0x0010:
+    expansion: "0123456789"
+    increment: 1
+instructions:
+  0x8002:
+    comment:                "Skip Next If Not Equal: {value:x}"
+    parameters:
+      value:
+        length:             4
+  0x8003:
+    comment:                "Skip Next If Equal: {value:x}"
+    parameters:
+      value:
+        length:             4
+  0x8004:
+    comment:                "Write to RAM {address:x} ({_pretty_address})"
+    parameters:
+      address:
+        length:             4
+        prettify:
+          0x8015c704:       "Fortune Doll Progress"
+          0x801c7740:       "Scratch"
+          0x801c7750:       "Scratch"
+          -1:               "Unknown"
+  0x8006:
+    comment:                "Read from RAM {address:x} ({_pretty_address})"
+    parameters:
+      address:
+        length:             4
+        prettify:
+          0x8015c5e0:       "Maximum Health"
+          0x8015c5e4:       "Current Health"
+          0x8015c5e8:       "Current Ryo"
+          0x8015c704:       "Fortune Doll Progress"
+          0x801c7740:       "Scratch"
+          0x801c7750:       "Scratch"
+          -1:               "Unknown"
+  0x8008:
+    comment:                "End Event"
+  0x8009:
+    comment:                "Store Value: {value:x}"
+    parameters:
+      value:
+        length:             4
+  0x800a:
+    comment:                "Jump To {address:x}"
+    parameters:
+      address:
+        length:             4
+        track_pointer:      True
+        virtual_address:    0x8000000
+  0x800b:
+    comment:                "Execute Code: {address:x} ({_pretty_address})"
+    parameters:
+      address:
+        length:             4
+        prettify:
+          0x8003f460:       "Wait For Timer"
+          0x8003f594:       "Load Current Character"
+          -1:               "Unknown"
+  0x800c:
+    comment:                "Skip Next If Not Less Than {value:x}"
+    parameters:
+      value:
+        length:             4
+  0x8010:
+    comment:                "Print Text"
+    parameters:
+      text:
+        length:             4
+        track_pointer:      True
+        virtual_address:    0x8000000
+        is_text:            True
+  0x8011:
+    comment:                "Begin Option Selection"
+  0x8012:
+    comment:                "End Option Selection"
+  0x8013:
+    comment:                "Increase By {value:x}"
+    parameters:
+      value:
+        length:             4
+  0x8015:
+    comment:                "Unknown 8015 (Related to saving)"
+    parameters:
+      address:
+        length:             4
+  0x8017:
+    comment:                "Unknown 8017 (Related to saving)"
+    parameters:
+      value:
+        length:             4
+  0x8020:
+    comment:                "Set Flag {flag:0>3x}"
+    parameters:
+      flag:
+        length:             4
+  0x8021:
+    comment:                "Unset Flag: {flag:0>3x}"
+    parameters:
+      flag:
+        length:             4
+  0x8022:
+    comment:                "If Flag {flag:0>3x}, Jump To {address:x}"
+    parameter_order:        ['flag', 'address']
+    parameters:
+      flag:
+        length:             4
+      address:
+        length:             4
+        track_pointer:      True
+        virtual_address:    0x8000000
+  0x8030:
+    comment:                "Skip Next If {address:x} ({_pretty_address}) Not Equal"
+    parameters:
+      address:
+        length:             4
+        prettify:
+          0x8015c5e0:       "Maximum Health"
+          0x8015c5e4:       "Current Health"
+          -1:               "Unknown"
