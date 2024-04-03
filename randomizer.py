@@ -98,24 +98,50 @@ def consolidate_free_space(free_space):
 
 
 class GoemonParser(Parser):
-    def get_text(self, pointer):
-        self.data.seek(pointer.pointer & 0xffffff)
-        decoded = ''
-        char_size = self.config['text_char_size']
-        while True:
-            value = self.data.read(char_size)
-            if len(value) < char_size:
-                decoded += '{EOF}'
-                break
-            value = int.from_bytes(value, byteorder=self.config['byte_order'])
-            if value in self.text_decode_table:
-                decoded += self.text_decode_table[value]
-            else:
-                word = ('{0:0>%sx}' % (char_size*2)).format(value)
-                decoded += '{%s}' % word
-            if value in self.config['text_terminators']:
-                break
-        return decoded
+    def __eq__(self, other):
+        if self is not other:
+            assert self.file_index != other.file_index
+        return self is other
+
+    def __lt__(self, other):
+        return self.file_index < other.file_index
+
+    def __hash__(self):
+        return self.file_index
+
+    def get_text(self, value, instruction):
+        pointer = self.get_tracked_pointer(value,
+                                           self.config['virtual_address'])
+        return self.decode(pointer.pointer & 0xffffff, self.data)
+
+    def dump_all_text(self):
+        encoded_strs = []
+        for _, s in sorted(self.scripts.items()):
+            for i in s.instructions:
+                for parameter_name in i.text_parameters:
+                    encoded = self.encode(i.text_parameters[parameter_name])
+                    encoded_strs.append(encoded)
+        encoded_strs = sorted(encoded_strs, key=lambda s: (-len(s), s))
+        most = max(encoded_strs, key=lambda s: (encoded_strs.count(s),
+                                                -encoded_strs.index(s)))
+        encoded_strs = [most] + encoded_strs
+        bytecode = b''
+        for s in encoded_strs:
+            if s in bytecode:
+                continue
+            if len(s) % 4:
+                s += b'\x00\x00'
+            assert not len(s) % 4
+            bytecode += s
+        self.text_dump = bytecode
+        return self.text_dump
+
+    def text_to_parameter_bytecode(self, parameter_name, instruction):
+        encoded = self.encode(instruction.text_parameters[parameter_name])
+        index = self.text_dump.index(encoded)
+        pointer = index | (instruction.parameters['text'] & 0xff000000)
+        return pointer.to_bytes(length=self.config['pointer_size'],
+                                byteorder=self.config['byte_order'])
 
     def format_opcode(self, opcode):
         return '{0:0>2x}'.format(opcode & 0xff)
@@ -128,6 +154,16 @@ class GoemonParser(Parser):
 
     def format_pointer(self, pointer, format_spec=None):
         return '@{0:x}'.format(pointer.converted)
+
+    def to_bytecode(self):
+        if hasattr(self, '_bytecode'):
+            return self._bytecode
+        bytecode = self.dump_all_text()
+        bytecode = self.dump_all_scripts(header=bytecode)
+        while len(bytecode) % 0x10:
+            bytecode += b'\x00'
+        self._bytecode = bytecode
+        return self.to_bytecode()
 
 
 class ConvertPointerMixin:
@@ -184,7 +220,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     '''
     MAIN_CODE_INDEX = 0xb
     MAX_WARP_INDEX = 0x1e3
-    FORCE_OLD_POINTER = (list(range(0x335)) +
+    FORCE_OLD_POINTER = (list(range(0x50)) +
                          list(range(0x482, 0x520)))
 
     ROM_SPLIT_THRESHOLD_LOW = 0x336
@@ -2454,7 +2490,7 @@ class MessageFileObject(TableObject):
 
 class MessagePointerObject(TableObject):
     PARSER_CONFIG = path.join(tblpath, 'parser_config.yaml')
-    parsers = {}
+    parsers = {0: None}
 
     def __repr__(self):
         lines = []
@@ -2489,15 +2525,27 @@ class MessagePointerObject(TableObject):
         return (f'MESSAGE {self.index:0>3x}: '
                 f'{self.file_index:0>3x}-{self.message_pointer:0>4x}')
 
+    @property
+    def scripts(self):
+        if hasattr(self, '_scripts'):
+            return self._scripts
+        self._scripts = self.get_message()
+        return self.scripts
+
+    @property
+    def parser(self):
+        self.scripts
+        return MessagePointerObject.parsers[self.file_index]
+
     def get_message(self):
-        if self.file_index == 0:
-            return set()
         if self.file_index not in MessagePointerObject.parsers:
             data = MapMetaObject.get(self.file_index-1).get_decompressed()
             parser = GoemonParser(self.PARSER_CONFIG, data, set())
             parser.file_index = self.file_index
             MessagePointerObject.parsers[self.file_index] = parser
         parser = MessagePointerObject.parsers[self.file_index]
+        if parser is None:
+            return set()
         assert parser.file_index == self.file_index
         script_pointer = self.message_pointer | 0x8000000
         parser.add_pointer(script_pointer, script=True)
@@ -2511,22 +2559,21 @@ class MessagePointerObject(TableObject):
                 break
         return scripts
 
-    def get_bytecode(self):
-        return None
-
     def preprocess(self):
-        self.get_message()
-        self.old_bytecode = self.get_bytecode()
-        self.reallocate = False
+        self.scripts
 
     def cleanup(self):
-        if not self.reallocate:
-            assert self.message_pointer_str == \
-                    self.old_data['message_pointer_str']
-            assert self.get_bytecode() == self.old_bytecode
+        if self.parser is None:
+            return
+        MapMetaObject.get(self.file_index-1)._data = self.parser.to_bytecode()
+        script_pointer = self.message_pointer | \
+                self.parser.config['virtual_address']
+        script = self.parser.scripts[script_pointer]
+        self.message_pointer = script.pointer.repointer & 0xffffff
 
     @classmethod
     def full_cleanup(self):
+        print('Recompiling event code...')
         super().full_cleanup()
 
 
@@ -3550,10 +3597,6 @@ if __name__ == '__main__':
                       custom_degree=False, custom_difficulty=False)
         for code in sorted(get_activated_codes()):
             print('Code "%s" activated.' % code)
-
-        #for mpo in MessagePointerObject.every:
-        #    print(mpo)
-        #    print()
 
         import_filename = None
         if 'import' in get_activated_codes():
