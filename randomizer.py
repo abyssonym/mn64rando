@@ -155,6 +155,30 @@ class GoemonParser(Parser):
     def format_pointer(self, pointer, format_spec=None):
         return '@{0:x}'.format(pointer.converted)
 
+    def interpret_opcode(self, opcode):
+        try:
+            opcode = int(opcode, 0x10)
+        except ValueError:
+            return None
+        if opcode > 0xff:
+            return None
+        opcode |= 0x8000
+        return super().interpret_opcode(f'{opcode:x}')
+
+    def interpret_pointer(self, pointer):
+        pointer = pointer.split('#')[0].strip()
+        if not pointer.startswith('@'):
+            return None
+        pointer = pointer[1:]
+        try:
+            pointer = int(pointer, 0x10)
+        except ValueError:
+            return None
+        if pointer & self.config['virtual_address']:
+            raise Exception(f'Pointer @{pointer:x} outside of valid range.')
+        pointer |= self.config['virtual_address']
+        return super().interpret_pointer(f'@{pointer:x}')
+
     def to_bytecode(self):
         if hasattr(self, '_bytecode'):
             return self._bytecode
@@ -1328,6 +1352,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     @classmethod
     def import_from_file(self, filename):
+        filename = filename.strip()
         mmo = None
         previous_entity = None
         with open(filename) as f:
@@ -2559,17 +2584,70 @@ class MessagePointerObject(TableObject):
                 break
         return scripts
 
+    @classmethod
+    def import_all_scripts(self, script):
+        script = script.strip()
+        if '\n' not in script:
+            with open(script) as f:
+                script = f.read()
+
+        import_lines = defaultdict(list)
+        current_mpo = None
+        for line in script.split('\n'):
+            line = line.strip()
+            if line.startswith('#'):
+                line = line.lstrip('#').strip()
+                if not line.startswith('MESSAGE '):
+                    continue
+                line = line[len('MESSAGE '):].strip()
+                message_index, file_index_pointer = line.split(':')
+                message_index = int(message_index, 0x10)
+                file_index_pointer = file_index_pointer.strip()
+                if '-' in file_index_pointer:
+                    file_index_pointer = file_index_pointer.split('-')[0]
+                file_index = int(file_index_pointer, 0x10)
+                if file_index <= 0:
+                    raise Exception(f'ERROR: {line} - File index cannot be 0.')
+                mpo = MessagePointerObject.get(message_index)
+                mfo = MessageFileObject.get(mpo.index)
+                if mpo.file_index != file_index:
+                    if mpo.file_index != 0:
+                        print(f'WARNING: {line} - Changing file index.')
+                    mfo.file_index = file_index
+                assert mpo.file_index == file_index
+                current_mpo = mpo
+                continue
+
+            line = line.split('#')[0].strip()
+            if not line:
+                continue
+            import_lines[current_mpo.index].append(line)
+
+        for index, lines in sorted(import_lines.items()):
+            mpo = MessagePointerObject.get(index)
+            mpo.parser.import_script('\n'.join(lines))
+            mpo.updated = True
+
     def preprocess(self):
         self.scripts
+        self.updated = False
+
+    def preclean(self):
+        if not self.updated:
+            return
+        mmo = MapMetaObject.get(self.file_index-1)
+        if self.updated:
+            mmo._data = self.parser.to_bytecode()
 
     def cleanup(self):
         if self.parser is None:
             return
-        MapMetaObject.get(self.file_index-1)._data = self.parser.to_bytecode()
-        script_pointer = self.message_pointer | \
-                self.parser.config['virtual_address']
-        script = self.parser.scripts[script_pointer]
-        self.message_pointer = script.pointer.repointer & 0xffffff
+        mmo = MapMetaObject.get(self.file_index-1)
+        if mmo.data_has_changed:
+            script_pointer = self.message_pointer | \
+                    self.parser.config['virtual_address']
+            script = self.parser.scripts[script_pointer]
+            self.message_pointer = script.pointer.repointer & 0xffffff
 
     @classmethod
     def full_cleanup(self):
@@ -3554,16 +3632,40 @@ def export_data():
         export_filename = environ['MN64_EXPORT']
     else:
         export_filename = f'{get_outfile()}.export.txt'
-    print(f'EXPORTING to {export_filename}')
+    print(f'EXPORTING actors to {export_filename}')
     with open(export_filename, 'w+') as f:
         s =  (f'# Seed:   {get_seed()}\n')
         s += (f'# Flags:  {get_flags()}\n')
         done_codes = ','.join(get_activated_codes())
         s += (f'# Codes:  {done_codes}\n')
         s += (f'# Import: {import_filename}\n')
+        s += (f'# Script: {script_filename}\n')
         f.write(s + '\n')
         for mmo in MapMetaObject.sorted_rooms:
             f.write(str(mmo) + '\n\n')
+
+    if 'MN64_SCRIPT_EXPORT' in environ:
+        export_filename = environ['MN64_SCRIPT_EXPORT']
+    else:
+        export_filename = f'{get_outfile()}.script.export.txt'
+    print(f'EXPORTING script to {export_filename}')
+    parsers = sorted(mpo.parser for mpo in MessagePointerObject.every
+                     if mpo.parser is not None)
+    script_headers = defaultdict(set)
+    for mpo in MessagePointerObject.every:
+        for script in mpo.get_message():
+            header = f'# {mpo.header}.{script.pointer.converted:0>4x}'
+            script_headers[script].add(header)
+    sorted_scripts = sorted(script_headers, key=lambda s: (s.parser.file_index,
+                                                           s.pointer.pointer))
+
+    dump = ''
+    for s in sorted_scripts:
+        header = '\n'.join(sorted(script_headers[s])).strip()
+        dump = f'{dump}\n\n{header}\n{s}'
+    dump = dump.strip()
+    with open(export_filename, 'w+') as f:
+        f.write(dump)
 
 
 def write_abridged_metadata():
@@ -3599,15 +3701,32 @@ if __name__ == '__main__':
             print('Code "%s" activated.' % code)
 
         import_filename = None
+        script_filename = None
         if 'import' in get_activated_codes():
             if 'MN64_IMPORT' in environ:
                 import_filename = environ['MN64_IMPORT']
             else:
-                import_filename = input('Import from filename: ')
+                import_filename = input('Import actors from filename: ')
             if not import_filename.strip():
                 import_filename = f'{get_sourcefile()}.import.txt'
-            print(f'IMPORTING from {import_filename}')
-            MapMetaObject.import_from_file(import_filename)
+            if 'MN64_SCRIPT_IMPORT' in environ:
+                script_filename = environ['MN64_SCRIPT_IMPORT']
+            else:
+                script_filename = input('Import script from filename: ')
+            if not script_filename.strip():
+                script_filename = f'{get_sourcefile()}.script.import.txt'
+
+            print(f'IMPORTING actors from {import_filename}')
+            try:
+                MapMetaObject.import_from_file(import_filename)
+            except FileNotFoundError:
+                print(f'Failed to import actors from "{import_filename}"')
+
+            print(f'IMPORTING script from {script_filename}')
+            try:
+                MessagePointerObject.import_all_scripts(script_filename)
+            except FileNotFoundError:
+                print(f'Failed to import script from "{script_filename}"')
 
         if 'norandom' not in get_activated_codes():
             randomize_doors()

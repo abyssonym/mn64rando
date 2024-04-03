@@ -8,6 +8,7 @@ text_char_size:             2
 text_decode_table:
   0x0000: " "
   0x0001: "!"
+  0x0002: "\""
   0x0007: "'"
   0x0008: "("
   0x0009: ")"
@@ -28,6 +29,23 @@ text_decode_table:
   0x0010:
     expansion: "0123456789"
     increment: 1
+  0xffb9: "{end}"
+  0xffba: "{begin}"
+  0xffc1: "{newwindow}"
+  0xffc2: "{waitinput}"
+  0xffc3: "{button}"
+  0xffc4: "{newline}"
+  0xffc7: "{/big}"
+  0xffc8: "{big}"
+  0xffcd: "{/blink}"
+  0xffce: "{blink}"
+  0xffdb: "{unknown-ffdb}"
+  0xffdc: "{em-green}"
+  0xffdd: "{em-blue}"
+  0xffde: "{em-red}"
+  0xffdf: "{em-yellow}"
+  0xffe0: "{/em}"
+  0xffff: "{endline}"
 instructions:
   0x8002:
     comment:                "Skip Next If Not Equal: {value:x}"
@@ -82,6 +100,7 @@ instructions:
       address:
         length:             4
         prettify:
+          0x80221fd4:       "Give/Take Ryo"
           0x8003f460:       "Wait For Timer"
           0x8003f594:       "Load Current Character"
           -1:               "Unknown"
