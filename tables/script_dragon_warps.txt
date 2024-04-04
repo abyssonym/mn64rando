@@ -1,0 +1,22 @@
+# MESSAGE 08b: 05d-3420.3420
+@3420
+  3420. 04:801cce88      # Write to RAM 801cce88 (Unknown)
+  3428. 09:50            # Store Value: 50
+  3430. 04:801cce8c      # Write to RAM 801cce8c (Unknown)
+  3438. 09:20            # Store Value: 20
+  3440. 04:801cce98      # Write to RAM 801cce98 (Unknown)
+  3448. 09:5             # Store Value: 5
+  3450. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+ 10000. 04:8016209c      # Write to RAM 8016209c (Oedo Town Warp Acquired)
+ 10001. 09:1             # Store Value: 1
+  3458. 10:08,000c84     # Print Text
+    text: |{000d}{0124}{0123}{0111}{0112}{newline}{endline}|
+  3460. 10:08,000c94     # Print Text
+    text: |{000d}{000d}{000d}{00e8}{em-yellow}{0027}{0042}{0037}{0114}{/em}{0125}{endline}|
+  3468. 04:801cce70      # Write to RAM 801cce70 (Unknown)
+  3470. 09:3c            # Store Value: 3c
+  3478. 0b:8003f0cc      # Execute Code: 8003f0cc (Unknown)
+  3480. 10:08,000068     # Print Text
+    text: |{end}{endline}|
+  3488. 08:              # End Event

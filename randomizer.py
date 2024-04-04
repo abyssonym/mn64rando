@@ -2719,17 +2719,11 @@ def setup_dragon_warps(dr):
         '1a5-001': 0x93,
         }
 
-    for index in range(0x8b, 0x90):
-        MessagePointerObject.get(index).reallocate=True
-    mpo = MessagePointerObject.get(0x8f)
-    mpo.message = mpo.get(0x8f).message[-1:]
-    mpo = MessagePointerObject.get(0x8b)
     if get_global_label() == 'MN64_JP':
-        OEDO_WARP_ADDRESS = 0x8016209c
+        script_file = path.join(tblpath, 'script_dragon_warps.txt')
     elif get_global_label() == 'MN64_EN':
-        OEDO_WARP_ADDRESS = 0x8015c8ac
-    mpo.message.insert(0, (4, (OEDO_WARP_ADDRESS,)))
-    mpo.message.insert(1, (9, (1,)))
+        script_file = path.join(tblpath, 'script_dragon_warps_en.txt')
+    MessagePointerObject.import_all_scripts(script_file)
 
     for mmo in MapMetaObject.every:
         if not mmo.is_room:
@@ -3643,7 +3637,7 @@ def export_data():
                      if mpo.parser is not None)
     script_headers = defaultdict(set)
     for mpo in MessagePointerObject.every:
-        for script in mpo.get_message():
+        for script in mpo.scripts:
             header = f'# {mpo.header}.{script.pointer.converted:0>4x}'
             script_headers[script].add(header)
     sorted_scripts = sorted(script_headers, key=lambda s: (s.parser.file_index,
