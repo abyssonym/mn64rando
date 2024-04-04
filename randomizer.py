@@ -2677,6 +2677,14 @@ def do_flute_anywhere():
         write_patch(get_outfile(), 'patch_flute_anywhere_en.txt')
 
 
+def fix_bad_events():
+    if get_global_label() == 'MN64_JP':
+        script_file = path.join(tblpath, 'script_missable_events.txt')
+    elif get_global_label() == 'MN64_EN':
+        script_file = path.join(tblpath, 'script_missable_events_en.txt')
+    MessagePointerObject.import_all_scripts(script_file)
+
+
 def setup_save_warps(dr):
     WARP_DICT = {
         1:   0x15f,
@@ -3017,6 +3025,7 @@ def randomize_doors():
 
     if config['fix_bad_maps']:
         definition_overrides = fix_softlockable_rooms(definition_overrides)
+        fix_bad_events()
 
     preset_connections = defaultdict(set)
 

@@ -1,0 +1,36 @@
+# MESSAGE 1ea: 066-3e00.3e00
+@3e00
+  3e00. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  0001. 22:10,08,@3e001  # If Flag 010, proceed as normal.
+  0002. 0a:08,@3e002     # If not, skip other flag checks.
+ f0000. 08:              # End Event
+
+@3e001
+  3e08. 22:12,08,@441c   # If Flag 012, Jump To @441c
+  3e14. 22:11,08,@40c4   # If Flag 011, Jump To @40c4
+  3e20. 22:10,08,@4078   # If Flag 010, Jump To @4078
+ f0000. 08:              # End Event
+
+@3e002
+  3e2c. 10:08,000004     # Print Text
+    text: |{0080}{0065}{00a2}{0061}{0127}{0012}{003c}{00d4}{newline}{endline}|
+  3e34. 10:08,000018     # Print Text
+    text: |{000d}{000d}{000d}{000d}{000d}{0017}{003b}{0022}{0021}{0017}{0038}{002c}{004d}{0033}{0015}{0144}{001d}{0022}{button}{endline}|
+  3e3c. 10:08,000040     # Print Text
+    text: |{newwindow}{endline}|
+  3e44. 10:08,000044     # Print Text
+    text: |{0127}{000f}{003c}{001d}{000f}{0128}{0062}{0087}{0023}{0022}{003b}{0026}{0033}{0010}{004a}{00e0}{0129}{newline}{endline}|
+  3e4c. 10:08,00006c     # Print Text
+    text: |{000d}{newline}{endline}|
+  3e54. 11:              # Begin Option Selection
+  3e58. 10:08,000074     # Print Text
+    text: |{000d}{em-yellow}{0017}{003b}{0022}{0021}{0017}{004d}{0022}{0023}{0031}{003c}{0020}{003b}{0026}{00e0}{newline}{endline}|
+  3e60. 0a:08,@3e88      # Jump To @3e88
+  3e68. 10:08,000098     # Print Text
+    text: |{000d}{em-yellow}{0031}{0015}{004a}{001f}{0124}{0064}{006b}{0086}{0125}{003c}{0020}{000e}{0036}{00e0}{newline}{endline}|
+  3e70. 0a:08,@3ebc      # Jump To @3ebc
+  3e78. 12:              # End Option Selection
+  3e7c. 10:08,0000bc     # Print Text
+    text: |{end}{endline}|
+  3e84. 08:              # End Event

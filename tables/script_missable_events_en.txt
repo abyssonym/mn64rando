@@ -1,0 +1,38 @@
+# MESSAGE 1ea: 066-63fc.63fc
+@63fc
+  63fc. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  0001. 22:10,08,@63fc1  # If Flag 010, proceed as normal.
+  0002. 0a:08,@63fc2     # If not, skip other flag checks.
+ f0000. 08:              # End Event
+
+@63fc1
+  6404. 22:12,08,@6a08   # If Flag 012, Jump To @6a08
+  6410. 22:11,08,@66c8   # If Flag 011, Jump To @66c8
+  641c. 22:10,08,@668c   # If Flag 010, Jump To @668c
+ f0000. 08:              # End Event
+
+@63fc2
+  6428. 10:08,000004     # Print Text
+    text: |Mokubei:Wow! {newline}{endline}|
+  6430. 10:08,000024     # Print Text
+    text: |     I'm impressed that you{newline}{endline}|
+  6438. 10:08,000060     # Print Text
+    text: |     made it this far!{button}{endline}|
+  6440. 10:08,000090     # Print Text
+    text: |{newwindow}{endline}|
+  6448. 10:08,000094     # Print Text
+    text: |What do you want from me?{newline}{endline}|
+  6450. 10:08,0000cc     # Print Text
+    text: |  {newline}{endline}|
+  6458. 11:              # Begin Option Selection
+  645c. 10:08,0000d4     # Print Text
+    text: |  {em-yellow}What are you doing here?{newline}{endline}|
+  6464. 0a:08,@648c      # Jump To @648c
+  646c. 10:08,000110     # Print Text
+    text: |  {em-yellow}Do you have a good [Pipe]?{newline}{endline}|
+  6474. 0a:08,@64d0      # Jump To @64d0
+  647c. 12:              # End Option Selection
+  6480. 10:08,000150     # Print Text
+    text: |{end}{endline}|
+  6488. 08:              # End Event
