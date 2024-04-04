@@ -34,3 +34,98 @@
   3e7c. 10:08,0000bc     # Print Text
     text: |{end}{endline}|
   3e84. 08:              # End Event
+
+# MESSAGE 30c: 079-1164.1164
+@1164
+  1164. 21:7a            # Unset Flag: 07a
+  11cc. 22:34,08,@11641  # If Flag 034 (Met Benkei), Jump To @11641
+ 10000. 0a:08,@11640     # Jump To @11640
+ fffff. 08:
+
+@11641
+  1190. 22:33,08,@11643  # If Flag 033, Jump To @11643
+  11c0. 22:29,08,@11642  # If Flag 029, Jump To @11642
+ 10000. 0a:08,@11643     # Jump To @11643
+ fffff. 08:
+
+@11642
+  119c. 22:69,08,@1750   # If Flag 069, Jump To @1750
+  11a8. 22:67,08,@16e4   # If Flag 067, Jump To @16e4
+  11b4. 22:6a,08,@1648   # If Flag 06a, Jump To @1648
+  11c0. 22:29,08,@1340   # If Flag 029, Jump To @1340
+ fffff. 08:
+
+@11643
+  116c. 22:23,08,@22b0   # If Flag 023, Jump To @22b0
+  1178. 22:32,08,@1df4   # If Flag 032, Jump To @1df4
+  1184. 22:a,08,@1d80    # If Flag 00a, Jump To @1d80
+  1190. 22:33,08,@1d3c   # If Flag 033, Jump To @1d3c
+  11cc. 22:34,08,@12ec   # If Flag 034, Jump To @12ec
+ fffff. 08:
+
+@11640
+  11d8. 04:801cce88      # Write to RAM 801cce88 (Unknown)
+  11e0. 09:20            # Store Value: 20
+  11e8. 04:801cce8c      # Write to RAM 801cce8c (Unknown)
+  11f0. 09:68            # Store Value: 68
+  11f8. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  1200. 20:25            # Set Flag 025
+  1208. 10:08,000004     # Print Text
+    text: |{00a2}{008b}{0066}{005f}{0127}{0029}{003b}{00d4}{newline}{endline}|
+  1210. 10:08,000018     # Print Text
+    text: |{000d}{000d}{000d}{000d}{000d}{002c}{0020}{0128}{002c}{0020}{012f}{000f}{00d4}{00d4}{button}{endline}|
+  1218. 10:08,000038     # Print Text
+    text: |{newwindow}{endline}|
+  1220. 10:08,00003c     # Print Text
+    text: |{0017}{0017}{003a}{0021}{0012}{0035}{001d}{0015}{004f}{0128}{newline}{endline}|
+  1228. 10:08,000054     # Print Text
+    text: |{0012}{002c}{0011}{0018}{003b}{0026}{0030}{003c}{0020}{000f}{0036}{em-yellow}{0012}{001d}{0013}{0034}{/em}{003a}{newline}{endline}|
+  1230. 10:08,00007c     # Print Text
+    text: |{001e}{003f}{0010}{004a}{000f}{0019}{0033}{0010}{00d4}{00d4}{button}{endline}|
+  1238. 10:08,000038     # Print Text
+    text: |{newwindow}{endline}|
+  1240. 04:801ccea0      # Write to RAM 801ccea0 (Unknown)
+  1248. 09:1             # Store Value: 1
+  1250. 10:08,000094     # Print Text
+    text: |{0127}{0018}{000e}{0128}{004e}{0010}{001a}{0036}{003c}{00d4}{00d4}{0129}{newline}{endline}|
+  1258. 10:08,0000b0     # Print Text
+    text: |{000d}{newline}{endline}|
+  1260. 11:              # Begin Option Selection
+  1264. 10:08,0000b8     # Print Text
+    text: |{000d}{em-yellow}{001e}{0040}{0010}{002d}{001e}{0023}{0019}{002c}{001a}{00e8}{00e8}{00e8}{newline}{endline}|
+  126c. 0a:08,@1294      # Jump To @1294
+  1274. 10:08,0000d8     # Print Text
+    text: |{000d}{em-yellow}{0012}{001d}{0013}{0034}{0022}{003b}{0020}{0030}{003c}{0020}{0022}{000f}{0019}{00e8}{00e8}{00e8}{newline}{endline}|
+  127c. 0a:08,@12c0      # Jump To @12c0
+  1284. 12:              # End Option Selection
+  1288. 10:08,000100     # Print Text
+    text: |{end}{endline}|
+  1290. 08:              # End Event
+
+# MESSAGE 160: 061-830c.9028
+@9028
+  9028. 10:08,00003c     # Print Text
+    text: |{newwindow}{endline}|
+  832c. 22:29,08,@90281  # If Flag 029, Jump To @90281
+  8338. 22:2a,08,@87ac   # If Flag 02a, Jump To @87ac
+  8344. 22:2b,08,@86f4   # If Flag 02b, Jump To @86f4
+  8350. 22:2c,08,@863c   # If Flag 02c, Jump To @863c
+  835c. 22:25,08,@838c   # If Flag 025, Jump To @838c
+ ffff0. 0a:08,@90281     # Jump To @90281
+ fffff. 08:
+
+@90281
+  9030. 10:08,004dbc     # Print Text
+    text: |{0060}{0069}{0089}{0063}{0127}{015c}{0018}{000f}{0021}{0128}{001d}{0052}{0030}{003b}{0027}{newline}{endline}|
+  9038. 10:08,004de0     # Print Text
+    text: |{000d}{000d}{000d}{000d}{000d}{001e}{003f}{003c}{0021}{004d}{0011}{0011}{0019}{00e8}{00e8}{00e8}{button}{endline}|
+  9040. 10:08,00003c     # Print Text
+    text: |{newwindow}{endline}|
+  9048. 10:08,004e04     # Print Text
+    text: |{007a}{0081}{0022}{003b}{0013}{0128}{0030}{012f}{0028}{0038}{0015}{0020}{newline}{endline}|
+  9050. 10:08,004e20     # Print Text
+    text: |{0089}{008b}{00e8}{0086}{00af}{007e}{004d}{0030}{0128}{0012}{0113}{002d}{001d}{000f}{004d}{003c}{001b}{00d4}{endline}|
+  9058. 10:08,00079c     # Print Text
+    text: |{waitinput}{end}{endline}|
+  9060. 08:              # End Event
