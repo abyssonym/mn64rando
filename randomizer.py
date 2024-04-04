@@ -3638,11 +3638,17 @@ def export_data():
     script_headers = defaultdict(set)
     for mpo in MessagePointerObject.every:
         for script in mpo.scripts:
-            header = f'# {mpo.header}.{script.pointer.converted:0>4x}'
-            script_headers[script].add(header)
+            for referenced in script.referenced_scripts:
+                pointer = referenced.pointer.converted
+                header = f'# {mpo.header}.{pointer:0>4x}'
+                script_headers[referenced].add(header)
+    for p in parsers:
+        for script in p.scripts.values():
+            if script not in script_headers:
+                header = f'# MESSAGE ???: {p.file_index:0>3x}'
+                script_headers[script].add(header)
     sorted_scripts = sorted(script_headers, key=lambda s: (s.parser.file_index,
                                                            s.pointer.pointer))
-
     dump = ''
     for s in sorted_scripts:
         header = '\n'.join(sorted(script_headers[s])).strip()
