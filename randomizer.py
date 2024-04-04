@@ -110,9 +110,8 @@ class GoemonParser(Parser):
         return self.file_index
 
     def get_text(self, value, instruction):
-        pointer = self.get_tracked_pointer(value,
-                                           self.config['virtual_address'])
-        return self.decode(pointer.pointer & 0xffffff, self.data)
+        pointer = self.get_tracked_pointer(value)
+        return self.decode(pointer.pointer, self.data)
 
     def dump_all_text(self):
         encoded_strs = []
@@ -138,8 +137,7 @@ class GoemonParser(Parser):
 
     def text_to_parameter_bytecode(self, parameter_name, instruction):
         encoded = self.encode(instruction.text_parameters[parameter_name])
-        index = self.text_dump.index(encoded)
-        pointer = index | (instruction.parameters['text'] & 0xff000000)
+        pointer = self.text_dump.index(encoded)
         return pointer.to_bytes(length=self.config['pointer_size'],
                                 byteorder=self.config['byte_order'])
 
@@ -153,7 +151,7 @@ class GoemonParser(Parser):
         return super().format_parameter(instruction, parameter_name)
 
     def format_pointer(self, pointer, format_spec=None):
-        return '@{0:x}'.format(pointer.converted)
+        return '@{0:x}'.format(pointer.pointer)
 
     def interpret_opcode(self, opcode):
         try:
@@ -164,20 +162,6 @@ class GoemonParser(Parser):
             return None
         opcode |= 0x8000
         return super().interpret_opcode(f'{opcode:x}')
-
-    def interpret_pointer(self, pointer):
-        pointer = pointer.split('#')[0].strip()
-        if not pointer.startswith('@'):
-            return None
-        pointer = pointer[1:]
-        try:
-            pointer = int(pointer, 0x10)
-        except ValueError:
-            return None
-        if pointer & self.config['virtual_address']:
-            raise Exception(f'Pointer @{pointer:x} outside of valid range.')
-        pointer |= self.config['virtual_address']
-        return super().interpret_pointer(f'@{pointer:x}')
 
     def to_bytecode(self):
         if hasattr(self, '_bytecode'):
@@ -2514,7 +2498,6 @@ class MessageFileObject(TableObject):
 
 
 class MessagePointerObject(TableObject):
-    PARSER_CONFIG = path.join(tblpath, 'parser_config.yaml')
     parsers = {0: None}
 
     def __repr__(self):
@@ -2540,6 +2523,13 @@ class MessagePointerObject(TableObject):
 
     message_pointer = property(
             get_message_pointer, set_message_pointer, del_message_pointer)
+
+    @property
+    def PARSER_CONFIG(self):
+        if get_global_label() == 'MN64_JP':
+            return path.join(tblpath, 'parser_config.yaml')
+        elif get_global_label() == 'MN64_EN':
+            return path.join(tblpath, 'parser_config_en.yaml')
 
     @property
     def file_index(self):
@@ -2572,7 +2562,7 @@ class MessagePointerObject(TableObject):
         if parser is None:
             return set()
         assert parser.file_index == self.file_index
-        script_pointer = self.message_pointer | 0x8000000
+        script_pointer = self.message_pointer
         parser.add_pointer(script_pointer, script=True)
         parser.read_scripts()
         scripts = {parser.scripts[script_pointer]}
@@ -2647,7 +2637,7 @@ class MessagePointerObject(TableObject):
             script_pointer = self.message_pointer | \
                     self.parser.config['virtual_address']
             script = self.parser.scripts[script_pointer]
-            self.message_pointer = script.pointer.repointer & 0xffffff
+            self.message_pointer = script.pointer.repointer
 
     @classmethod
     def full_cleanup(self):

@@ -6,6 +6,29 @@ terminators:                [0x8008]
 text_terminators:           [0xffff]
 text_char_size:             2
 text_decode_table:
+  0x0000: " "
+  0x0001: "!"
+  0x0002: "\""
+  0x0007: "'"
+  0x0008: "("
+  0x0009: ")"
+  0x000c: ","
+  0x000d: "-"
+  0x000e: "."
+  0x000f: "/"
+  0x001a: ":"
+  0x001f: "?"
+  0x003b: "["
+  0x003d: "]"
+  0x0041:
+    expansion: "abcdefghijklmnopqrstuvwxyz"
+    increment: 1
+  0x0021:
+    expansion: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    increment: 1
+  0x0010:
+    expansion: "0123456789"
+    increment: 1
   0xffb9: "{end}"
   0xffba: "{begin}"
   0xffc1: "{newwindow}"
@@ -40,6 +63,9 @@ instructions:
       address:
         length:             4
         prettify:
+          0x8015c704:       "Fortune Doll Progress"
+          0x801c7740:       "Scratch"
+          0x801c7750:       "Scratch"
           -1:               "Unknown"
   0x8006:
     comment:                "Read from RAM {address:x} ({_pretty_address})"
@@ -47,6 +73,12 @@ instructions:
       address:
         length:             4
         prettify:
+          0x8015c5e0:       "Maximum Health"
+          0x8015c5e4:       "Current Health"
+          0x8015c5e8:       "Current Ryo"
+          0x8015c704:       "Fortune Doll Progress"
+          0x801c7740:       "Scratch"
+          0x801c7750:       "Scratch"
           -1:               "Unknown"
   0x8008:
     comment:                "End Event"
@@ -71,6 +103,9 @@ instructions:
       address:
         length:             4
         prettify:
+          0x80221fd4:       "Give/Take Ryo"
+          0x8003f460:       "Wait For Timer"
+          0x8003f594:       "Load Current Character"
           -1:               "Unknown"
   0x800c:
     comment:                "Skip Next If Not Less Than {value:x}"
@@ -135,4 +170,6 @@ instructions:
       address:
         length:             4
         prettify:
+          0x8015c5e0:       "Maximum Health"
+          0x8015c5e4:       "Current Health"
           -1:               "Unknown"
