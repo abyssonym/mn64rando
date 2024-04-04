@@ -36,3 +36,100 @@
   6480. 10:08,000150     # Print Text
     text: |{end}{endline}|
   6488. 08:              # End Event
+
+# MESSAGE 30c: 079-1cd8.1cd8
+@1cd8
+  1cd8. 21:7a            # Unset Flag: 07a
+  1d40. 22:34,08,@1cd81  # If Flag 034 (Met Benkei), Jump To @1cd81
+ 10000. 0a:08,@1cd80     # Jump To @1cd80
+ fffff. 08:
+
+@1cd81
+  1d04. 22:33,08,@1cd83  # If Flag 033 (Defeated Benkei), Jump To @1cd83
+  1d34. 22:29,08,@1cd82  # If Flag 029 (Achilles Heel), Jump To @1cd82
+ 10000. 0a:08,@1cd83     # Jump To @1cd83
+ fffff. 08:
+
+@1cd82
+  1d10. 22:69,08,@22ec   # If Flag 069 (Just Won), Jump To @22ec
+  1d1c. 22:67,08,@2280   # If Flag 067 (Lost to Benkei), Jump To @2280
+  1d28. 22:6a,08,@21d4   # If Flag 06a (Just Lost), Jump To @21d4
+  1d34. 22:29,08,@1ebc   # If Flag 029 (Achilles Heel), Jump To @1ebc
+ fffff. 08:
+
+@1cd83
+  1ce0. 22:23,08,@2e34   # If Flag 023, Jump To @2e34
+  1cec. 22:32,08,@2998   # If Flag 032, Jump To @2998
+  1cf8. 22:a,08,@2924    # If Flag 00a, Jump To @2924
+  1d04. 22:33,08,@28d8   # If Flag 033, Jump To @28d8
+  1d40. 22:34,08,@1e68   # If Flag 034, Jump To @1e68
+ fffff. 08:
+
+@1cd80
+  1d4c. 04:801c7758      # Write to RAM 801c7758 (Unknown)
+  1d54. 09:20            # Store Value: 20
+  1d5c. 04:801c775c      # Write to RAM 801c775c (Unknown)
+  1d64. 09:68            # Store Value: 68
+  1d6c. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  1d74. 20:25            # Set Flag 025
+  1d7c. 10:08,000004     # Print Text
+    text: |Benkei:Hey! {newline}{endline}|
+  1d84. 10:08,000020     # Print Text
+    text: |      Stop, stop right there!{button}{endline}|
+  1d8c. 10:08,000060     # Print Text
+    text: |{newwindow}{endline}|
+  1d94. 10:08,000064     # Print Text
+    text: |If you want to get by here,{newline}{endline}|
+  1d9c. 10:08,0000a0     # Print Text
+    text: |hand over the {em-yellow}treasure{/em} you have!{button}{endline}|
+  1da4. 10:08,000060     # Print Text
+    text: |{newwindow}{endline}|
+  1dac. 04:801c7770      # Write to RAM 801c7770 (Unknown)
+  1db4. 09:1             # Store Value: 1
+  1dbc. 10:08,0000e8     # Print Text
+    text: |Well come on, {newline}{endline}|
+  1dc4. 10:08,000108     # Print Text
+    text: |   what is it going to be?{newline}{endline}|
+  1dcc. 11:              # Begin Option Selection
+  1dd0. 10:08,000140     # Print Text
+    text: |  {em-yellow}I'll take a different route...{newline}{endline}|
+  1dd8. 0a:08,@1e00      # Jump To @1e00
+  1de0. 10:08,000188     # Print Text
+    text: |  {em-yellow}I have no treasure with me...{newline}{endline}|
+  1de8. 0a:08,@1e34      # Jump To @1e34
+  1df0. 12:              # End Option Selection
+  1df4. 10:08,0001cc     # Print Text
+    text: |{end}{endline}|
+  1dfc. 08:              # End Event
+
+# MESSAGE 160: 061-c028.cd04
+@cd04
+  cd04. 10:08,000034     # Print Text
+    text: |{newwindow}{endline}|
+  c048. 22:29,08,@cd041  # If Flag 029, Jump To @cd041
+  c054. 22:2a,08,@c490   # If Flag 02a, Jump To @c490
+  c060. 22:2b,08,@c3f0   # If Flag 02b, Jump To @c3f0
+  c06c. 22:2c,08,@c350   # If Flag 02c, Jump To @c350
+  c078. 22:25,08,@c0a8   # If Flag 025, Jump To @c0a8
+ ffff0. 0a:08,@cd041     # Jump To @cd041
+ fffff. 08:
+
+@cd041
+  cd0c. 10:08,008264     # Print Text
+    text: |Ushiwaka:When you're smaller,{newline}{endline}|
+  cd14. 10:08,0082a4     # Print Text
+    text: |       you don't need to{newline}{endline}|
+  cd1c. 10:08,0082d8     # Print Text
+    text: |       eat as much,{button}{endline}|
+  cd24. 10:08,000034     # Print Text
+    text: |{newwindow}{endline}|
+  cd2c. 10:08,008304     # Print Text
+    text: |and a room can seem so large,{newline}{endline}|
+  cd34. 10:08,008344     # Print Text
+    text: |that even a bachelor pad will{newline}{endline}|
+  cd3c. 10:08,008384     # Print Text
+    text: |look like a castle!{endline}|
+  cd44. 10:08,000cb0     # Print Text
+    text: |{waitinput}{end}{endline}|
+  cd4c. 08:              # End Event

@@ -113,7 +113,7 @@ instructions:
       flag:
         length:             4
   0x8021:
-    comment:                "Unset Flag: {flag:0>3x}"
+    comment:                "Unset Flag {flag:0>3x}"
     parameters:
       flag:
         length:             4

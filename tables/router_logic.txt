@@ -21,7 +21,8 @@
 .def flute_anywhere             `NEVER`
 .def fire_ryo                   140-003
 .def golden_temple              16d-002
-.def mini_ebisu                 ushiwaka&golden_temple&1b5-001
+.def iyo_teahouse               1b5-001
+.def mini_ebisu                 ushiwaka&golden_temple&iyo_teahouse
 .def camera                     031-003
 .def darumanyo                  049-001&camera
 .def bizen_opened               darumanyo
@@ -32,7 +33,8 @@
 .def tsurami                    071-001
 .def kyushu                     tsurami&153-002
 .def sudden_impact              kyushu&1c4-001
-.def silver_weapons             pipe_maker&179-002
+.def brother                    179-002
+.def silver_weapons             pipe_maker&brother
 .def witch                      1d4-001
 .def mermaid                    yae&witch&154-002
 .def bazooka                    081-001
@@ -629,7 +631,8 @@
 099-00a=099-005                         # dango
 
 # 09D Gourmet Sub 4F Thaisamba Boss Room
-.missable 09d-001 171-004
+.def missable_benkei 171-004
+.missable 09d-001 missable_benkei
 09d-001>>14d-002
 
 # 0A8 Musical Castle 1 Entrance
@@ -1278,8 +1281,8 @@
 
 # 171 Zazen - Bridge to Yamato (Benkei)
 .guarantee  171-004 achilles_heel&171-x04
-#.guarantee  1b5-001 171-004
-.missable 1b5-001 171-004
+.missable iyo_teahouse missable_benkei
+.require iyo_teahouse golden_temple
 #171-002=>171-004 achilles_heel
 171-002=171-x04
 171-002=171-006
@@ -1354,7 +1357,8 @@
 178-006=178-007
 
 # 179 Festival Village (West)
-.missable 179-002 chain_pipe
+.def missable_chain_pipe chain_pipe
+.missable brother missable_chain_pipe
 179-002=179-004
 179-002=179-006
 179-002=179-008

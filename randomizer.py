@@ -2677,14 +2677,6 @@ def do_flute_anywhere():
         write_patch(get_outfile(), 'patch_flute_anywhere_en.txt')
 
 
-def fix_bad_events():
-    if get_global_label() == 'MN64_JP':
-        script_file = path.join(tblpath, 'script_missable_events.txt')
-    elif get_global_label() == 'MN64_EN':
-        script_file = path.join(tblpath, 'script_missable_events_en.txt')
-    MessagePointerObject.import_all_scripts(script_file)
-
-
 def setup_save_warps(dr):
     WARP_DICT = {
         1:   0x15f,
@@ -3025,7 +3017,7 @@ def randomize_doors():
 
     if config['fix_bad_maps']:
         definition_overrides = fix_softlockable_rooms(definition_overrides)
-        fix_bad_events()
+        definition_overrides = fix_missable_events(definition_overrides)
 
     preset_connections = defaultdict(set)
 
@@ -3586,6 +3578,17 @@ def fix_softlockable_rooms(definition_overrides):
     mmo.spawn_groups[(-1,-1,-1)].append(instance)
     definition_overrides['softlock_142'] = 'start'
 
+    return definition_overrides
+
+
+def fix_missable_events(definition_overrides):
+    if get_global_label() == 'MN64_JP':
+        script_file = path.join(tblpath, 'script_missable_events.txt')
+    elif get_global_label() == 'MN64_EN':
+        script_file = path.join(tblpath, 'script_missable_events_en.txt')
+    MessagePointerObject.import_all_scripts(script_file)
+    definition_overrides['missable_chain_pipe'] = 'start'
+    definition_overrides['missable_benkei'] = 'start'
     return definition_overrides
 
 
