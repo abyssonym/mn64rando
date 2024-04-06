@@ -11,6 +11,7 @@
 .def yae                        167-002
 .def ushiwaka                   173-002
 .def benkei                     171-002
+.def beyond_benkei              171-004
 .def achilles_heel              benkei&ushiwaka&168-002&16b-002&16e-004&172-002
 .def turtle_rock                137-002
 .def yamato_opened              turtle_rock
@@ -64,13 +65,6 @@
 
 .start      start
 .goal       goal
-
-#.unreachable 061-005
-#.unreachable 065-003
-#.unreachable 091-00c
-#.unreachable 091-00d
-#.unreachable 15f-005
-#.unreachable 160-003
 
 # 000 Oedo Castle 1F Tile Room
 000-001=000-003                         # 0.109.silver
@@ -631,7 +625,7 @@
 099-00a=099-005                         # dango
 
 # 09D Gourmet Sub 4F Thaisamba Boss Room
-.def missable_benkei 171-004
+.def missable_benkei beyond_benkei
 .missable 09d-001 missable_benkei
 09d-001>>14d-002
 
@@ -1282,7 +1276,9 @@
 # 171 Zazen - Bridge to Yamato (Benkei)
 .guarantee  171-004 achilles_heel&171-x04
 .missable iyo_teahouse missable_benkei
-.require iyo_teahouse golden_temple
+.or ushiwaka_at_golden_temple
++ushiwaka_at_golden_temple .missable iyo_teahouse beyond_benkei
++ushiwaka_at_golden_temple .require beyond_benkei golden_temple
 #171-002=>171-004 achilles_heel
 171-002=171-x04
 171-002=171-006

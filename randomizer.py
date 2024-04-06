@@ -3354,7 +3354,7 @@ def generate_locks(dr):
             continue
         preliminary_lockable.add(edge)
 
-    requirement_nodes = {n for n in dr.reachable_from_root if n.required_nodes}
+    requirement_nodes = {n for n in dr.reachable_from_root if n.dependencies}
     used_key_locations = set()
     used_lock_locations = set()
     lock_key_pairs = {}
@@ -3371,7 +3371,7 @@ def generate_locks(dr):
                 continue
             nonorphans = dr.reachable_from_root - orphans
             for n in nonorphans:
-                if n.required_nodes & orphans:
+                if n.dependencies & orphans:
                     break
             else:
                 lockable.add(e)
@@ -3448,7 +3448,7 @@ def generate_locks(dr):
             nonorphans = dr.reachable_from_root - orphans
             requirements_pass = True
             for n in requirement_nodes & nonorphans:
-                rs = n.required_nodes & nonorphans
+                rs = n.dependencies & nonorphans
                 rs = {r for r in rs
                       if r.rank > min(n.rank, chosen.destination.rank)}
                 if not rs:
