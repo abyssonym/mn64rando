@@ -2686,12 +2686,11 @@ def initialize_variables(config, parameters):
         script_file = path.join(tblpath, 'script_initialize_variables.txt')
     elif get_global_label() == 'MN64_EN':
         script_file = path.join(tblpath, 'script_initialize_variables_en.txt')
-        CUSTOM_SCRIPT_POINTER = 0x41881
     MessagePointerObject.import_all_scripts(script_file)
 
     INITIAL_MESSAGE_INDEX = 0x90
-    mpo = MessagePointerObject.get(0x90)
-    script = mpo.parser.scripts[CUSTOM_SCRIPT_POINTER]
+    mpo = MessagePointerObject.get(INITIAL_MESSAGE_INDEX)
+    script = mpo.parser.scripts[addresses.custom_initialize_script]
     for address in sorted(initialize_addresses, reverse=True):
         script.prepend_instruction('09:1')
         script.prepend_instruction(f'04:{address:x}')

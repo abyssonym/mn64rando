@@ -11,7 +11,7 @@ avoid_softlocks:      True  # Create a graph where you can't get stuck
 trap_doors:           0.00  # Rate to allow one-way trick doors
 skip_complex_nodes:   0.50  # Rate to skip nodes that are difficult to route
 lazy_complex_nodes:   False # Simplify complex nodes (softlock potential)
-goal_based_missables: False # Missable nodes only relevant if required by goal
+goal_based_missables: True  # Missable nodes only relevant if required by goal
 
 # MN64 Specific Options
 fix_bad_maps:         True  # Alter specific maps to remove softlock potential
@@ -26,8 +26,10 @@ enable_debug:         True  # Enable debug menu by pressing L
 start_camera:         False # Start with Ebisumaru's Karakuri Camera
 start_minimaru:       False # Start with Mini-Ebisu magic already learned
 start_flute:          True  # Start with Yae & Flute
+start_mermaid:        False # Start with Mermaid magic already learned
 flute_anywhere:       True  # Flute works anywhere
 start_snow:           True  # Start with Miracle Snow
 ice_kunai_logic:      True  # Incorporate Ice Kunai into logic
 ryo_hover_logic:      False # Incorporate Ryo Hover into logic (experimental)
 jp_super_jump_logic:  False # Incorporate better super jump on JP version
+sasuke_mode:          True  # Start as Sasuke & Yae instead of Goemon & Ebi

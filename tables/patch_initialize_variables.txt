@@ -5,6 +5,9 @@
 
 # RAM address 041be0
 0427e0: ac 82 00 90     # Set Unknown flag
+        24 02 00 {{initial_character:00}}
+        ac 82 00 68     # Initial Starting Character
+        24 02 00 01     # Restore V0=1
         03 e0 00 08     # Return
 
 VALIDATION

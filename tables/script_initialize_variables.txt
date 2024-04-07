@@ -1,0 +1,33 @@
+# MESSAGE 090: 05d-3674.3674
+@3674
+  0000. 06:801620a4      # Read from RAM 801620a4 (Oedo Castle Warp Point)
+  0001. 02:0             # Skip Next If Not Equal: 0
+  0002. 0a:08,@36741     # Jump To @36741
+  0003. 0a:08,@36740     # Jump To @36740
+ fffff. 08:              # End Event
+
+@36741
+ ffff0. 0a:08,@36740
+ fffff. 08:
+
+@36740
+  3674. 04:801cce88      # Write to RAM 801cce88 (Unknown)
+  367c. 09:50            # Store Value: 50
+  3684. 04:801cce8c      # Write to RAM 801cce8c (Unknown)
+  368c. 09:20            # Store Value: 20
+  3694. 04:801cce98      # Write to RAM 801cce98 (Unknown)
+  369c. 09:3             # Store Value: 3
+  36a4. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  36ac. 04:801620a4      # Write to RAM 801620a4 (Oedo Castle Warp Point)
+  36b4. 09:1             # Store Value: 1
+  36bc. 10:08,000004     # Print Text
+    text: |{000d}{newline}{endline}|
+  36c4. 10:08,000d54     # Print Text
+    text: |{0124}{em-yellow}{0013}{000f}{0049}{0010}{0123}{0111}{0112}{0113}{/em}{0125}{endline}|
+  36cc. 04:801cce70      # Write to RAM 801cce70 (Unknown)
+  36d4. 09:3c            # Store Value: 3c
+  36dc. 0b:8003f0cc      # Execute Code: 8003f0cc (Unknown)
+  36e4. 10:08,000068     # Print Text
+    text: |{end}{endline}|
+  36ec. 08:              # End Event

@@ -15,4 +15,15 @@ $expected_data_end          f9e8a4
 $free_space_start           fa0000
 $free_space_end             ff7fff
 $seed_info_address          ff8000
+$have_goemon                80161e8c
+$have_ebisumaru             80161e90
+$have_sasuke                80161e94
+$have_yae                   80161e98
+$have_bomb                  80161eb4
+$have_flute                 80161eb8
+$have_camera                80161ec0
+$have_minimaru              80161ee0
+$have_mermaid               80161ee8
+$have_snow                  80162054
+$custom_initialize_script   36741
 #.patch                      patch_no_checksum.txt

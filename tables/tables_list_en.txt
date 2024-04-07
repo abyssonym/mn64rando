@@ -25,4 +25,5 @@ $have_camera                8015c6d0
 $have_minimaru              8015c6f0
 $have_mermaid               8015c6f8
 $have_snow                  8015c864
+$custom_initialize_script   41881
 #.patch                      patch_no_checksum.txt
