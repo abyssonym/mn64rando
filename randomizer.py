@@ -2658,16 +2658,50 @@ def decouple_fire_ryo():
     MapCategoryData.data = data
 
 
-def initialize_variables(parameters=None):
-    if parameters is None:
-        parameters = {}
+def fix_character_swap_wraparound():
+    # This patches code in file 00a, which is compressed
+    # It allows you to character swap even without recruiting Goemon
+    data = MapCategoryData.data
     if get_global_label() == 'MN64_JP':
-        patch_filename = 'patch_initialize_variables.txt'
+        write_patch(data, 'patch_character_swap_00a.txt', noverify=True)
     elif get_global_label() == 'MN64_EN':
-        patch_filename = 'patch_initialize_variables_en.txt'
-    else:
-        raise Exception('Unknown ROM version.')
-    write_patch(get_outfile(), patch_filename, parameters=parameters)
+        write_patch(data, 'patch_character_swap_00a_en.txt', noverify=True)
+    MapCategoryData.data = data
+
+
+def initialize_variables(config, parameters):
+    initialize_addresses = set()
+    for key in config:
+        if not config[key]:
+            continue
+        if not key.startswith('start_'):
+            continue
+        address_key = 'have_' + key[len('start_'):]
+        if not hasattr(addresses, address_key):
+            print('WARNING: Unknown address ${address_key}.')
+            continue
+        initialize_addresses.add(getattr(addresses, address_key))
+
+    if get_global_label() == 'MN64_JP':
+        script_file = path.join(tblpath, 'script_initialize_variables.txt')
+    elif get_global_label() == 'MN64_EN':
+        script_file = path.join(tblpath, 'script_initialize_variables_en.txt')
+        CUSTOM_SCRIPT_POINTER = 0x41881
+    MessagePointerObject.import_all_scripts(script_file)
+
+    INITIAL_MESSAGE_INDEX = 0x90
+    mpo = MessagePointerObject.get(0x90)
+    script = mpo.parser.scripts[CUSTOM_SCRIPT_POINTER]
+    for address in sorted(initialize_addresses, reverse=True):
+        script.prepend_instruction('09:1')
+        script.prepend_instruction(f'04:{address:x}')
+
+    if get_global_label() == 'MN64_JP':
+        write_patch(get_outfile(), 'patch_initialize_variables.txt',
+                    parameters=parameters)
+    elif get_global_label() == 'MN64_EN':
+        write_patch(get_outfile(), 'patch_initialize_variables_en.txt',
+                    parameters=parameters)
 
 
 def do_flute_anywhere():
@@ -2972,48 +3006,66 @@ def randomize_doors():
             goal = 'pemopemo_god&flute&all_inns&all_teahouses'
         definition_overrides['goal'] = goal
 
-    if config['start_camera']:
-        parameters['start_camera'] = 'c8'
-        definition_overrides['camera'] = 'start'
+    if config['sasuke_mode']:
+        config['start_goemon'] = False
+        config['start_ebisumaru'] = False
+        config['start_sasuke'] = True
+        config['start_yae'] = True
+        parameters['initial_character'] = 2
+        definition_overrides['goemon'] = 'big_tree_battery'
+        definition_overrides['ebisumaru'] = 'zazen_gate'
+        fix_character_swap_wraparound()
+        if get_global_label() == 'MN64_JP':
+            script_file = path.join(tblpath, 'script_sasuke_mode.txt')
+        elif get_global_label() == 'MN64_EN':
+            script_file = path.join(tblpath, 'script_sasuke_mode_en.txt')
+        MessagePointerObject.import_all_scripts(script_file)
     else:
-        parameters['start_camera'] = '94'
+        config['start_goemon'] = True
+        config['start_ebisumaru'] = True
+        config['start_sasuke'] = False
+        config['start_yae'] = False
+        parameters['initial_character'] = 0
+    config['start_bomb'] = True
+
+    if config['start_camera']:
+        config['start_ebisumaru'] = True
+        definition_overrides['camera'] = 'ebisumaru'
 
     if config['start_minimaru']:
-        parameters['start_minimaru'] = 'e8'
-        definition_overrides['mini_ebisu'] = 'start'
-    else:
-        parameters['start_minimaru'] = '94'
+        config['start_ebisumaru'] = True
+        definition_overrides['mini_ebisu'] = 'ebisumaru'
 
     if config['start_flute']:
-        parameters['start_yae'] = 'a0'
-        parameters['start_flute'] = 'c0'
-        definition_overrides['yae'] = 'start'
-        definition_overrides['flute'] = 'start'
-    else:
-        parameters['start_yae'] = '94'
-        parameters['start_flute'] = '94'
+        config['start_yae'] = True
+        definition_overrides['flute'] = 'yae'
+
+    if config['start_mermaid']:
+        config['start_yae'] = True
+        definition_overrides['mermaid'] = 'yae'
+
+    for character in ('goemon', 'ebisumaru', 'sasuke', 'yae'):
+        key = f'start_{character}'
+        if key in config and config[key]:
+            definition_overrides[character] = 'start'
 
     if config['flute_anywhere']:
         definition_overrides['flute_anywhere'] = 'flute'
         do_flute_anywhere()
 
     if config['start_snow']:
-        parameters['start_snow'] = '02 5c'
         definition_overrides['miracle_snow'] = 'start'
-    else:
-        parameters['start_snow'] = '00 94'
 
     if not config['ice_kunai_logic']:
         definition_overrides['ice_kunai_optional'] = 'start'
 
     if config['ryo_hover_logic']:
-        definition_overrides['ryo_hover'] = 'start'
+        definition_overrides['ryo_hover'] = 'goemon'
 
     if get_global_label() == 'MN64_JP' and config['jp_super_jump_logic']:
         definition_overrides['super_jump_jp'] = 'super_jump'
 
-    parameters['start_mermaid'] = '94'
-    initialize_variables(parameters)
+    initialize_variables(config, parameters)
 
     if config['fix_bad_maps']:
         definition_overrides = fix_softlockable_rooms(definition_overrides)

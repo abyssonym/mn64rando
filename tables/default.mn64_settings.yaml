@@ -26,8 +26,10 @@ enable_debug:         True  # Enable debug menu by pressing L
 start_camera:         False # Start with Ebisumaru's Karakuri Camera
 start_minimaru:       False # Start with Mini-Ebisu magic already learned
 start_flute:          True  # Start with Yae & Flute
+start_mermaid:        False # Start with Mermaid magic already learned
 flute_anywhere:       True  # Flute works anywhere
 start_snow:           True  # Start with Miracle Snow
 ice_kunai_logic:      True  # Incorporate Ice Kunai into logic
 ryo_hover_logic:      False # Incorporate Ryo Hover into logic (experimental)
 jp_super_jump_logic:  False # Incorporate better super jump on JP version
+sasuke_mode:          True  # Start as Sasuke & Yae instead of Goemon & Ebi

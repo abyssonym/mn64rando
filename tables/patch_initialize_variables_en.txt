@@ -5,14 +5,9 @@
 
 # RAM address 03ff20
 040b20: ac 82 00 90     # Set Unknown flag
-        ac 82 00 94     # Set "Goemon in party" flag
-        ac 82 00 98     # Set "Ebisumaru in party" flag
-        ac 82 00 {{start_camera:c8}}    # "Have Camera" flag
-        ac 82 00 {{start_minimaru:e8}}  # "Have Mini-Ebisu" flag
-        ac 82 00 {{start_yae:a0}}       # "Yae in party" flag
-        ac 82 00 {{start_flute:c0}}     # "Have Flute" flag
-        ac 82 00 {{start_mermaid:f0}}   # "Have Mermaid" flag
-        ac 82 {{start_snow:02 5c}}      # "Have Miracle Snow" flag
+        24 02 00 {{initial_character:00}}
+        ac 82 00 68     # Initial Starting Character
+        24 02 00 01     # Restore V0=1
         03 e0 00 08     # Return
 
 VALIDATION

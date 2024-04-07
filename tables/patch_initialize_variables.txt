@@ -5,13 +5,6 @@
 
 # RAM address 041be0
 0427e0: ac 82 00 90     # Set Unknown flag
-        ac 82 00 94     # Set "Goemon in party" flag
-        ac 82 00 98     # Set "Ebisumaru in party" flag
-        ac 82 00 {{start_camera:c8}}    # "Have Camera" flag
-        ac 82 00 {{start_minimaru:e8}}  # "Have Mini-Ebisu" flag
-        ac 82 00 {{start_yae:a0}}       # "Yae in party" flag
-        ac 82 00 {{start_flute:c0}}     # "Have Flute" flag
-        ac 82 {{start_snow:02 5c}}      # "Have Miracle Snow" flag
         03 e0 00 08     # Return
 
 VALIDATION

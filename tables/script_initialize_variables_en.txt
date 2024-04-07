@@ -1,0 +1,33 @@
+# MESSAGE 090: 05d-4188.4188
+@4188
+  0000. 06:8015c8b4      # Read from RAM 8015c8b4 (Oedo Castle Warp Point)
+  0001. 02:0             # Skip Next If Not Equal: 0
+  0002. 0a:08,@41881     # Jump To @41881
+  0003. 0a:08,@41880     # Jump To @41880
+ fffff. 08:              # End Event
+
+@41881
+ ffff0. 0a:08,@41880
+ fffff. 08:
+
+@41880
+  4188. 04:801c7758      # Write to RAM 801c7758 (Unknown)
+  4190. 09:50            # Store Value: 50
+  4198. 04:801c775c      # Write to RAM 801c775c (Unknown)
+  41a0. 09:20            # Store Value: 20
+  41a8. 04:801c7768      # Write to RAM 801c7768 (Unknown)
+  41b0. 09:5             # Store Value: 5
+  41b8. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  41c0. 04:8015c8b4      # Write to RAM 8015c8b4 (Unknown)
+  41c8. 09:1             # Store Value: 1
+  41d0. 10:08,001794     # Print Text
+    text: |[{em-yellow}Transformed{newline}{endline}|
+  41d8. 10:08,0017b4     # Print Text
+    text: |     Oedo Castle{/em}]{endline}|
+  41e0. 04:801c7740      # Write to RAM 801c7740 (Scratch)
+  41e8. 09:3c            # Store Value: 3c
+  41f0. 0b:8003f460      # Execute Code: 8003f460 (Wait For Timer)
+  41f8. 10:08,0000bc     # Print Text
+    text: |{end}{endline}|
+  4200. 08:              # End Event

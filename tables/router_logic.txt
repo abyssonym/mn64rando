@@ -2,13 +2,16 @@
 #   Multi-line .guarantee statements are joined by OR logic
 #   Multi-line .missable statements are joined by AND logic
 .def start                      1d1-001
+.def goemon                     start
+.def ebisumaru                  start
 .def ryo_hover                  `NEVER`
 .def pipe_maker                 1d2-001
-.def chain_pipe                 pipe_maker
+.def chain_pipe                 goemon&pipe_maker
 .def congo                      016-001
 .def super_pass                 028-x01
 .def triton_shell               132-002
-.def yae                        167-002
+.def zazen_gate                 167-002
+.def yae                        zazen_gate
 .def ushiwaka                   173-002
 .def benkei                     171-002
 .def beyond_benkei              171-004
@@ -20,20 +23,22 @@
 .def dragon                     tourism&13c-002
 .def flute                      yae&dragon
 .def flute_anywhere             `NEVER`
-.def fire_ryo                   140-003
+.def fire_ryo                   goemon&140-x03
 .def golden_temple              16d-002
 .def iyo_teahouse               1b5-001
-.def mini_ebisu                 ushiwaka&golden_temple&iyo_teahouse
-.def camera                     031-003
+.def mini_ebisu                 ebisumaru&16d-x02
+.def camera                     ebisumaru&031-003
 .def darumanyo                  049-001&camera
 .def bizen_opened               darumanyo
-.def sasuke                     camera&14a-002&149-002
+.def big_tree_battery           camera&14a-002&149-002
+.def sasuke                     big_tree_battery
+.def firecracker                sasuke
 .def ice_kunai                  sasuke&06e-001
 .def ice_kunai_optional         ice_kunai
 .def meatsaw_hammer             062-00c
 .def tsurami                    071-001
 .def kyushu                     tsurami&153-002
-.def sudden_impact              kyushu&1c4-001
+.def sudden_impact              kyushu&goemon&1c4-001
 .def brother                    179-002
 .def silver_weapons             pipe_maker&brother
 .def witch                      1d4-001
@@ -53,7 +58,7 @@
 .def gold_weapons               194-x01
 .def all_miracle    miracle_moon&miracle_flower&miracle_star&miracle_snow
 .def pemopemo_god   all_miracle&14c-002
-.def all_characters sasuke&yae
+.def all_characters goemon&ebisumaru&sasuke&yae
 .def all_weapons    chain_pipe&fire_ryo&meatsaw_hammer&camera&ice_kunai&flute&bazooka
 .def all_magic      sudden_impact&mini_ebisu&super_jump&mermaid
 .def all_key_items  triton_shell&super_pass&achilles_heel&special_key&cucumber
@@ -940,6 +945,7 @@
 140-003=140-004
 140-003=140-006
 140-004=140-006
+140-003=140-x03 goemon
 
 # 141 Iyo
 141-005=141-005 mini_ebisu
@@ -968,12 +974,12 @@
 #143-006=>143-008 special_key             # 5.196.special
 143-006=143-x08
 143-x08=>143-008 special_key
-143-011=143-002 sasuke                  # cat
-143-011=143-004 sasuke                  # cat
-143-011=143-006 sasuke                  # cat
-143-013=143-002 sasuke                  # cat
-143-013=143-004 sasuke                  # cat
-143-013=143-006 sasuke                  # cat
+143-011=143-002 firecracker             # cat
+143-011=143-004 firecracker             # cat
+143-011=143-006 firecracker             # cat
+143-013=143-002 firecracker             # cat
+143-013=143-004 firecracker             # cat
+143-013=143-006 firecracker             # cat
 
 # 144 Aki - Nagato
 144-002=144-004
@@ -993,8 +999,8 @@
 146-004=146-006
 
 # 147 Shuhodo Tunnel to Festival Temple
-.guarantee  147-004 sasuke&147-002
-147-002=>147-004 sasuke
+.guarantee  147-004 firecracker&147-002
+147-002=>147-004 firecracker
 
 # 148 Izumo
 148-002=148-004
@@ -1263,6 +1269,9 @@
 16c-00c=16c-00e
 16c-00c=16c-00f
 16c-00e=16c-00f
+
+# 16D Zazen - Golden Temple
+16d-002=16d-x02 ebisumaru&ushiwaka&iyo_teahouse
 
 # 16E Zazen - Bridge to Bizen
 .guarantee  16e-002 bizen_opened&16e-004

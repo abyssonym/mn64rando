@@ -1,0 +1,16 @@
+# 801dd538
+# Need to clear A1, V1, A3
+0120d8: 24 a5 00 01     # ADDIU A1,A1,0x0001
+        30 63 00 03     # ANDI V1,V1,0x0003
+        00 00 00 00     # NOP
+        00 00 00 00     # NOP
+        00 00 00 00     # NOP
+
+VALIDATION
+
+# 801dd538
+0120d8: 28 61 00 04     # SLTI AT,V1,0x0004
+        14 20 00 03     # BNEZ AT,0x801DD54C
+        24 a5 00 01     # ADDIU A1,A1,0x0001
+        10 00 00 02     # B 0x801DD550
+        00 00 10 25     # OR V0,R0,R0
