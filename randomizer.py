@@ -300,6 +300,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     JP_EN_NODE_MAPPING = {
         '13b-00e': '13b-00c',
+        '152-013': '152-00f',
         '152-014': '152-010',
         '16b-00a': '16b-00b',
         }
@@ -395,6 +396,16 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             MapMetaObject.entity_signatures[self] = signature
             return self.signature
 
+        @property
+        def converted_signature(self):
+            if get_global_label() != 'MN64_EN':
+                return self.signature
+            mapping = MapMetaObject.EN_JP_NODE_MAPPING
+            if self.signature in mapping:
+                return mapping[self.signature]
+            if self.signature in mapping.values():
+                return f'{self.signature}-0'
+            return self.signature
 
         @property
         def details(self):
@@ -3312,6 +3323,7 @@ def randomize_doors():
     pickups = set()
     if dr.config['randomize_pickups']:
         for mmo in MapMetaObject.sorted_rooms:
+            random.seed(dr.seed * mmo.index)
             for e in mmo.definitions:
                 if e is m2key:
                     continue
@@ -3321,29 +3333,37 @@ def randomize_doors():
                     e.become_gold_dango()
                 if e.is_pickup and not e.is_key:
                     assert e.is_gold_dango
-                    node = dr.get_by_label(e.signature)
+                    node = dr.get_by_label(e.converted_signature)
                     if node and node.rooted:
                         pickups.add(e)
 
-        pickups = sorted(pickups)
+        random.seed(dr.seed)
+        pickup_sort_key = lambda p: p.converted_signature
+        def sample_pickups(pickups, quantity):
+            pickups = sorted(pickups, key=pickup_sort_key)
+            indexed_pickups = {i: p for (i, p) in enumerate(pickups)}
+            chosen = random.sample(sorted(indexed_pickups.keys()), quantity)
+            chosen = [indexed_pickups[i] for i in chosen]
+            return chosen
+
         MapMetaObject.available_memory_flags -= (silver_cats | gold_cats)
         num_entities = min(len(gold_cats), len(pickups))
         if num_entities < len(gold_cats):
             print('WARNING: Unable to allocate all golden cat dolls.')
-        gold_cat_entities = random.sample(pickups, num_entities)
-        pickups = sorted(set(pickups) - set(gold_cat_entities))
+        gold_cat_entities = sample_pickups(pickups, num_entities)
+        pickups = set(pickups) - set(gold_cat_entities)
         for e, flag in zip(gold_cat_entities, gold_cats):
             e.become_gold_cat(flag)
 
         num_entities = min(len(silver_cats), len(pickups))
         if num_entities < len(silver_cats):
             print('WARNING: Unable to allocate all silver cat dolls.')
-        silver_cat_entities = random.sample(pickups, num_entities)
-        pickups = sorted(set(pickups) - set(silver_cat_entities))
+        silver_cat_entities = sample_pickups(pickups, num_entities)
+        pickups = set(pickups) - set(silver_cat_entities)
         for e, flag in zip(silver_cat_entities, silver_cats):
             e.become_silver_cat(flag)
 
-        for e in pickups:
+        for e in sorted(pickups, key=pickup_sort_key):
             e.become_random_pickup()
 
     festival_blocker = MapMetaObject.get_entity_by_signature(
