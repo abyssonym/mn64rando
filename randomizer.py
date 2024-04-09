@@ -1672,6 +1672,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             return f'STAGE.NO {self.index}'
 
     @cached_property
+    def debug_name(self):
+        return f'{self.debug_index} - {self.room_name}'
+
+    @cached_property
     def exits(self):
         return [e for e in self.instances if e.is_exit]
 
@@ -2559,9 +2563,28 @@ class MessagePointerObject(TableObject):
         return self.scripts
 
     @property
+    def root(self):
+        if not self.scripts:
+            return None
+        candidates = [s for s in self.scripts
+                      if s.pointer.pointer == self.message_pointer]
+        assert len(candidates) == 1
+        return candidates[0]
+
+    @property
     def parser(self):
         self.scripts
         return MessagePointerObject.parsers[self.file_index]
+
+    def get_npcs(self):
+        npcs = []
+        for mmo in MapMetaObject.every:
+            if not mmo.is_room:
+                continue
+            npcs += [d for d in mmo.definitions
+                     if 'message' in d.structure
+                     and d.get_property_value('message') == self.index]
+        return npcs
 
     def get_message(self):
         if self.file_index not in MessagePointerObject.parsers:
@@ -2584,6 +2607,104 @@ class MessagePointerObject(TableObject):
             if scripts == old:
                 break
         return scripts
+
+    @classmethod
+    def scan_script_for_flags(self, script, force=False):
+        if hasattr(script, 'flag_order') and not force:
+            return
+        script.flag_order = []
+        script.children = set()
+        script.parents = set()
+        for i in script.instructions:
+            if 'Flag' not in str(i):
+                if 'Jump To' in str(i):
+                    for s in i.referenced_scripts:
+                        script.flag_order.insert(0, (None, s))
+                        script.children.add(s)
+                        if not hasattr(s, 'parents'):
+                            s.parents = set()
+                        s.parents.add(script)
+                continue
+            if 'If Flag' in str(i):
+                flag = i.parameters['flag']
+                for s in i.referenced_scripts:
+                    script.flag_order.insert(0, (flag, s))
+                    script.children.add(s)
+                    if not hasattr(s, 'parents'):
+                        s.parents = set()
+                    s.parents.add(script)
+                continue
+
+    @classmethod
+    def get_pretty_script(self, script, done_scripts=None, with_header=None):
+        if done_scripts is None:
+            done_scripts = set()
+        else:
+            done_scripts = set(done_scripts)
+        done_scripts.add(script)
+        if with_header is None:
+            with_header = done_scripts == {script}
+
+        if not hasattr(script, 'flag_order'):
+            self.scan_script_for_flags(script)
+
+        result = ''
+        for i in script.instructions:
+            if not result.strip():
+                result = result.strip()
+            if 'et Flag' not in str(i) and 'Print Text' not in str(i):
+                continue
+            for text in i.text_parameters.values():
+                text = re.sub('{[^}]*}', '', text)
+                result = f'{result}\n{text}'
+            if 'Flag' in str(i):
+                result = f'{result}\n\n# {i.comment}\n\n'
+        if not result.strip():
+            result = result.strip()
+        result = re.sub('\n  *\n', '\n\n', result)
+        for flag, child in script.flag_order:
+            if child in done_scripts:
+                continue
+            child_text, did_scripts = self.get_pretty_script(child,
+                                                             done_scripts)
+            done_scripts |= did_scripts
+            if not child_text:
+                continue
+            child_text = child_text.rstrip()
+            child_text = child_text.lstrip('\n')
+            child_text = '| ' + child_text.replace('\n', '\n| ')
+            if flag is None:
+                child_header = '??? condition'
+            else:
+                child_header = f'Flag {flag:0>3x}'
+                try:
+                    pretty_flag = child.parser.config['prettify']['flag'][flag]
+                    child_header = f'{child_header} ({pretty_flag})'
+                except KeyError:
+                    pass
+            result = f'{result}\n\n# {child_header}:\n{child_text}'
+        while '\n\n\n' in result:
+            result = result.replace('\n\n\n', '\n\n')
+        result = result.lstrip('\n')
+
+        if with_header:
+            header = ''
+            roots = {mpo.root: mpo.index for mpo in MessagePointerObject.every}
+            if script in roots:
+                mpo = MessagePointerObject.get(roots[script])
+                header = f'# {mpo.header}'
+                for npc in mpo.get_npcs():
+                    description = npc.structure['name']
+                    description = f'{npc.parent.debug_name} - {description}'
+                    header = f'{header}\n# NPC: {description}'
+            else:
+                file_index = f'{script.parser.file_index:0>3x}'
+                address = f'{script.pointer.pointer:x}'
+                header = f'# MESSAGE ???: {file_index}-{address}'
+            header = header.strip()
+            result = f'{header}\n{result}'.strip()
+
+        return result, done_scripts
 
     @classmethod
     def import_all_scripts(self, script):
@@ -2627,18 +2748,18 @@ class MessagePointerObject(TableObject):
         for index, lines in sorted(import_lines.items()):
             mpo = MessagePointerObject.get(index)
             mpo.parser.import_script('\n'.join(lines))
-            mpo.updated = True
+            mpo.parser.updated = True
 
     def preprocess(self):
         self.scripts
-        self.updated = False
+        if self.parser and not hasattr(self.parser, 'updated'):
+            self.parser.updated = False
 
     def preclean(self):
-        if not self.updated:
-            return
-        mmo = MapMetaObject.get(self.file_index-1)
-        if self.updated:
+        if self.parser and self.parser.updated:
+            mmo = MapMetaObject.get(self.file_index-1)
             mmo._data = self.parser.to_bytecode()
+            self.parser.updated = False
 
     def cleanup(self):
         if self.parser is None:
@@ -3372,6 +3493,8 @@ def randomize_doors():
 
     random.seed(dr.seed)
     add_roommates()
+    if 'automash' in config and config['automash']:
+        do_automash()
 
     if VISUALIZE:
         relabel = {}
@@ -3741,6 +3864,73 @@ def export_data():
         f.write(dump)
 
 
+def get_pretty_message_dump():
+    result = ''
+    printed = set()
+    file_indexes = {mpo.file_index for mpo in MessagePointerObject.every}
+    divider = '-'*79
+    result = divider + '\n'
+    for index in sorted(file_indexes):
+        if index == 0:
+            continue
+        mpos = [mpo for mpo in MessagePointerObject.every
+                if mpo.file_index == index]
+        for mpo in mpos:
+            if mpo.scripts:
+                s, did_scripts = MessagePointerObject.get_pretty_script(
+                        mpo.root, printed, with_header=True)
+                if '\n' not in s.strip():
+                    continue
+                result = f'{result}{s.strip()}\n{divider}\n'
+                printed.add(mpo.root)
+                printed |= did_scripts
+        while True:
+            old = set(printed)
+            for script in old:
+                printed |= script.referenced_scripts
+            if old == printed:
+                break
+        parsers = {mpo.parser for mpo in mpos}
+        assert len(parsers) == 1
+        parser = parsers.pop()
+        unprinted = set(parser.scripts.values()) - printed
+        for script in sorted(unprinted):
+            s, did_scripts = MessagePointerObject.get_pretty_script(
+                    script, printed, with_header=True)
+            s = s.strip()
+            if '\n' not in s:
+                continue
+            result = f'{result}{s.strip()}\n{divider}\n'
+            printed.add(s)
+            printed |= did_scripts
+    return result.strip()
+
+
+def do_automash():
+    parsers = {mpo.parser for mpo in MessagePointerObject.every if mpo.parser}
+    scripts = {s for parser in parsers for s in parser.scripts.values()}
+    for s in scripts:
+        MessagePointerObject.scan_script_for_flags(s)
+    scripts = {s for s in scripts if '(Dialogue Portrait Character)' in str(s)}
+    while True:
+        old = set(scripts)
+        for s in old:
+            scripts |= s.children
+            scripts |= s.parents
+        if scripts == old:
+            break
+    for s in scripts:
+        for i in s.instructions:
+            if 'Begin Option Selection' in str(i):
+                break
+            for parameter_name, text in i.text_parameters.items():
+                text = text.replace('{button}', '')
+                text = text.replace('{waitinput}', '')
+                if i.text_parameters[parameter_name] != text:
+                    i.text_parameters[parameter_name] = text
+                    i.parser.updated = True
+
+
 def write_abridged_metadata():
     timestamp = datetime.strftime(datetime.now(), '%Y%m%d%H')
     header = (f'MN64 Randomizer v{VERSION}\n'
@@ -3828,9 +4018,6 @@ if __name__ == '__main__':
             write_patch(get_outfile(), patch_filename)
 
         decouple_fire_ryo()
-        if DEBUG_MODE:
-            initialize_variables()
-
         modified = ('import' in get_activated_codes() or
                     'enemizer' in get_activated_codes() or
                     'norandom' not in get_activated_codes())
