@@ -74,27 +74,16 @@ def pretty_hexify(s, newlines=True):
         return ' '.join(result)
 
 
-def consolidate_free_space(free_space):
-    while True:
-        updated = False
-        for (a1, b1) in sorted(free_space):
-            if updated:
-                break
-            for (a2, b2) in sorted(free_space):
-                if updated:
-                    break
-                if (a1, b1) == (a2, b2):
-                    continue
-                if a2 < a1:
-                    continue
-                if a1 <= a2 <= b1:
-                    free_space.remove((a1, b1))
-                    free_space.remove((a2, b2))
-                    free_space.add((a1, max(b1, b2)))
-                    updated = True
-        if not updated:
-            break
-    return free_space
+def infer_lang_name(filename):
+    if get_global_label() == 'MN64_JP':
+        return filename
+    if get_global_label() == 'MN64_EN':
+        parts = filename.split('.')
+        extension = parts[-1]
+        base = '.'.join(parts[:-1])
+        if base.endswith('_en'):
+            return filename
+        return f'{base}_en.{extension}'
 
 
 class GoemonParser(Parser):
@@ -1471,12 +1460,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             }
         parameters = {k: format_two_bytes(v) for (k, v) in parameters.items()}
 
-        if get_global_label() == 'MN64_JP':
-            write_patch(f, 'patch_pemopemo_destination_042.txt',
-                        parameters=parameters, noverify=True)
-        elif get_global_label() == 'MN64_EN':
-            write_patch(f, 'patch_pemopemo_destination_042_en.txt',
-                        parameters=parameters, noverify=True)
+        write_patch(f, infer_lang_name('patch_pemopemo_destination_042.txt'),
+                    parameters=parameters, noverify=True)
 
         f.seek(0)
         mmo._data = f.read()
@@ -2541,10 +2526,7 @@ class MessagePointerObject(TableObject):
 
     @property
     def PARSER_CONFIG(self):
-        if get_global_label() == 'MN64_JP':
-            return path.join(tblpath, 'parser_config.yaml')
-        elif get_global_label() == 'MN64_EN':
-            return path.join(tblpath, 'parser_config_en.yaml')
+        return infer_lang_name(path.join(tblpath, 'parser_config.yaml'))
 
     @property
     def file_index(self):
@@ -2781,12 +2763,9 @@ def decouple_fire_ryo():
     # This patches code in file 00a, which is compressed
     # It allows you to charge the Karakuri Camera without obtaining Fire Ryo.
     data = MapCategoryData.data
-    if get_global_label() == 'MN64_JP':
-        write_patch(data, 'patch_decouple_fire_ryo_00a.txt', noverify=True)
-        write_patch(get_outfile(), 'patch_decouple_fire_ryo.txt')
-    elif get_global_label() == 'MN64_EN':
-        write_patch(data, 'patch_decouple_fire_ryo_00a_en.txt', noverify=True)
-        write_patch(get_outfile(), 'patch_decouple_fire_ryo_en.txt')
+    write_patch(data, infer_lang_name('patch_decouple_fire_ryo_00a.txt'),
+                noverify=True)
+    write_patch(get_outfile(), infer_lang_name('patch_decouple_fire_ryo.txt'))
     MapCategoryData.data = data
 
 
@@ -2794,10 +2773,8 @@ def fix_character_swap_wraparound():
     # This patches code in file 00a, which is compressed
     # It allows you to character swap even without recruiting Goemon
     data = MapCategoryData.data
-    if get_global_label() == 'MN64_JP':
-        write_patch(data, 'patch_character_swap_00a.txt', noverify=True)
-    elif get_global_label() == 'MN64_EN':
-        write_patch(data, 'patch_character_swap_00a_en.txt', noverify=True)
+    write_patch(data, infer_lang_name('patch_character_swap_00a.txt'),
+                noverify=True)
     MapCategoryData.data = data
 
 
@@ -2814,10 +2791,8 @@ def initialize_variables(config, parameters):
             continue
         initialize_addresses.add(getattr(addresses, address_key))
 
-    if get_global_label() == 'MN64_JP':
-        script_file = path.join(tblpath, 'script_initialize_variables.txt')
-    elif get_global_label() == 'MN64_EN':
-        script_file = path.join(tblpath, 'script_initialize_variables_en.txt')
+    script_file = infer_lang_name(
+            path.join(tblpath, 'script_initialize_variables.txt'))
     MessagePointerObject.import_all_scripts(script_file)
 
     INITIAL_MESSAGE_INDEX = 0x90
@@ -2827,19 +2802,21 @@ def initialize_variables(config, parameters):
         script.prepend_instruction('09:1')
         script.prepend_instruction(f'04:{address:x}')
 
-    if get_global_label() == 'MN64_JP':
-        write_patch(get_outfile(), 'patch_initialize_variables.txt',
-                    parameters=parameters)
-    elif get_global_label() == 'MN64_EN':
-        write_patch(get_outfile(), 'patch_initialize_variables_en.txt',
-                    parameters=parameters)
+    write_patch(get_outfile(),
+                infer_lang_name('patch_initialize_variables.txt'),
+                parameters=parameters)
 
 
 def do_flute_anywhere():
-    if get_global_label() == 'MN64_JP':
-        write_patch(get_outfile(), 'patch_flute_anywhere.txt')
-    elif get_global_label() == 'MN64_EN':
-        write_patch(get_outfile(), 'patch_flute_anywhere_en.txt')
+    write_patch(get_outfile(), infer_lang_name('patch_flute_anywhere.txt'))
+
+
+def do_hard_mode():
+    data = MapCategoryData.data
+    write_patch(data,
+                infer_lang_name('patch_damage_multiplier_00a.txt'),
+                noverify=True)
+    MapCategoryData.data = data
 
 
 def setup_save_warps(dr):
@@ -2884,10 +2861,8 @@ def setup_dragon_warps(dr):
         '1a5-001': 0x93,
         }
 
-    if get_global_label() == 'MN64_JP':
-        script_file = path.join(tblpath, 'script_dragon_warps.txt')
-    elif get_global_label() == 'MN64_EN':
-        script_file = path.join(tblpath, 'script_dragon_warps_en.txt')
+    script_file = infer_lang_name(path.join(tblpath,
+                                            'script_dragon_warps.txt'))
     MessagePointerObject.import_all_scripts(script_file)
 
     for mmo in MapMetaObject.every:
@@ -2903,10 +2878,8 @@ def setup_dragon_warps(dr):
     else:
         data = mmo.get_decompressed()
     f = BytesIO(data)
-    if get_global_label() == 'MN64_JP':
-        write_patch(f, 'patch_dragon_atlas_010.txt', noverify=True)
-    elif get_global_label() == 'MN64_EN':
-        write_patch(f, 'patch_dragon_atlas_010_en.txt', noverify=True)
+    write_patch(f, infer_lang_name('patch_dragon_atlas_010.txt'),
+                noverify=True)
     f.seek(0)
     mmo._data = f.read()
     f.close()
@@ -3146,10 +3119,8 @@ def randomize_doors():
         definition_overrides['goemon'] = 'big_tree_battery'
         definition_overrides['ebisumaru'] = 'zazen_gate'
         fix_character_swap_wraparound()
-        if get_global_label() == 'MN64_JP':
-            script_file = path.join(tblpath, 'script_sasuke_mode.txt')
-        elif get_global_label() == 'MN64_EN':
-            script_file = path.join(tblpath, 'script_sasuke_mode_en.txt')
+        script_file = infer_lang_name(path.join(tblpath,
+                                                'script_sasuke_mode.txt'))
         MessagePointerObject.import_all_scripts(script_file)
     else:
         config['start_goemon'] = True
@@ -3192,6 +3163,9 @@ def randomize_doors():
 
     if config['ryo_hover_logic']:
         definition_overrides['ryo_hover'] = 'goemon'
+
+    if config['hard_mode']:
+        do_hard_mode()
 
     if get_global_label() == 'MN64_JP' and config['jp_super_jump_logic']:
         definition_overrides['super_jump_jp'] = 'super_jump'
@@ -3776,10 +3750,8 @@ def fix_softlockable_rooms(definition_overrides):
 
 
 def fix_missable_events(definition_overrides):
-    if get_global_label() == 'MN64_JP':
-        script_file = path.join(tblpath, 'script_missable_events.txt')
-    elif get_global_label() == 'MN64_EN':
-        script_file = path.join(tblpath, 'script_missable_events_en.txt')
+    script_file = infer_lang_name(path.join(tblpath,
+                                            'script_missable_events.txt'))
     MessagePointerObject.import_all_scripts(script_file)
     definition_overrides['missable_chain_pipe'] = 'start'
     definition_overrides['missable_benkei'] = 'start'
@@ -4009,12 +3981,7 @@ if __name__ == '__main__':
             randomize_enemies()
 
         if 'debugmenu' in get_activated_codes():
-            if get_global_label() == 'MN64_JP':
-                patch_filename = 'patch_debug_menu.txt'
-            elif get_global_label() == 'MN64_EN':
-                patch_filename = 'patch_debug_menu_en.txt'
-            else:
-                raise Exception('Unknown ROM version.')
+            patch_filename = infer_lang_name('patch_debug_menu.txt')
             write_patch(get_outfile(), patch_filename)
 
         decouple_fire_ryo()

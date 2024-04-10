@@ -33,4 +33,5 @@ ice_kunai_logic:      True  # Incorporate Ice Kunai into logic
 ryo_hover_logic:      False # Incorporate Ryo Hover into logic (experimental)
 jp_super_jump_logic:  False # Incorporate better super jump on JP version
 sasuke_mode:          True  # Start as Sasuke & Yae instead of Goemon & Ebi
+hard_mode:            False # Take 4x damage from all sources
 automash:             False # Eliminate button mashing during long cutscenes
