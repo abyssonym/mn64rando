@@ -2548,8 +2548,14 @@ class MessagePointerObject(TableObject):
     def root(self):
         if not self.scripts:
             return None
-        candidates = [s for s in self.scripts
-                      if s.pointer.pointer == self.message_pointer]
+        candidates = []
+        for s in self.parser.scripts.values():
+            if hasattr(s.pointer, 'repointer'):
+                pointer = s.pointer.repointer
+            else:
+                pointer = s.pointer.pointer
+            if pointer == self.message_pointer:
+                candidates.append(s)
         assert len(candidates) == 1
         return candidates[0]
 
@@ -2699,8 +2705,8 @@ class MessagePointerObject(TableObject):
         current_mpo = None
         for line in script.split('\n'):
             line = line.strip()
-            if line.startswith('#'):
-                line = line.lstrip('#').strip()
+            if line.startswith('!'):
+                line = line.lstrip('!').strip()
                 if not line.startswith('MESSAGE '):
                     continue
                 line = line[len('MESSAGE '):].strip()
@@ -2738,6 +2744,7 @@ class MessagePointerObject(TableObject):
             self.parser.updated = False
 
     def preclean(self):
+        self.old_message_pointer = self.message_pointer
         if self.parser and self.parser.updated:
             mmo = MapMetaObject.get(self.file_index-1)
             mmo._data = self.parser.to_bytecode()
@@ -3832,16 +3839,23 @@ def export_data():
     parsers = sorted(mpo.parser for mpo in MessagePointerObject.every
                      if mpo.parser is not None)
     script_headers = defaultdict(set)
+    npcs = defaultdict(set)
     for mpo in MessagePointerObject.every:
+        for npc in mpo.get_npcs():
+            description = npc.structure['name']
+            description = f'{npc.parent.debug_name} - {description}'
+            npcs[mpo.root].add(description)
         for script in mpo.scripts:
             for referenced in script.referenced_scripts:
                 pointer = referenced.pointer.converted
-                header = f'# {mpo.header}.{pointer:0>4x}'
+                header = f'! {mpo.header}.{pointer:0>4x}'
+                for description in npcs[referenced]:
+                    header = f'{header}\n# {description}'
                 script_headers[referenced].add(header)
     for p in parsers:
         for script in p.scripts.values():
             if script not in script_headers:
-                header = f'# MESSAGE ???: {p.file_index:0>3x}'
+                header = f'! MESSAGE ???: {p.file_index:0>3x}'
                 script_headers[script].add(header)
     sorted_scripts = sorted(script_headers, key=lambda s: (s.parser.file_index,
                                                            s.pointer.pointer))

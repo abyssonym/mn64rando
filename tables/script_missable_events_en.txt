@@ -1,4 +1,4 @@
-# MESSAGE 1ea: 066-63fc.63fc
+! MESSAGE 1ea: 066-63fc.63fc
 @63fc
   63fc. 10:08,000000     # Print Text
     text: |{begin}{endline}|
@@ -37,7 +37,7 @@
     text: |{end}{endline}|
   6488. 08:              # End Event
 
-# MESSAGE 30c: 079-1cd8.1cd8
+! MESSAGE 30c: 079-1cd8.1cd8
 @1cd8
   1cd8. 21:7a            # Unset Flag: 07a
   1d40. 22:34,08,@1cd81  # If Flag 034 (Met Benkei), Jump To @1cd81
@@ -103,7 +103,7 @@
     text: |{end}{endline}|
   1dfc. 08:              # End Event
 
-# MESSAGE 160: 061-c028.cd04
+! MESSAGE 160: 061-c028.cd04
 @cd04
   cd04. 10:08,000034     # Print Text
     text: |{newwindow}{endline}|

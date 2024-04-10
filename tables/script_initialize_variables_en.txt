@@ -1,4 +1,4 @@
-# MESSAGE 090: 05d-4188.4188
+! MESSAGE 090: 05d-4188.4188
 @4188
   0000. 06:8015c8b4      # Read from RAM 8015c8b4 (Oedo Castle Warp Point)
   0001. 02:0             # Skip Next If Not Equal: 0

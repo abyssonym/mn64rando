@@ -1,4 +1,4 @@
-# MESSAGE 090: 05d-3674.3674
+! MESSAGE 090: 05d-3674.3674
 @3674
   0000. 06:801620a4      # Read from RAM 801620a4 (Oedo Castle Warp Point)
   0001. 02:0             # Skip Next If Not Equal: 0
