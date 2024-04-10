@@ -268,7 +268,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             0x3ef: {0x27},
         }
 
-    NO_ENEMY_RANDOMIZE = [0x39, 0x3b, 0x40]
+    NO_ENEMY_RANDOMIZE = {0x39, 0x3b, 0x40}
 
     with open(ENTITY_STRUCTURES_FILENAME) as f:
         ENTITY_STRUCTURES = yaml.safe_load(f.read())
@@ -2945,13 +2945,14 @@ def setup_dragon_warps(dr):
 
 
 def randomize_enemies():
+    UNCONSIDER_MAPS = {0x131}
     enemy_maps = [mmo for mmo in MapMetaObject.every
                   if mmo.is_room and mmo.enemies]
     enemy_files = []
     file_counts = []
     all_enemies = []
     for mmo in enemy_maps:
-        if mmo.warp_index in mmo.NO_ENEMY_RANDOMIZE:
+        if mmo.warp_index in mmo.NO_ENEMY_RANDOMIZE | UNCONSIDER_MAPS:
             continue
         files = {MapMetaObject.ENTITY_FILES[e.definition.actor_id]
                  for e in mmo.enemies}
