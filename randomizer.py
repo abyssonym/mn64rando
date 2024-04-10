@@ -2790,6 +2790,7 @@ def initialize_variables(config, parameters):
             print('WARNING: Unknown address ${address_key}.')
             continue
         initialize_addresses.add(getattr(addresses, address_key))
+    initialize_addresses.add(addresses.have_bomb)
 
     script_file = infer_lang_name(
             path.join(tblpath, 'script_initialize_variables.txt'))
@@ -2801,6 +2802,7 @@ def initialize_variables(config, parameters):
     for address in sorted(initialize_addresses, reverse=True):
         script.prepend_instruction('09:1')
         script.prepend_instruction(f'04:{address:x}')
+        script.parser.updated = True
 
     write_patch(get_outfile(),
                 infer_lang_name('patch_initialize_variables.txt'),
@@ -2817,6 +2819,21 @@ def do_hard_mode():
                 infer_lang_name('patch_damage_multiplier_00a.txt'),
                 noverify=True)
     MapCategoryData.data = data
+
+
+def do_sasuke_mode():
+    YAE_MESSAGE_INDEX = 0x14c
+    SASUKE_MESSAGE_INDEX = 0x1f1
+
+    mpo = MessagePointerObject.get(YAE_MESSAGE_INDEX)
+    mpo.root.prepend_instruction('09:1')
+    mpo.root.prepend_instruction(f'04:{addresses.have_ebisumaru:x}')
+    mpo.root.parser.updated = True
+
+    mpo = MessagePointerObject.get(SASUKE_MESSAGE_INDEX)
+    mpo.root.prepend_instruction('09:1')
+    mpo.root.prepend_instruction(f'04:{addresses.have_goemon:x}')
+    mpo.root.parser.updated = True
 
 
 def setup_save_warps(dr):
@@ -2836,6 +2853,7 @@ def setup_save_warps(dr):
 
 def setup_dragon_warps(dr):
     DRAGON_ATLAS_INDEX = 0x10
+    OEDO_TOWN_MESSAGE_INDEX = 0x8b
 
     WARP_DICT = {
         0:   '1a1-001',  # Oedo Inn
@@ -2861,9 +2879,10 @@ def setup_dragon_warps(dr):
         '1a5-001': 0x93,
         }
 
-    script_file = infer_lang_name(path.join(tblpath,
-                                            'script_dragon_warps.txt'))
-    MessagePointerObject.import_all_scripts(script_file)
+    mpo = MessagePointerObject.get(OEDO_TOWN_MESSAGE_INDEX)
+    mpo.root.prepend_instruction('09:1')
+    mpo.root.prepend_instruction(f'04:{addresses.have_oedo_town_warp:x}')
+    mpo.root.parser.updated = True
 
     for mmo in MapMetaObject.every:
         if not mmo.is_room:
@@ -3110,23 +3129,22 @@ def randomize_doors():
             goal = 'pemopemo_god&flute&all_inns&all_teahouses'
         definition_overrides['goal'] = goal
 
+    for character in ('goemon', 'ebisumaru', 'sasuke', 'yae'):
+        key = f'start_{character}'
+        if key not in config:
+            config[key] = False
+
     if config['sasuke_mode']:
-        config['start_goemon'] = False
-        config['start_ebisumaru'] = False
         config['start_sasuke'] = True
         config['start_yae'] = True
         parameters['initial_character'] = 2
         definition_overrides['goemon'] = 'big_tree_battery'
         definition_overrides['ebisumaru'] = 'zazen_gate'
         fix_character_swap_wraparound()
-        script_file = infer_lang_name(path.join(tblpath,
-                                                'script_sasuke_mode.txt'))
-        MessagePointerObject.import_all_scripts(script_file)
+        do_sasuke_mode()
     else:
         config['start_goemon'] = True
         config['start_ebisumaru'] = True
-        config['start_sasuke'] = False
-        config['start_yae'] = False
         parameters['initial_character'] = 0
     config['start_bomb'] = True
 

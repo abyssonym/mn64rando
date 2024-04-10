@@ -25,5 +25,6 @@ $have_camera                80161ec0
 $have_minimaru              80161ee0
 $have_mermaid               80161ee8
 $have_snow                  80162054
+$have_oedo_town_warp        8016209c
 $custom_initialize_script   36741
 #.patch                      patch_no_checksum.txt
