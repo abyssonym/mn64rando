@@ -3271,9 +3271,13 @@ def randomize_doors():
         assert test in dr.connectable
         copy_to = MapMetaObject.get_entity_by_signature(copy_to)
         copy_from = MapMetaObject.get_entity_by_signature(copy_from)
-        for attr in ('dest_room', 'dest_x', 'dest_z', 'dest_y', 'direction'):
-            value = copy_from.get_property_value(attr, old=False)
-            copy_to.set_property(attr, value)
+        if test.rooted:
+            for attr in ('dest_room', 'dest_x', 'dest_z', 'dest_y',
+                         'direction'):
+                value = copy_from.get_property_value(attr, old=False)
+                copy_to.set_property(attr, value)
+        else:
+            copy_to.remove()
 
     # Clear unused exits
     for n in sorted(dr.connectable):

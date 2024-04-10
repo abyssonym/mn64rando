@@ -8,7 +8,6 @@ fg_cache_limit:      10000  # Max cache size for node guarantee simplification
 map_size:             0.75  # Percentage of all possible nodes to connect
 map_strictness:       0.75  # Lower bound portion of selected nodes to connect
 avoid_softlocks:      True  # Create a graph where you can't get stuck
-trap_doors:           0.00  # Rate to allow one-way trick doors
 skip_complex_nodes:   0.50  # Rate to skip nodes that are difficult to route
 lazy_complex_nodes:   False # Simplify complex nodes (softlock potential)
 goal_based_missables: True  # Missable nodes only relevant if required by goal
