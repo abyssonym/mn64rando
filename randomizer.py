@@ -1461,7 +1461,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         parameters = {k: format_two_bytes(v) for (k, v) in parameters.items()}
 
         write_patch(f, infer_lang_name('patch_pemopemo_destination_042.txt'),
-                    parameters=parameters, noverify=True)
+                    parameters=parameters, noverify=True, validate=True)
 
         f.seek(0)
         mmo._data = f.read()
@@ -2771,8 +2771,7 @@ def decouple_fire_ryo():
     # It allows you to charge the Karakuri Camera without obtaining Fire Ryo.
     data = MapCategoryData.data
     write_patch(data, infer_lang_name('patch_decouple_fire_ryo_00a.txt'),
-                noverify=True)
-    write_patch(get_outfile(), infer_lang_name('patch_decouple_fire_ryo.txt'))
+                noverify=True, validate=True)
     MapCategoryData.data = data
 
 
@@ -2781,7 +2780,7 @@ def fix_character_swap_wraparound():
     # It allows you to character swap even without recruiting Goemon
     data = MapCategoryData.data
     write_patch(data, infer_lang_name('patch_character_swap_00a.txt'),
-                noverify=True)
+                noverify=True, validate=True)
     MapCategoryData.data = data
 
 
@@ -2816,15 +2815,11 @@ def initialize_variables(config, parameters):
                 parameters=parameters)
 
 
-def do_flute_anywhere():
-    write_patch(get_outfile(), infer_lang_name('patch_flute_anywhere.txt'))
-
-
 def do_hard_mode():
     data = MapCategoryData.data
     write_patch(data,
                 infer_lang_name('patch_damage_multiplier_00a.txt'),
-                noverify=True)
+                noverify=True, validate=True)
     MapCategoryData.data = data
 
 
@@ -2905,7 +2900,7 @@ def setup_dragon_warps(dr):
         data = mmo.get_decompressed()
     f = BytesIO(data)
     write_patch(f, infer_lang_name('patch_dragon_atlas_010.txt'),
-                noverify=True)
+                noverify=True, validate=True)
     f.seek(0)
     mmo._data = f.read()
     f.close()
@@ -3179,7 +3174,7 @@ def randomize_doors():
 
     if config['flute_anywhere']:
         definition_overrides['flute_anywhere'] = 'flute'
-        do_flute_anywhere()
+        write_patch(get_outfile(), infer_lang_name('patch_flute_anywhere.txt'))
 
     if config['start_snow']:
         definition_overrides['miracle_snow'] = 'start'

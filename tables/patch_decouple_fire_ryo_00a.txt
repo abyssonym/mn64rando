@@ -1,11 +1,30 @@
-# RAM address 1e176c
+# RAM address 801e176c
 # File address 00a:010bdc
-010bdc: 0c 01 4c 36     # JAL       0x800530d8
+010bdc: 0c 08 3e 44     # JAL       0x8020f910
+        00 00 00 00
+        00 00 00 00
+
+# RAM address 8020f910
+03ed80: 00 00 00 00     # NOP (also serves as string terminator)
+        00 08 48 80     # SLL       T1, T0, 2
+        01 49 50 21     # ADDU      T2, T2, T1
+        8d 49 1d cc     # LW        T1, 0x1DCC (T2)
+        8d 4a 1e cc     # LW        T2, 0x1ECC (T2)
+        01 49 50 25     # OR        T2, T2, T1
+        03 e0 00 08     # JR        RA
+        00 00 00 00     # NOP
+        00 00 00 00     # NOPs for compression buffer
+        00 00 00 00
         00 00 00 00
         00 00 00 00
 
 VALIDATION
 
+# RAM address 801e176c
 010bdc: 00 08 48 80     # SLL       T1, T0, 2
         01 49 50 21     # ADDU      T2, T2, T1
         8d 4a 1e cc     # LW        T2, 0x1ECC (T2)
+
+# RAM address 8020f910
+03ed80: 2a 2a 2a 2a
+        2a 2a 2a 2a     # ************* BURA NOHIT ********************

@@ -1,21 +1,26 @@
 # 801dcd48
 0118e8: 08 08 2a 7c     # J 8020a9f0
-:       00 04 2e 00     # SLL A1,A0,24
+        00 04 2e 00     # SLL A1,A0,24
 
 # 8020a9f0
 03f590: 00 00 00 00     # NOP (also serves as string terminator)
-:       18 a0 00 02     # BGEZ A1,+2
-:       00 05 75 83     # SRA T6,A1,22 (Quadruple damage)
-:       00 0e 70 83     # SRA T6,T6,2 (Normal Healing)
-:       00 00 00 00     # NOP
-:       08 07 73 54     # J 801dcd50
-:       00 00 00 00     # NOP
+        18 a0 00 02     # BGEZ A1,+2
+        00 05 75 83     # SRA T6,A1,22 (Quadruple damage)
+        00 0e 70 83     # SRA T6,T6,2 (Normal Healing)
+        00 00 00 00     # NOP
+        08 07 73 54     # J 801dcd50
+        00 00 00 00     # NOP
+        00 00 00 00     # NOPs for compression buffer
+        00 00 00 00
+        00 00 00 00
+        00 00 00 00
+        00 00 00 00
 
 VALIDATION
 
 # 801dcd48
 0118e8: 00 04 2e 00     # SLL A1,A0,24
-:       00 05 76 03     # SRA T6,A1,24
+        00 05 76 03     # SRA T6,A1,24
 
 # 801dcd50
 0118f0: 27 bd ff e8
