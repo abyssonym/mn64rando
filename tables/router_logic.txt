@@ -1,6 +1,3 @@
-# Note:
-#   Multi-line .guarantee statements are joined by OR logic
-#   Multi-line .missable statements are joined by AND logic
 .def start                      1d1-001
 .def goemon                     start
 .def ebisumaru                  start
@@ -15,6 +12,7 @@
 .def ushiwaka                   173-002
 .def benkei                     171-002
 .def beyond_benkei              171-004
+.def benkei_after_thaisamba     171-xx4&thaisamba
 .def blue_fish                  benkei&ushiwaka
 .def one_yellow_fish            168-002|16e-004
 .def two_yellow_fish            16b-002
@@ -29,7 +27,7 @@
 .def five_rf_a                  three_red_fish&two_red_fish
 .def five_rf_b                  168-002&16b-002&172-002
 .def red_fish                   five_rf_a|five_rf_b
-.def achilles_heel              benkei&ushiwaka&blue_fish&yellow_fish&red_fish
+.def achilles_heel              173-x03
 .def turtle_rock                137-002
 .def yamato_opened              turtle_rock
 .def turtle_torii               turtle_rock
@@ -42,36 +40,38 @@
 .def iyo_teahouse               1b5-001
 .def mini_ebisu                 ebisumaru&16d-x02
 .def camera                     ebisumaru&031-003
-.def darumanyo                  049-001&camera
+.def darumanyo                  049-x01
 .def bizen_opened               darumanyo
-.def big_tree_battery           camera&14a-002&149-002
+.def big_tree_battery           149-x02
 .def sasuke                     big_tree_battery
 .def firecracker                sasuke
 .def ice_kunai                  sasuke&06e-001
 .def ice_kunai_optional         ice_kunai
 .def meatsaw_hammer             062-00c
 .def tsurami                    071-001
-.def kyushu                     tsurami&153-002
-.def sudden_impact              kyushu&goemon&1c4-001
+.def kyushu                     153-x02
+.def sudden_impact              1c4-x01&goemon
 .def brother                    179-002
-.def silver_weapons             pipe_maker&brother
+.def silver_weapons             1d2-x01
 .def witch                      1d4-001
-.def mermaid                    yae&witch&154-002
+.def mermaid                    154-x02
 .def bazooka                    081-001
 .def thaisamba                  09d-001
-.def kappa                      16a-002
-.def special_key                thaisamba&benkei&kappa&golden_temple
-.def super_jump                 sasuke&1d0-001
+.def kappa                      16a-x02
+.def special_key                16d-xx2
+.def super_jump                 1d0-x01
 .def super_jump_jp              `NEVER`
-.def cucumber                   super_jump&170-002
+.def cucumber                   170-x02
+.def kappa_after_cucumber       16a-xx2&cucumber
 .def miracle_moon               congo
 .def miracle_flower             darumanyo
 .def miracle_star               tsurami
-.def miracle_snow               thaisamba&benkei&kappa&cucumber
+.def miracle_snow               kappa_after_cucumber
 .def sogen_armor_shop           19f-001
 .def gold_weapons               194-x01
 .def all_miracle    miracle_moon&miracle_flower&miracle_star&miracle_snow
-.def pemopemo_god   all_miracle&14c-002
+.def pemopemo_god               14c-002
+.def pemopemo_with_goal         pemopemo_god&14c-x02
 .def all_characters goemon&ebisumaru&sasuke&yae
 .def all_weapons    chain_pipe&fire_ryo&meatsaw_hammer&camera&ice_kunai&flute&bazooka
 .def all_magic      sudden_impact&mini_ebisu&super_jump&mermaid
@@ -80,10 +80,10 @@
 .def everything     pemopemo_god&gold_weapons&all_inventory&kappa&turtle_rock
 .def all_inns                   1a1-001&1a2-001&1a3-001&1a4-001&1a5-001
 .def all_teahouses              1b1-001&1b3-001&1b4-001&1b5-001&1b6-001
-.def goal                       pemopemo_god
+.def goal                       all_miracle
 
 .start      start
-.goal       goal
+.goal       pemopemo_with_goal&goal
 
 # 000 Oedo Castle 1F Tile Room
 000-001=000-003                         # 0.109.silver
@@ -191,8 +191,9 @@
 01a-008=01a-006                         # cat
 
 # 028 Oedo Castle Lord's Room
-028-001=028-x01 congo
-028-x01>>166-002
+.require 028-x01 166-002
+028-001>028-x01? congo
+028-x01>166-002
 
 # 02F Ghost Toys Entrance
 .guarantee  02f-003 fire_ryo&02f-001
@@ -304,7 +305,9 @@
 046-005=046-001                         # dango
 
 # 049 Ghost Toys 2F-3F Elevator / Darumanyo Boss Room
-049-001>>142-004 camera
+.require 049-x01 142-004
+049-001>049-x01? camera
+049-x01>142-004
 
 # 05A Festival Temple West Main Entrance
 05a-001=05a-002
@@ -1028,6 +1031,9 @@
 148-006=148-00a
 148-008=148-00a
 
+# 149 Izumo - Big Tree
+149-002=149-x02 camera&14a-002
+
 # 14A Inaba
 14a-006=14a-002                         # cat
 14a-007=14a-002                         # dango
@@ -1038,6 +1044,9 @@
 14b-004<14b-006
 14b-002=14b-006 silver_weapons|gold_weapons
 14b-004=14b-006 silver_weapons|gold_weapons
+
+# 14C Ugo - Stone Circle
+14c-002=14c-x02 goal
 
 # 14D Mutsu - Shoreline
 14d-006=14d-006 mermaid
@@ -1081,8 +1090,12 @@
 152-014=152-002                         # cat
 152-014=152-004                         # cat
 
+# 153 Kanmonkyo Gateway Viewpoint
+153-002=153-x02 tsurami
+
 # 154 Waterfall of Kegon
 154-004=154-002 mermaid                 # cat
+154-002=154-x02 yae&witch
 
 # 15E Oedo - Bridge to Musashi
 .guarantee  15e-002 super_pass&15e-x02
@@ -1248,6 +1261,8 @@
 
 # 16A Zazen - Kappa Pond
 16a-002=16a-004
+16a-002=16a-x02 benkei_after_thaisamba
+16a-002=16a-xx2 cucumber
 
 # 16B Zazen - Waterway
 16b-002=16b-003
@@ -1286,6 +1301,7 @@
 
 # 16D Zazen - Golden Temple
 16d-002=16d-x02 ebisumaru&ushiwaka&iyo_teahouse
+16d-002=16d-xx2 kappa
 
 # 16E Zazen - Bridge to Bizen
 .guarantee  16e-002 bizen_opened&16e-004
@@ -1296,6 +1312,9 @@
 # 16F Zazen - Path to Mt. Nyoigatake
 16f-002=16f-004
 
+# 170 Zazen - Mt. Nyoigatake
+170-002=170-x02 super_jump
+
 # 171 Zazen - Bridge to Yamato (Benkei)
 .guarantee  171-004 achilles_heel&171-x04
 .missable iyo_teahouse missable_benkei
@@ -1304,6 +1323,7 @@
 +ushiwaka_at_golden_temple .require beyond_benkei golden_temple
 #171-002=>171-004 achilles_heel
 171-002=171-x04
+171-002=171-xx4 thaisamba
 171-002=171-006
 171-002=171-007
 #171-004<=171-006 achilles_heel
@@ -1316,8 +1336,37 @@
 # 172 Zazen - Waterfall
 172-002=172-004
 
+.or fishing168
++fishing168 .nongoal achilles_heel
++fishing168 .nongoal 168-002
++fishing168 .unreachable 168-002
++fishing168 .guarantee 168-002 beyond_benkei
++fishing168 .reachable_from_without 168-002 ushiwaka beyond_benkei
+.or fishing16b
++fishing16b .nongoal achilles_heel
++fishing16b .nongoal 16b-002
++fishing16b .unreachable 16b-002
++fishing16b .guarantee 16b-002 beyond_benkei
++fishing16b .reachable_from_without 16b-002 ushiwaka beyond_benkei
+.or fishing16e
++fishing16e .nongoal achilles_heel
++fishing16e .nongoal 16e-004
++fishing16e .unreachable 16e-004
++fishing16e .guarantee 16e-004 beyond_benkei
++fishing16e .reachable_from_without 16e-004 ushiwaka beyond_benkei
+.or fishing172
++fishing172 .nongoal achilles_heel
++fishing172 .nongoal 172-002
++fishing172 .unreachable 172-002
++fishing172 .guarantee 172-002 beyond_benkei
++fishing172 .reachable_from_without 172-002 ushiwaka beyond_benkei
+.or fishing_benkei
++fishing_benkei .nongoal achilles_heel
++fishing_benkei .reachable_from_without benkei ushiwaka beyond_benkei
+
 # 173 Zazen - Ushiwaka
 173-002=173-003
+173-003=173-x03 blue_fish&yellow_fish&red_fish&benkei
 
 # 175 Folkypoke Village (East)
 175-002=175-004
@@ -1438,15 +1487,16 @@
 # 194 Sogen - Restaurant
 194-001=194-x01 sogen_armor_shop
 
-.or complex_tourism1
-+complex_tourism1 .reachable_from_without 1b8-001 13c-002 13c-x02
-+complex_tourism1 .reachable_from_without 1b9-001 13c-002 13c-x02
+.dependency 1b8-001 13c-002
+.dependency 1b9-001 13c-002
 
-.or complex_tourism2
-+complex_tourism2 .reachable_from_without 13c-002 1b8-001 13c-x02
-+complex_tourism2 .reachable_from_without 13c-002 1b9-001 13c-x02
-+complex_tourism2 .unreachable 1b8-001
-+complex_tourism2 .unreachable 1b9-001
+.or complex_tourism
++complex_tourism .nongoal 13c-002
++complex_tourism .unreachable 1b8-001
++complex_tourism .unreachable 1b9-001
++complex_tourism .reachable_from_without 13c-002 1b8-001 13c-x02
++complex_tourism .reachable_from_without 13c-002 1b9-001 13c-x02
++complex_tourism .reachable_from_without 13c-002 start 13c-x02
 
 13c-x02>13c-002
 
@@ -1457,6 +1507,15 @@
 # 1B9 Kii-Awaji Tourism Center
 1b9-001=1b8-001 dragon
 1b9-001>13c-x02?
+
+# 1C4 Muscle Training Gym
+1c4-001=1c4-x01 kyushu&goemon
+
+# 1D0 Sasuke Jetpack Training
+1d0-001=1d0-x01 sasuke
+
+# 1D2 Mt. Fuji - Pipe Maker's House
+1d2-001=1d2-x01 brother
 
 # Dragon Warps
 12c-0*>start flute

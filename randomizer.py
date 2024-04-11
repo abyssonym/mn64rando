@@ -3121,7 +3121,7 @@ def randomize_doors():
         if 'goal' in definition_overrides:
             goal = definition_overrides['goal'] + '&everything'
         else:
-            goal = 'pemopemo_god&everything'
+            goal = 'everything'
         definition_overrides['goal'] = goal
 
     if config['all_warps']:
@@ -3129,7 +3129,7 @@ def randomize_doors():
             goal = definition_overrides['goal'] + \
                     '&flute&all_inns&all_teahouses'
         else:
-            goal = 'pemopemo_god&flute&all_inns&all_teahouses'
+            goal = 'all_miracle&flute&all_inns&all_teahouses'
         definition_overrides['goal'] = goal
 
     for character in ('goemon', 'ebisumaru', 'sasuke', 'yae'):
