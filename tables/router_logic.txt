@@ -1438,13 +1438,25 @@
 # 194 Sogen - Restaurant
 194-001=194-x01 sogen_armor_shop
 
+.or complex_tourism1
++complex_tourism1 .reachable_from_without 1b8-001 13c-002 13c-x02
++complex_tourism1 .reachable_from_without 1b9-001 13c-002 13c-x02
+
+.or complex_tourism2
++complex_tourism2 .reachable_from_without 13c-002 1b8-001 13c-x02
++complex_tourism2 .reachable_from_without 13c-002 1b9-001 13c-x02
++complex_tourism2 .unreachable 1b8-001
++complex_tourism2 .unreachable 1b9-001
+
+13c-x02>13c-002
+
 # 1B8 Folkypoke Tourism Center
 1b8-001=1b9-001 dragon
-1b8-001>>13c-002
+1b8-001>13c-x02?
 
 # 1B9 Kii-Awaji Tourism Center
 1b9-001=1b8-001 dragon
-1b9-001>>13c-002
+1b9-001>13c-x02?
 
 # Dragon Warps
 12c-0*>start flute
