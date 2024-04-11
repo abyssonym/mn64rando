@@ -3389,10 +3389,11 @@ def randomize_doors():
                     MapMetaObject.get_entity_by_signature(
                         node.label).get_pretty_value('key_type'))
         mmo = label_to_mmo(node.label)
+        s1 = ''
         if extra is None:
-            s += f'\n{warp_index} {mmo.room_name}\n'
+            s1 += f'\n{warp_index} {mmo.room_name}\n'
         else:
-            s += f'\n{warp_index} {mmo.room_name} **{extra}**\n'
+            s1 += f'\n{warp_index} {mmo.room_name} **{extra}**\n'
         nodes = [p.destination for p in solpath]
         previous_line = None
         pathlines = []
@@ -3411,7 +3412,10 @@ def randomize_doors():
                     pathlines = pathlines[:-2] + [a]
                 elif b.startswith(a):
                     pathlines = pathlines[:-2] + [b]
-        s += '\n'.join(pathlines) + '\n'
+        s1 += '\n'.join(pathlines) + '\n'
+        if s1.strip().count('\n') <= 1 and '**' not in s1:
+            continue
+        s += s1
     s = s.strip()
     solution_filename = f'{get_outfile()}.spoiler.txt'
     timestamp = datetime.strftime(datetime.now(), '%Y%m%d%H')
