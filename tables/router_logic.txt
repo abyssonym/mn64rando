@@ -14,18 +14,18 @@
 .def beyond_benkei              171-004
 .def benkei_after_thaisamba     171-xx4&thaisamba
 .def blue_fish                  benkei&ushiwaka
-.def one_yellow_fish            168-002|16e-004
+.def one_yellow_fish            168-006|16e-004
 .def two_yellow_fish            16b-002
 .def three_yellow_fish          172-002
 .def four_yf_a                  three_yellow_fish&one_yellow_fish
 .def four_yf_b                  three_yellow_fish&two_yellow_fish
-.def four_yf_c                  two_yellow_fish&168-002&16e-004
+.def four_yf_c                  two_yellow_fish&168-006&16e-004
 .def yellow_fish                four_yf_a|four_yf_b|four_yf_c
 .def one_red_fish               172-002
-.def two_red_fish               168-002|16b-002
+.def two_red_fish               168-006|16b-002
 .def three_red_fish             16e-004
 .def five_rf_a                  three_red_fish&two_red_fish
-.def five_rf_b                  168-002&16b-002&172-002
+.def five_rf_b                  168-006&16b-002&172-002
 .def red_fish                   five_rf_a|five_rf_b
 .def achilles_heel              173-x03
 .def turtle_rock                137-002
@@ -1062,14 +1062,20 @@
 14d-x06=>14d-006 mermaid
 
 # 14E Japan Sea - Underwater
-.orphanless 14e-003
-.require 14e-003 14e-002
+.def missable_submarine `NEVER`
+.dependency 14e-003 14e-002
+.or submarine
++submarine .orphanless 14e-003
++submarine .unreachable 14e-003
++submarine .reachable_from_without 14e-x03 14e-003 start
 14e-002=14e-002 mermaid
 14e-003=14e-003 mermaid
-14e-002=14e-003 mermaid
+14e-002=14e-003 mermaid&missable_submarine
+14e-002=14e-003? mermaid
 14e-002=14e-009 mermaid                 # cat
 14e-002=14e-00b mermaid                 # pack
 14e-002=14e-00a mermaid                 # dango
+14e-003=14e-x03 missable_submarine
 
 
 # 14F Northeast Tunnel to Festival Village 1
@@ -1342,10 +1348,10 @@
 
 .or fishing168
 +fishing168 .nongoal achilles_heel
-+fishing168 .nongoal 168-002
-+fishing168 .unreachable 168-002
-+fishing168 .guarantee 168-002 beyond_benkei
-+fishing168 .reachable_from_without 168-002 ushiwaka beyond_benkei
++fishing168 .nongoal 168-006
++fishing168 .unreachable 168-006
++fishing168 .guarantee 168-006 beyond_benkei
++fishing168 .reachable_from_without 168-006 ushiwaka beyond_benkei
 .or fishing16b
 +fishing16b .nongoal achilles_heel
 +fishing16b .nongoal 16b-002

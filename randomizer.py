@@ -97,7 +97,7 @@ def patch_file(filename, file_index, parameters=None):
         assert isinstance(data, BytesIO)
         f = data
     else:
-        mmo = MapMetaObject.get(file_index)
+        mmo = MapMetaObject.get_by_file_index(file_index)
         if hasattr(mmo, '_data'):
             data = mmo._data
         else:
@@ -2865,6 +2865,22 @@ def do_sasuke_mode():
     mpo.root.parser.updated = True
 
 
+def do_permanent_sub():
+    JAPAN_SEA_INDEX = 0x14e
+    CODE_FILE_INDEX = 0x1e
+    THAISAMBA_FLAG = 0x32
+    MONEY_HANDLING_FLAG = 0x82
+    mmo = MapMetaObject.get_by_warp_index(JAPAN_SEA_INDEX)
+    for d in mmo.definitions:
+        if d.actor_id == 0x345:
+            assert d.get_property_value('flag') == THAISAMBA_FLAG
+            # This ensures the the submarine exit is always active
+            d.set_property('flag', MONEY_HANDLING_FLAG)
+
+    # This patch makes the submarine actor appear
+    patch_file('patch_permanent_sub_01e.txt', CODE_FILE_INDEX)
+
+
 def setup_save_warps(dr):
     WARP_DICT = {
         1:   0x15f,
@@ -3213,6 +3229,7 @@ def randomize_doors():
     if config['fix_bad_maps']:
         definition_overrides = fix_softlockable_rooms(definition_overrides)
         definition_overrides = fix_missable_events(definition_overrides)
+        do_permanent_sub()
 
     preset_connections = defaultdict(set)
 
@@ -3801,6 +3818,7 @@ def fix_missable_events(definition_overrides):
     MessagePointerObject.import_all_scripts(script_file)
     definition_overrides['missable_chain_pipe'] = 'start'
     definition_overrides['missable_benkei'] = 'start'
+    definition_overrides['missable_submarine'] = 'start'
     return definition_overrides
 
 
