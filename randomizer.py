@@ -3823,6 +3823,7 @@ def fix_missable_events(definition_overrides):
 
 
 def add_roommates():
+    MONEY_HANDLING_FLAG = 0x82
     NPC_FILES = [0x1a]
     candidates = {c for c in MapMetaObject.ENTITY_FILES
                   if MapMetaObject.ENTITY_FILES[c] in NPC_FILES
@@ -3835,6 +3836,8 @@ def add_roommates():
         actor_id = chosen.pop()
         definition = mmo.add_new_definition(b'\x00' * 0x10)
         definition.set_main_property(actor_id)
+        if 'flag' in definition.structure:
+            definition.set_property('flag', MONEY_HANDLING_FLAG)
         instance = mmo.EntityInstance(b'\x00' * 0x14, mmo)
         instance.set_main_property(definition.index)
         instance.clean()
