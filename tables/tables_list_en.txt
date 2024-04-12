@@ -4,13 +4,13 @@ SaveWarpObject          struct_dragon_warp.txt          5c630   18
 DragonWarpObject        struct_dragon_warp.txt          6e010   16
 MessagePointerObject    struct_message_pointer.txt      785a0   794
 MessageFileObject       struct_message_file.txt         79208   794
-$file00a_ram_offset         1cb460  # Location in RAM where file 00a is
-$file00a_pointer_offset     2098dc  # Location of pointers to misc room data
-$file00a_idle_offset        209d24  # Location of table for map idle animations
-$file00b_ram_offset         20d2a0  # Location in RAM where file 00b is
-$file00b_efile_offset       2297d6  # Associated file for each entity
-$file00b_loading_bank       220000  # Bank of each room's loading files
-$file00b_pointer_offset     231300  # Pointers to room metadata
+$file00b_ram_offset         1cb460  # Location in RAM where file 00a is
+$file00b_pointer_offset     2098dc  # Location of pointers to misc room data
+$file00b_idle_offset        209d24  # Location of table for map idle animations
+$file00c_ram_offset         20d2a0  # Location in RAM where file 00b is
+$file00c_efile_offset       2297d6  # Associated file for each entity
+$file00c_loading_bank       220000  # Bank of each room's loading files
+$file00c_pointer_offset     231300  # Pointers to room metadata
 $expected_data_end          fc8211
 $free_space_start           fc9000
 $free_space_end             ff7fff

@@ -86,6 +86,38 @@ def infer_lang_name(filename):
         return f'{base}_en.{extension}'
 
 
+def patch_file(filename, file_index, parameters=None):
+    if parameters is None:
+        parameters = {}
+    checkstr = f'_{file_index:0>3x}'
+    assert checkstr in filename
+
+    if file_index == MapCategoryData.ROOM_DATA_INDEX:
+        data = MapCategoryData.data
+        assert isinstance(data, BytesIO)
+        f = data
+    else:
+        mmo = MapMetaObject.get(file_index)
+        if hasattr(mmo, '_data'):
+            data = mmo._data
+        else:
+            data = mmo.get_decompressed()
+        assert isinstance(data, bytes)
+        f = BytesIO(data)
+
+    write_patch(f, infer_lang_name(filename), noverify=True, validate=True,
+                parameters=parameters)
+
+    if file_index == MapCategoryData.ROOM_DATA_INDEX:
+        assert isinstance(MapCategoryData.data, BytesIO)
+        assert MapCategoryData.data is f
+    else:
+        f.seek(0)
+        mmo._data = f.read()
+        assert isinstance(mmo._data, bytes)
+        f.close()
+
+
 class GoemonParser(Parser):
     def __eq__(self, other):
         if self is not other:
@@ -198,6 +230,10 @@ class MetaSizeObject(TableObject):
         assert m % 0x40 == 0
         return m
 
+    @classmethod
+    def get_by_file_index(self, index):
+        return self.get(index-1)
+
 
 class MapMetaObject(TableObject, ConvertPointerMixin):
     ENTITY_STRUCTURES_FILENAME = path.join(tblpath, 'entity_structures.yaml')
@@ -207,21 +243,21 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     Using extra free space is complicated.
     Pointers must ostensibly be in ascending order, because the "next" pointer
     is used to determine the size of variable length data blocks. However,
-    some data, such as the MAIN_CODE_INDEX, cannot be moved. So, if we want
-    to move some movable data, we have to identify breakpoints where there is
-    a pointer that never gets read, so that the "next" pointer issue never
+    some data, such as the MAIN_CODE_FILE_INDEX, cannot be moved. So, if we
+    want to move some movable data, we have to identify breakpoints where there
+    is a pointer that never gets read, so that the "next" pointer issue never
     comes up. Two such indexes are:
         336 - Room 001 - Alternate Oedo Castle Tile Room (unused)
         46d - Room 1ce - Unknown Training Gym (unused, no exits or actors)
         482 - Room 1e3 - Unknown (goes to credits sequence, unused?)
     '''
-    MAIN_CODE_INDEX = 0xb
+    MAIN_CODE_FILE_INDEX = 0xc
     MAX_WARP_INDEX = 0x1e3
-    FORCE_OLD_POINTER = (list(range(0x50)) +
-                         list(range(0x482, 0x520)))
+    FORCE_OLD_POINTER = (list(range(0x51)) +
+                         list(range(0x483, 0x521)))
 
-    ROM_SPLIT_THRESHOLD_LOW = 0x336
-    ROM_SPLIT_THRESHOLD_HI = 0x46d
+    ROM_SPLIT_THRESHOLD_LOW = 0x337
+    ROM_SPLIT_THRESHOLD_HI = 0x46e
     ROM_SPLIT_THRESHOLDS = (ROM_SPLIT_THRESHOLD_LOW, ROM_SPLIT_THRESHOLD_HI)
 
     LOADING_CODE_HEADER = \
@@ -254,7 +290,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             'ending_offset':        (0x0e, 0x10),
             'meta_eight3':          (0x10, 0x12),
             'footer_offset':        (0x12, 0x14),
-            'file_index':           (0x14, 0x16),
+            'actor_file_index':     (0x14, 0x16),
             'meta_null':            (0x16, 0x18),
             'loading_pointer':      (0x18, 0x1c),
         }
@@ -1116,11 +1152,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     @classproperty
     def VIRTUAL_RAM_OFFSET(self):
-        return addresses.file00b_ram_offset
+        return addresses.file00c_ram_offset
 
     @classproperty
     def POINTER_TABLE_OFFSET(self):
-        return addresses.file00b_pointer_offset
+        return addresses.file00c_pointer_offset
 
     @classproperty
     def sorted_rooms(self):
@@ -1130,14 +1166,14 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     @classmethod
     def read_loading_files(self):
-        main_code = self.get(self.MAIN_CODE_INDEX)
+        main_code = self.get_by_file_index(self.MAIN_CODE_FILE_INDEX)
         main_code._data = main_code.get_decompressed()
         data_start = 0xffffffff
         data_end = 0
         routine_start = 0xffffffff
         routine_end = 0
         with BytesIO(main_code._data) as f:
-            f.seek(self.convert_pointer(addresses.file00b_efile_offset))
+            f.seek(self.convert_pointer(addresses.file00c_efile_offset))
             for entity_index in range(0x402):
                 value = int.from_bytes(f.read(2), byteorder='big')
                 self.ENTITY_FILES[entity_index] = value
@@ -1151,12 +1187,12 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 f.seek(self.convert_pointer(pointer))
                 metadata = f.read(self.METADATA_LENGTH)
                 mmo_index = int.from_bytes(metadata[0x14:0x16],
-                                           byteorder='big') - 1
-                if mmo_index < 0:
+                                           byteorder='big')
+                if mmo_index <= 0:
                     assert set(metadata[4:-4]) == {0}
                     continue
 
-                mmo = MapMetaObject.get(mmo_index)
+                mmo = MapMetaObject.get_by_file_index(mmo_index)
                 if mmo.is_rom_split:
                     continue
                 mmo.warp_index = warp_index
@@ -1171,7 +1207,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 assert mmo.meta_eight2 == 0x800
                 assert mmo.meta_eight3 == 0x800
                 assert mmo.meta_null == 0
-                assert mmo.file_index == mmo.index + 1
+                assert mmo.file_index == mmo.actor_file_index == mmo.index + 1
                 assert mmo.ending_offset == \
                     mmo.footer_offset + self.ENTITY_FOOTER_LENGTH
 
@@ -1186,7 +1222,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                     self.LOADING_CODE_HEADER + self.LOADING_CODE_FOOTER) + 2
                 offset = int.from_bytes(routine[0x12:0x14], byteorder='big')
                 f.seek(self.convert_pointer(
-                    addresses.file00b_loading_bank | offset))
+                    addresses.file00c_loading_bank | offset))
                 data_start = min(data_start, f.tell())
                 warp_loads = []
                 while True:
@@ -1209,7 +1245,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     @classmethod
     def write_loading_files(self):
-        main_code = self.get(self.MAIN_CODE_INDEX)
+        main_code = self.get_by_file_index(self.MAIN_CODE_FILE_INDEX)
         data_start = MapMetaObject.loading_data_start
         data_end = MapMetaObject.loading_data_end
         routine_start = MapMetaObject.loading_routine_start
@@ -1318,6 +1354,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             return None
         assert len(choices) == 1
         return choices[0]
+
+    @classmethod
+    def get_by_file_index(self, index):
+        return self.get(index-1)
 
     @classmethod
     def get_entity_by_signature(self, signature, convert=True):
@@ -1441,15 +1481,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     @classmethod
     def set_pemopemo_destination(self, room, x, z, y, direction):
         PEMOPEMO_ENTITY = 0x335
-        PEMOPEMO_FILE_INDEX = self.ENTITY_FILES[PEMOPEMO_ENTITY]-1
-        assert PEMOPEMO_FILE_INDEX == 0x42
-
-        mmo = MapMetaObject.get(PEMOPEMO_FILE_INDEX)
-        if hasattr(mmo, '_data'):
-            data = mmo._data
-        else:
-            data = mmo.get_decompressed()
-        f = BytesIO(data)
+        PEMOPEMO_FILE_INDEX = self.ENTITY_FILES[PEMOPEMO_ENTITY]
+        assert PEMOPEMO_FILE_INDEX == 0x43
 
         def format_two_bytes(value):
             return f'{value>>8:0>2x} {value&0xff:0>2x}'
@@ -1460,12 +1493,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             }
         parameters = {k: format_two_bytes(v) for (k, v) in parameters.items()}
 
-        write_patch(f, infer_lang_name('patch_pemopemo_destination_042.txt'),
-                    parameters=parameters, noverify=True, validate=True)
-
-        f.seek(0)
-        mmo._data = f.read()
-        f.close()
+        patch_file('patch_pemopemo_destination_043.txt', PEMOPEMO_FILE_INDEX,
+                   parameters=parameters)
 
     @classmethod
     def free_memory_flag(self, flag):
@@ -1482,7 +1511,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             header = f'ROOM {self.warp_index:0>3X}: '
         else:
             header = f'ROOM: '
-        header += (f'{self.index:0>3x},{self.pointer:0>5x}->'
+        header += (f'{self.file_index:0>3x},{self.pointer:0>5x}->'
                    f'{self.reference_pointer:0>8x}')
         if self.room_name:
             header += f'  # {self.debug_index} - {self.room_name}'
@@ -1501,7 +1530,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             value = ('{0:0>%sx}' % length).format(getattr(self, attr))
             header += f'\n# {attr:25} {value}'
 
-        for attr in ('file_index', 'persist_actor_ptr', 'event_source_ptr'):
+        for attr in ('actor_file_index', 'persist_actor_ptr',
+                     'event_source_ptr'):
             if not hasattr(self, attr):
                 continue
             a, b = self.METADATA_STRUCTURE[attr]
@@ -1546,6 +1576,10 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         return s.strip()
 
     @property
+    def file_index(self):
+        return self.index + 1
+
+    @property
     def data_pointer(self):
         if not hasattr(self, 'reference_pointer'):
             self.reference_pointer = int.from_bytes(
@@ -1559,7 +1593,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     @property
     def metasize(self):
-        return MetaSizeObject.get(self.index)
+        return MetaSizeObject.get_by_file_index(self.file_index)
 
     @property
     def total_size(self):
@@ -1568,21 +1602,21 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         loading_files = list(self.loading_files)
         loading_files += [l for l in self.misc_data.loading_files if l > 0]
         assert 0 not in loading_files
-        return sum([MetaSizeObject.get(index-1).effective_metasize
+        return sum([MetaSizeObject.get_by_file_index(index).effective_metasize
                     for index in loading_files])
 
     @property
     def enemy_size(self):
         assert self.total_size
         enemy_files = set(self.loading_files) & self.ENEMY_FILES
-        return sum([MetaSizeObject.get(index-1).effective_metasize
+        return sum([MetaSizeObject.get_by_file_index(index).effective_metasize
                     for index in enemy_files])
 
     @property
     def pickup_size(self):
         assert self.total_size
         pickup_files = set(self.loading_files) & self.PICKUP_FILES
-        return sum([MetaSizeObject.get(index-1).effective_metasize
+        return sum([MetaSizeObject.get_by_file_index(index).effective_metasize
                     for index in pickup_files])
 
     @property
@@ -1614,7 +1648,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                         data += value.to_bytes(length=2, byteorder='big')
 
             return data
-        if self.index == self.MAIN_CODE_INDEX:
+        if self.file_index == self.MAIN_CODE_FILE_INDEX:
             assert hasattr(self, '_data')
         return None
 
@@ -1636,15 +1670,15 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     def is_room(self):
         if self.is_rom_split:
             return False
-        if 0x335 <= self.index <= 0x481:
+        if 0x336 <= self.file_index <= 0x482:
             assert self.warp_index is not None
             return True
         return False
 
     @property
     def room_name(self):
-        if self.index in self.room_names:
-            return self.room_names[self.index]
+        if self.file_index in self.room_names:
+            return self.room_names[self.file_index]
 
     @cached_property
     def debug_index(self):
@@ -1654,7 +1688,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             category_name = self.DEBUG_WARP_CATEGORIES[category_index]
             return f'{category_name} {self.warp_index-category_index}'
         else:
-            return f'STAGE.NO {self.index}'
+            return f'STAGE.NO {self.warp_index}'
 
     @cached_property
     def debug_name(self):
@@ -1705,12 +1739,12 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
     @property
     def is_new_rom(self):
-        return self.ROM_SPLIT_THRESHOLD_LOW < self.index <= \
+        return self.ROM_SPLIT_THRESHOLD_LOW < self.file_index <= \
                 self.ROM_SPLIT_THRESHOLD_HI
 
     @property
     def is_rom_split(self):
-        return self.index in self.ROM_SPLIT_THRESHOLDS
+        return self.file_index in self.ROM_SPLIT_THRESHOLDS
 
     def get_compressed(self):
         if hasattr(self, '_cached_compressed'):
@@ -1889,7 +1923,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             if b-a >= length:
                 break
         else:
-            raise Exception(f'No free space: {self.index:x}')
+            raise Exception(f'No free space: {self.file_index:x}')
         start, finish = a, b
         MapMetaObject.free_space.remove((start, finish))
         new_start = start+length
@@ -1931,7 +1965,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         self.relocated = True
 
     def compress_and_write(self):
-        if self.index in self.FORCE_OLD_POINTER:
+        if self.file_index in self.FORCE_OLD_POINTER:
             if not self.data_has_changed:
                 assert self.get_compressed() == self._cached_compressed
                 self.force_allocate(self.reference_pointer & 0x7fffffff,
@@ -1941,7 +1975,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             else:
                 #if not self.is_room:
                 #    print(f'NOTICE: Force writing new data to '
-                #          f'file {self.index+1:0>3x}.')
+                #          f'file {self.file_index+1:0>3x}.')
                 return self.force_write()
 
         if self.data_has_changed and self.is_room:
@@ -1960,7 +1994,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         else:
             data = self.get_decompressed()
 
-        if self.index == MapCategoryData.ROOM_DATA_INDEX:
+        if self.file_index == MapCategoryData.ROOM_DATA_INDEX:
             old_length = len(self.get_compressed())
             assert len(data) <= old_length
             data += b'\x00' * (old_length-len(data))
@@ -2037,8 +2071,8 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             assert self.entities[:len(definitions)] == definitions
             assert all(e.index == i for (i, e) in enumerate(definitions))
         except AssertionError:
-            raise Exception(f'Room {self.index:0>3x}: Entity definitions must '
-                             'be in order at the start.')
+            raise Exception(f'Room {self.file_index:0>3x}: Entity definitions '
+                             'must be in order at the start.')
 
         for e in self.entities:
             e.validate_data()
@@ -2091,19 +2125,19 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
             assert not self.data_has_changed
 
     def preclean(self):
-        if self.index >= MapCategoryData.ROOM_DATA_INDEX:
+        if self.file_index >= MapCategoryData.ROOM_DATA_INDEX:
             self.deallocate()
 
     def cleanup(self):
         if self.is_room and self.data_has_changed:
             self.validate_entities()
-        if (self.index == MapCategoryData.ROOM_DATA_INDEX
+        if (self.file_index == MapCategoryData.ROOM_DATA_INDEX
                 and self.data_has_changed):
             if any(mmo.misc_data.has_changed
                    for mmo in MapMetaObject.every if mmo.is_room):
                 print(f'WARNING: Modifying miscellaneous data in file '
-                      f'{self.index:0>3x} may result in instability.')
-        if self.index >= MapCategoryData.ROOM_DATA_INDEX:
+                      f'{self.file_index:0>3x} may result in instability.')
+        if self.file_index >= MapCategoryData.ROOM_DATA_INDEX:
             self.compress_and_write()
             # for whatever reason, pointers must be in ascending order
             assert self.relocated
@@ -2126,10 +2160,11 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 self.reference_pointer & 0x80000000
         self.reference_pointer_be = self.reference_pointer.to_bytes(
             length=4, byteorder='big')
-        if (self.index <= self.MAIN_CODE_INDEX and self.reference_pointer_be
+        if (self.file_index <= self.MAIN_CODE_FILE_INDEX and
+                self.reference_pointer_be
                 != self.old_data['reference_pointer_be']):
             old_reference = self.old_data['reference_pointer']
-            print(f'WARNING: File {self.index:0>3x} has moved from '
+            print(f'WARNING: File {self.file_index:0>3x} has moved from '
                   f'{old_reference:x} to {self.reference_pointer:x}. '
                   f'This may result in instability.')
 
@@ -2183,7 +2218,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
 
 
 class MapCategoryData(ConvertPointerMixin):
-    ROOM_DATA_INDEX = 0xa
+    ROOM_DATA_INDEX = 0xb
 
     CATEGORY_RANGES = [
         (0x000, 0x05a),
@@ -2222,12 +2257,12 @@ class MapCategoryData(ConvertPointerMixin):
 
     @classproperty
     def VIRTUAL_RAM_OFFSET(self):
-        # Location in RAM where file 00a is
-        return addresses.file00a_ram_offset
+        # Location in RAM where file 00b is
+        return addresses.file00b_ram_offset
 
     @clached_property
     def POINTER_POINTERS(self):
-        return [addresses.file00a_pointer_offset + (i*4*6) for i in range(7)]
+        return [addresses.file00b_pointer_offset + (i*4*6) for i in range(7)]
 
     @classproperty
     def every(self):
@@ -2355,13 +2390,13 @@ class MapCategoryData(ConvertPointerMixin):
         if hasattr(MapCategoryData, '_data'):
             return MapCategoryData._data
 
-        mmo = MapMetaObject.get(MapCategoryData.ROOM_DATA_INDEX)
+        mmo = MapMetaObject.get_by_file_index(MapCategoryData.ROOM_DATA_INDEX)
         MapCategoryData._data = BytesIO(mmo.get_decompressed())
         return MapCategoryData.data
 
     @clached_property
     def special_idle_animations(self):
-        self.data.seek(self.convert_pointer(addresses.file00a_idle_offset))
+        self.data.seek(self.convert_pointer(addresses.file00b_idle_offset))
         result = {}
         while True:
             room_index = self.data.read(2)
@@ -2388,7 +2423,7 @@ class MapCategoryData(ConvertPointerMixin):
         room_category, category_index = \
                 self.convert_warp_to_category(warp_index)
 
-        mmo = MapMetaObject.get(self.ROOM_DATA_INDEX)
+        mmo = MapMetaObject.get_by_file_index(self.ROOM_DATA_INDEX)
         pointer_pointer = self.POINTER_POINTERS[section]
         pointer = self.convert_pointer(pointer_pointer) + (room_category*4)
         self.data.seek(pointer)
@@ -2422,7 +2457,7 @@ class MapCategoryData(ConvertPointerMixin):
         for mcd in self.every:
             mcd.verify_attributes()
 
-        mmo = MapMetaObject.get(self.ROOM_DATA_INDEX)
+        mmo = MapMetaObject.get_by_file_index(self.ROOM_DATA_INDEX)
         self.data.seek(0)
         mmo._data = self.data.read()
         self.data.close()
@@ -2767,21 +2802,16 @@ class MessagePointerObject(TableObject):
 
 
 def decouple_fire_ryo():
-    # This patches code in file 00a, which is compressed
+    # This patches code in file 00b, which is compressed
     # It allows you to charge the Karakuri Camera without obtaining Fire Ryo.
-    data = MapCategoryData.data
-    write_patch(data, infer_lang_name('patch_decouple_fire_ryo_00a.txt'),
-                noverify=True, validate=True)
-    MapCategoryData.data = data
+    patch_file('patch_decouple_fire_ryo_00b.txt',
+               MapCategoryData.ROOM_DATA_INDEX)
 
 
 def fix_character_swap_wraparound():
-    # This patches code in file 00a, which is compressed
+    # This patches code in file 00b, which is compressed
     # It allows you to character swap even without recruiting Goemon
-    data = MapCategoryData.data
-    write_patch(data, infer_lang_name('patch_character_swap_00a.txt'),
-                noverify=True, validate=True)
-    MapCategoryData.data = data
+    patch_file('patch_character_swap_00b.txt', MapCategoryData.ROOM_DATA_INDEX)
 
 
 def initialize_variables(config, parameters):
@@ -2816,11 +2846,8 @@ def initialize_variables(config, parameters):
 
 
 def do_hard_mode():
-    data = MapCategoryData.data
-    write_patch(data,
-                infer_lang_name('patch_damage_multiplier_00a.txt'),
-                noverify=True, validate=True)
-    MapCategoryData.data = data
+    patch_file('patch_damage_multiplier_00b.txt',
+               MapCategoryData.ROOM_DATA_INDEX)
 
 
 def do_sasuke_mode():
@@ -2854,7 +2881,7 @@ def setup_save_warps(dr):
 
 
 def setup_dragon_warps(dr):
-    DRAGON_ATLAS_INDEX = 0x10
+    DRAGON_ATLAS_INDEX = 0x11
     OEDO_TOWN_MESSAGE_INDEX = 0x8b
 
     WARP_DICT = {
@@ -2893,17 +2920,7 @@ def setup_dragon_warps(dr):
             if d.actor_id in (0x2ee, 0x33d, 0x34e):
                 d.remove()
 
-    mmo = MapMetaObject.get(DRAGON_ATLAS_INDEX)
-    if hasattr(mmo, '_data'):
-        data = mmo._data
-    else:
-        data = mmo.get_decompressed()
-    f = BytesIO(data)
-    write_patch(f, infer_lang_name('patch_dragon_atlas_010.txt'),
-                noverify=True, validate=True)
-    f.seek(0)
-    mmo._data = f.read()
-    f.close()
+    patch_file('patch_dragon_atlas_011.txt', DRAGON_ATLAS_INDEX)
 
     for dragon_index, signature in sorted(WARP_DICT.items()):
         room_exit = MapMetaObject.get_entity_by_signature(signature)
@@ -3816,7 +3833,7 @@ def export_data():
         except FileExistsError:
             pass
         for mmo in MapMetaObject.every:
-            filename = f'{mmo.index:0>3x}.bin'
+            filename = f'{mmo.file_index:0>3x}.bin'
             mmo.write_decompressed_to_file(path.join('export',
                                                      filename))
     if 'MN64_EXPORT' in environ:
@@ -4009,7 +4026,7 @@ if __name__ == '__main__':
                 if mmo.room_name:
                     name = f'ROOM {mmo.warp_index:0>3X} {mmo.room_name}'
                 else:
-                    name = f'FILE {mmo.index:0>3X}'
+                    name = f'FILE {mmo.file_index:0>3X}'
                 if VERBOSE or DEBUG_MODE:
                     print('Updated:', name)
 

@@ -1,7 +1,7 @@
 # General Options
 logic_filename:       router_logic.txt
 nodes_filename:       router_nodes.txt
-retry_limit:           500  # Max loops before reaching goal
+retry_limit:           750  # Max loops before reaching goal
 retry_limit_close:    1000  # Max loops to cleanup once goal has been reached
 time_limit:            240  # Seconds before giving up
 fg_cache_limit:      10000  # Max cache size for node guarantee simplification

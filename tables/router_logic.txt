@@ -287,8 +287,9 @@
 041-003=041-005
 
 # 043 Ghost Toys 2F False Floor Gold Key Room
-043-007=043-001 suggest:camera          # key
-043-008=043-001 suggest:camera          # pack
+#.require 043-001 camera
+043-007=043-001                         # key
+043-008=043-001                         # pack
 
 # 044 Ghost Toys 2F Darumanyo Diamond Lock Room
 044-001=044-003
@@ -558,7 +559,8 @@
 08a-001=08a-003
 
 # 08B Gourmet Sub 3F Invisible Path Diamond Key Room
-08b-004=08b-001 suggest:camera          # key
+#.require 08b-001 camera
+08b-004=08b-001                         # key
 
 # 08C Gourmet Sub 3F Fox Ramen Platforms & Diamond Lock Fork
 08c-001=08c-003                         # 4.182.silver,4.184.diamond
@@ -630,7 +632,8 @@
 096-001=096-003
 
 # 097 Gourmet Sub 3F Chain Pipe Ice Kunai Combination Room
-097-001=097-003 suggest:chain_pipe
+#.require 097-001 chain_pipe|ice_kunai
+097-001=097-003
 
 # 098 Gourmet Sub 2F-3F Ramen Soup Arrow Room
 098-003=098-003 mermaid
@@ -798,7 +801,8 @@
 0ba-010>0ba-001                         # dango
 
 # 0BB Musical Castle 2 Metal Box Lava Room
-0bb-001=>0bb-003 suggest:sudden_impact
+#.require 0bb-001 sudden_impact
+0bb-001=>0bb-003
 
 # 0BC Musical Castle 2 Gold Cat Hallway
 0bc-001=0bc-003

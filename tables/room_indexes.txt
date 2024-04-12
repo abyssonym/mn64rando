@@ -1,333 +1,333 @@
-000 335 Oedo Castle 1F Tile Room
-001 336 Oedo Castle Tile Room - Unused
-002 337 Oedo Castle 1F Entrance
-003 338 Oedo Castle 1F Swatting Robot Silver Key Room
-004 339 Oedo Castle 1F Gold Dango Room
-005 33a Oedo Castle 1F Chain Pipe Fork
-006 33b Oedo Castle 1F Congo's Feet
-007 33c Oedo Castle 1F Chain Pipe Key Room
-008 33d Oedo Castle 1F Swatting Robot Gold Key Room
-009 33e Oedo Castle 1F Turtle Pad Room
-00a 33f Oedo Castle 2F Crusher Key Room
-00b 340 Oedo Castle 2F Silver Cat Room
-00c 341 Oedo Castle 1F-2F Elevator / Dango Spawner Room
-00d 342 Oedo Castle 2F Spike Chain Room
-00e 343 Oedo Castle 2F Dango Ninja Room
-00f 344 Oedo Castle 2F Congo's Chest
-010 345 Oedo Castle 2F Crusher Platforms
-011 346 Oedo Castle 2F Chain Pipe Moat
-012 347 Oedo Castle 2F Silver Key Room
-013 348 Oedo Castle Gold Key Room - Unused
-014 349 Oedo Castle 2F Congo's Hand
-015 34a Oedo Castle 2F Blocked Silver Cat Room
-016 34b Oedo Castle 2F Congo Boss Room
-017 34c Congo Boss Room - Unused
-018 34d Null
-019 34e Null
-01a 34f Oedo Castle 2F-3F Elevator / Baron Room
-01b 350 Null
-01c 351 Oedo Castle Final Room - Unused
-01d 352 Null
-01e 353 Null
-01f 354 Null
-020 355 Null
-021 356 Null
-022 357 Null
-023 358 Null
-024 359 Null
-025 35a Null
-026 35b Null
-027 35c Null
-028 35f Oedo Castle Lord's Room
-029 360 Null
-02f 361 Ghost Toys Entrance
-030 362 Ghost Toys 1F Elevator Shogi Room
-031 363 Ghost Toys 1F Crane Room
-032 364 Ghost Toys 1F Spike Room
-033 365 Ghost Toys 1F Cannon Room
-034 366 Ghost Toys 1F Spike Cannon Boat Room
-035 367 Ghost Toys 1F Flower Blooming Key Room
-036 368 Ghost Toys 1F Shogi Cannon Gold Cat Room
-037 369
-038 36a
-039 36b Ghost Toys 1F Invisible Ghost Room
-03a 36c Ghost Toys 1F Spike Darumanyo Room
-03b 36d Ghost Toys 1F Invisible Ghost Key Room
-03c 36e Ghost Toys 1F-2F Elevator / Tiny Darumanyo Room
-03d 36f Null
-03e 370 Ghost Toys 2F Spinning Top Key Room
-03f 371 Ghost Toys 2F Big Spinning Spike Chain Room
-040 372 Ghost Toys 2F Invisible Darumanyo Key Room
-041 373 Ghost Toys 2F Jump Rope Room
-042 374 Ghost Toys 2F Treasure Room
-043 375 Ghost Toys 2F False Floor Gold Key Room
-044 376 Ghost Toys 2F Darumanyo Diamond Lock Room
-045 377 Ghost Toys 2F Billiards Room
-046 378 Ghost Toys 2F Spike Cannon Diamond Key Room
-047 379 Null
-048 37a Null
-049 37b Ghost Toys 2F-3F Elevator / Darumanyo Boss Room
-054 35d
-055 37c
-056 35e Oedo Castle 1st Elevator Room - Unused
-059 37d
-05a 37e Festival Temple West Main Entrance
-05b 37f Festival Temple West Gold Cat Dango Room
-05c 380 Festival Temple West Hot Platform Drummer Fox Room
-05d 381 Festival Temple West Hot Platform Samurai Room
-05e 382 Festival Temple West Hot Platform Gold Key Room
-05f 383 Festival Temple West Spike Chain Elly Fant Room
-060 384 Festival Temple East Tank Hallway
-061 385 Festival Temple East Chain Pipe Room
-062 386 Festival Temple East Meatsaw Hammer Room
-063 387 Festival Temple East Samurai Barrel Arrow Room
-064 388 Festival Temple East Drum Room
-065 389 Festival Temple East Samurai Bomb Room
-066 38a Festival Temple East Bamboo Barrel Bomb Room
-067 38b Festival Temple East Silver Cat Lock Fork
-068 38c Festival Temple Central Gold Lock Room
-069 38d Festival Temple Central Fox Tank Hallway
-06a 38e Festival Temple Central Samurai Tank Room
-06b 38f Festival Temple Central Accordion Room
-06c 390 Festival Temple Central Ring Key Hallway
-06d 391 Festival Temple Central Samurai Platform Room
-06e 392 Festival Temple East Ice Kunai Room
-06f 393 Festival Temple North Fish Kite Waterfall Column
-070 394 Festival Temple North Bamboo Path to Boss
-071 395 Festival Temple North Tsurami Boss Room
-072 396 Null
-073 397 Null
-074 398 Null
-075 399 Null
-076 39a Null
-077 39b Null
-078 39c Null
-080 39d Submarine Bazooka Room - Unused
-081 39e Gourmet Sub 2F Bazooka Room
-082 39f Gourmet Sub 2F Jetpack Crab Gold Key & Double Lock Room
-083 3a0 Gourmet Sub 2F Seahorse / Mini Ebisumaru Crosspath
-084 3a1 Submarine Unknown Room - Unused
-085 3a2 Gourmet Sub 2F Lava Treadmill Key & Lock Room
-086 3a3 Gourmet Sub 2F Turret Dango Stockpile Room
-087 3a4 Gourmet Sub 2F Ramen Soup Corridor
-088 3a5 Submarine Red Ramen Corridor - Unused
-089 3a6 Gourmet Sub 2F Underwater Spiny Key & Lock Room
-08a 3a7 Gourmet Sub 3F-4F Elevator / Turret Tightrope Room
-08b 3a8 Gourmet Sub 3F Invisible Path Diamond Key Room
-08c 3a9 Gourmet Sub 3F Fox Ramen Platforms & Diamond Lock Fork
-08d 3aa Gourmet Sub 3F Treasure Room
-08e 3ab Gourmet Sub 3F Sword Robot Key Room
-08f 3ac Null
-090 3ad Gourmet Sub 3F Blaster Crab Room
-091 3ae Gourmet Sub 1F-3F Entrance / Elevator
-092 3af Null
-093 3b0 Null
-094 3b1 Gourmet Sub 3F Sushi Belt Silver Key Room
-095 3b2 Gourmet Sub 3F Chain Pipe Lava Room
-096 3b3 Gourmet Sub 3F Chain Pipe Avoidance Room
-097 3b4 Gourmet Sub 3F Chain Pipe Ice Kunai Combination Room
-098 3b5 Gourmet Sub 2F-3F Ramen Soup Arrow Room
-099 3b6 Gourmet Sub 3F Floating Tofu Silver Lock Room
-09a 3b7 Null
-09b 3b8 Null
-09c 3b9 Null
-09d 3ba Gourmet Sub 4F Thaisamba Boss Room
-0a8 3bb Musical Castle 1 Entrance
-0a9 3bc Musical Castle 1 Flame Dango Ryo Room
-0aa 3bd Musical Castle 1 Tall Key & Lock Room
-0ab 3be Musical Castle 1 Straight Slicer Room
-0ac 3bf Musical Castle 1 Triple Slicer Room
-0ad 3c0 Musical Castle 1 Gold Key Fan Room
-0ae 3c1 Musical Castle 1 High Jump Gold Key Waves Room
-0af 3c2 Musical Castle 1 Drum Jump Waves Room
-0b0 3c3 Musical Castle 1 Gold Lock Fan Room
-0b1 3c4 Musical Castle 1 Waves Turret Connecting Room
-0b2 3c5 Musical Castle 1 Multi-Lock 3-Way Fork
-0b3 3c6 Musical Castle 1 B1F Hammer Thrower Room
-0b4 3c7 Musical Castle 1 B1F Rotating Cube Diamond Key Room
-0b5 3c8 Musical Castle 1 Mini Gold Key Big Wave Generator Room
-0b6 3c9 Musical Castle 1 Big Aquarium Room
-0b7 3ca Sogen Hedge Maze
-0b8 3cb Musical Castle 2 Entrance
-0b9 3cc Musical Castle 2 Beyond Entrance Platforms Room
-0ba 3cd Musical Castle 2 Left Entrance Treadmill Room
-0bb 3ce Musical Castle 2 Metal Box Lava Room
-0bc 3cf Musical Castle 2 Gold Cat Hallway
-0bd 3d0 Musical Castle 2 Diamond Key Platform Elevator
-0be 3d1 Musical Castle 2 Right Entrance Slope Room
-0bf 3d2 Musical Castle 2 B1F Descent
-0c0 3d3 Musical Castle 2 B1F Kaleidoscope Room
-0c1 3d4 Musical Castle 2 B1F Gorgeous Stage
-0c5 3d5
-12c 3d6 Kai Highway
-12d 3d7 Mt. Fuji
-12e 3d8 Mt. Fuji Interior (Base)
-12f 3d9 Mt. Fuji Interior (Summit)
-130 3da Musashi
-131 3db Musashi-Iga Tunnel
-132 3dc Iga
-133 3dd Yamato
-134 3de Yamato Shrine
-135 3df Yamato - Underwater Cave
-136 3e0 Yamato - Bamboo Forest
-137 3e1 Yamato - Turtle Rock
-138 3e2 Kii-Awaji Island
-139 3e3 Kii-Awaji - Husband and Wife Rocks
-13a 3e4 Tosa
-13b 3e5 Tosa - Vine Bridge
-13c 3e6 Kompira Mountain 1st Block
-13d 3e7 Kompira Mountain 2nd Block
-13e 3e8 Kompira Mountain 3rd Block
-13f 3e9 Kompira Mountain 4th Block
-140 3ea Kompira Shrine
-141 3eb Iyo
-142 3ec Iyo - Hot Springs
-143 3ed Bizen
-144 3ee Aki - Nagato
-145 3f2 Hagi
-146 3f3 Akiyoshidai
-147 3f4 Shuhodo Tunnel to Festival Temple
-148 3f5 Izumo
-149 3f6 Izumo - Big Tree
-14a 3f7 Inaba
-14b 3f8 Mutsu - Mt. Fear
-14c 3f9 Ugo - Stone Circle
-14d 3fa Mutsu - Shoreline
-14e 3fb Japan Sea - Underwater
-14f 3fc Northeast Tunnel to Festival Village 1
-150 3fd Northeast Tunnel to Festival Village 2
-151 3fe Mutsu - Path to Festival Village
-152 3ff Mutsu - Uzen Tunnel
-153 400 Kanmonkyo Gateway Viewpoint
-154 401 Waterfall of Kegon
-155 402 Dragon Fight
-156 403
-157 404 Mermaid Waterfall - Unused
-158 405
-159 3ef
-15a 3f0 Kompira Shrine - Unused
-15b 3f1 Lake Tree - Unused
-15c 406
-15e 407 Oedo - Bridge to Musashi
-15f 408 Oedo Town (West)
-160 409 Oedo Town (North)
-161 40a Oedo Town (South)
-162 40b Oedo - Bridge to Oedo Castle
-163 40c Oedo Town (Northwest)
-164 40d Path to Oedo Castle (Chain Pipe)
-165 40e Stairway to Oedo Castle
-166 40f Outside Oedo Castle
-167 410 Zazen - Gate
-168 411 Zazen - Entrance Bridge
-169 412 Zazen Town (South)
-16a 413 Zazen - Kappa Pond
-16b 414 Zazen - Waterway
-16c 419 Zazen Town (North)
-16d 41a Zazen - Golden Temple
-16e 41b Zazen - Bridge to Bizen
-16f 41c Zazen - Path to Mt. Nyoigatake
-170 41d Zazen - Mt. Nyoigatake
-171 41e Zazen - Bridge to Yamato (Benkei)
-172 41f Zazen - Waterfall
-173 420 Zazen - Ushiwaka
-174 421 Null
-175 422 Folkypoke Village (East)
-176 423 Folkypoke Village (South)
-177 424 Folkypoke Village (West)
-178 425 Folkypoke Village (Northeast)
-179 426 Festival Village (West)
-17a 427 Festival Village (East)
-17b 428 Festival Village - Festival Square
-17c 429 Festival Village (Northwest)
-17d 42a Festival Village - Hidden Lake Area
-17e 415
-17f 42b
-180 416 Zazen Waterway - Unused
-181 42c
-182 417
-183 42d
-184 42e
-185 418
-190 42f Oedo - Restaurant
-191 430 Zazen - Restaurant
-192 431 Folkypoke - Restaurant
-193 432 Festival Village - Restaurant
-194 433 Sogen - Restaurant
-195 434 Unknown Town Restaurant - Unused
-196 435 Oedo - Riceball Shop
-197 436 Oedo - Armor Shop
-198 437 Zazen - Riceball Shop
-199 438 Zazen - Armor Shop
-19a 439 Folkypoke - Riceball Shop
-19b 43a Folkypoke - Armor Shop
-19c 43b Festival Village - Shop
-19d 43c Festival Village - Hidden Lake Shop
-19e 43d Sogen - Riceball Shop
-19f 43e Sogen - Armor Shop
-1a0 43f Unknown Town Shop - Unused
-1a1 440 Oedo - Inn
-1a2 441 Zazen - Inn
-1a3 442 Folkypoke - Inn
-1a4 443 Festival Village - Inn
-1a5 444 Sogen - Inn
-1a6 445 Unknown Town Inn - Unused
-1a7 446 Oedo - Plasma
-1a8 447 Zazen - Plasma
-1a9 448 Folkypoke - Plasma
-1aa 449 Festival Village - Plasma
-1ab 44a Unknown Town Plasma - Unused
-1ac 44b Unknown Town Plasma - Unused
-1ad 44c Oedo Guardhouse
-1ae 44d Zazen Guardhouse
-1af 44e Null
-1b0 44f Oedo - Omitsu's Teahouse
-1b1 450 Kai Highway Teahouse
-1b2 451 Awaji Island Coffee Shop - Unused
-1b3 452 Kii-Awaji Teahouse
-1b4 453 Kompira Teahouse
-1b5 454 Iyo Teahouse
-1b6 455 Izumo Teahouse
-1b7 456 Null
-1b8 457 Folkypoke Tourism Center
-1b9 458 Kii-Awaji Tourism Center
-1ba 459 Unknown Town Guardhouse - Unused
-1bb 45a West Oedo House (Drunk)
-1bc 45b North Oedo House (Boy)
-1bd 45c North Oedo House (Red Woman)
-1be 45d South Zazen House (Old Woman)
-1bf 45e Kompira Shrine House
-1c0 45f Unknown Town House - Unused
-1c1 460 South Oedo House (Old Woman)
-1c2 461 South Oedo House (Young Woman)
-1c3 462 South Oedo House (Man c3)
-1c4 463 South Oedo House (Muscle Training Gym, empty?)
-1c5 464 South Oedo House (Man c5)
-1c6 465 Folkypoke House (Boy)
-1c7 466 Folkypoke House (Old Woman)
-1c8 467 Folkypoke House (Drunk)
-1c9 468 Folkypoke House (Red Woman)
-1ca 469 East Festival House (Dog)
-1cb 46a East Festival House (Red Woman)
-1cc 46b East Festival House (Drunk)
-1cd 46c Northwest Festival House (Old Man)
-1ce 46d Unknown Training Gym - Unused
-1cf 46e South Oedo House (Muscle Training Gym, occupied?)
-1d0 46f Sasuke Jetpack Training
-1d1 470 South Oedo - Goemon's House
-1d2 471 Mt. Fuji - Pipe Maker's House
-1d3 472 Kompira Shrine Charm Shop
-1d4 473 Mt. Fear - Witch's House
-1d5 474
-1d6 475
-1d7 476
-1d8 477
-1d9 478
-1da 479
-1db 47a
-1dc 47b
-1dd 47c
-1de 47d
-1e0 47e Goemon Impact Minigame
-1e1 47f Ebisumaru Sweets Minigame
-1e2 480 Sasuke High Jump Minigame
-1e3 481
+000 336 Oedo Castle 1F Tile Room
+001 337 Oedo Castle Tile Room - Unused
+002 338 Oedo Castle 1F Entrance
+003 339 Oedo Castle 1F Swatting Robot Silver Key Room
+004 33a Oedo Castle 1F Gold Dango Room
+005 33b Oedo Castle 1F Chain Pipe Fork
+006 33c Oedo Castle 1F Congo's Feet
+007 33d Oedo Castle 1F Chain Pipe Key Room
+008 33e Oedo Castle 1F Swatting Robot Gold Key Room
+009 33f Oedo Castle 1F Turtle Pad Room
+00a 340 Oedo Castle 2F Crusher Key Room
+00b 341 Oedo Castle 2F Silver Cat Room
+00c 342 Oedo Castle 1F-2F Elevator / Dango Spawner Room
+00d 343 Oedo Castle 2F Spike Chain Room
+00e 344 Oedo Castle 2F Dango Ninja Room
+00f 345 Oedo Castle 2F Congo's Chest
+010 346 Oedo Castle 2F Crusher Platforms
+011 347 Oedo Castle 2F Chain Pipe Moat
+012 348 Oedo Castle 2F Silver Key Room
+013 349 Oedo Castle Gold Key Room - Unused
+014 34a Oedo Castle 2F Congo's Hand
+015 34b Oedo Castle 2F Blocked Silver Cat Room
+016 34c Oedo Castle 2F Congo Boss Room
+017 34d Congo Boss Room - Unused
+018 34e Null
+019 34f Null
+01a 350 Oedo Castle 2F-3F Elevator / Baron Room
+01b 351 Null
+01c 352 Oedo Castle Final Room - Unused
+01d 353 Null
+01e 354 Null
+01f 355 Null
+020 356 Null
+021 357 Null
+022 358 Null
+023 359 Null
+024 35a Null
+025 35b Null
+026 35c Null
+027 35d Null
+028 360 Oedo Castle Lord's Room
+029 361 Null
+02f 362 Ghost Toys Entrance
+030 363 Ghost Toys 1F Elevator Shogi Room
+031 364 Ghost Toys 1F Crane Room
+032 365 Ghost Toys 1F Spike Room
+033 366 Ghost Toys 1F Cannon Room
+034 367 Ghost Toys 1F Spike Cannon Boat Room
+035 368 Ghost Toys 1F Flower Blooming Key Room
+036 369 Ghost Toys 1F Shogi Cannon Gold Cat Room
+037 36a
+038 36b
+039 36c Ghost Toys 1F Invisible Ghost Room
+03a 36d Ghost Toys 1F Spike Darumanyo Room
+03b 36e Ghost Toys 1F Invisible Ghost Key Room
+03c 36f Ghost Toys 1F-2F Elevator / Tiny Darumanyo Room
+03d 370 Null
+03e 371 Ghost Toys 2F Spinning Top Key Room
+03f 372 Ghost Toys 2F Big Spinning Spike Chain Room
+040 373 Ghost Toys 2F Invisible Darumanyo Key Room
+041 374 Ghost Toys 2F Jump Rope Room
+042 375 Ghost Toys 2F Treasure Room
+043 376 Ghost Toys 2F False Floor Gold Key Room
+044 377 Ghost Toys 2F Darumanyo Diamond Lock Room
+045 378 Ghost Toys 2F Billiards Room
+046 379 Ghost Toys 2F Spike Cannon Diamond Key Room
+047 37a Null
+048 37b Null
+049 37c Ghost Toys 2F-3F Elevator / Darumanyo Boss Room
+054 35e
+055 37d
+056 35f Oedo Castle 1st Elevator Room - Unused
+059 37e
+05a 37f Festival Temple West Main Entrance
+05b 380 Festival Temple West Gold Cat Dango Room
+05c 381 Festival Temple West Hot Platform Drummer Fox Room
+05d 382 Festival Temple West Hot Platform Samurai Room
+05e 383 Festival Temple West Hot Platform Gold Key Room
+05f 384 Festival Temple West Spike Chain Elly Fant Room
+060 385 Festival Temple East Tank Hallway
+061 386 Festival Temple East Chain Pipe Room
+062 387 Festival Temple East Meatsaw Hammer Room
+063 388 Festival Temple East Samurai Barrel Arrow Room
+064 389 Festival Temple East Drum Room
+065 38a Festival Temple East Samurai Bomb Room
+066 38b Festival Temple East Bamboo Barrel Bomb Room
+067 38c Festival Temple East Silver Cat Lock Fork
+068 38d Festival Temple Central Gold Lock Room
+069 38e Festival Temple Central Fox Tank Hallway
+06a 38f Festival Temple Central Samurai Tank Room
+06b 390 Festival Temple Central Accordion Room
+06c 391 Festival Temple Central Ring Key Hallway
+06d 392 Festival Temple Central Samurai Platform Room
+06e 393 Festival Temple East Ice Kunai Room
+06f 394 Festival Temple North Fish Kite Waterfall Column
+070 395 Festival Temple North Bamboo Path to Boss
+071 396 Festival Temple North Tsurami Boss Room
+072 397 Null
+073 398 Null
+074 399 Null
+075 39a Null
+076 39b Null
+077 39c Null
+078 39d Null
+080 39e Submarine Bazooka Room - Unused
+081 39f Gourmet Sub 2F Bazooka Room
+082 3a0 Gourmet Sub 2F Jetpack Crab Gold Key & Double Lock Room
+083 3a1 Gourmet Sub 2F Seahorse / Mini Ebisumaru Crosspath
+084 3a2 Submarine Unknown Room - Unused
+085 3a3 Gourmet Sub 2F Lava Treadmill Key & Lock Room
+086 3a4 Gourmet Sub 2F Turret Dango Stockpile Room
+087 3a5 Gourmet Sub 2F Ramen Soup Corridor
+088 3a6 Submarine Red Ramen Corridor - Unused
+089 3a7 Gourmet Sub 2F Underwater Spiny Key & Lock Room
+08a 3a8 Gourmet Sub 3F-4F Elevator / Turret Tightrope Room
+08b 3a9 Gourmet Sub 3F Invisible Path Diamond Key Room
+08c 3aa Gourmet Sub 3F Fox Ramen Platforms & Diamond Lock Fork
+08d 3ab Gourmet Sub 3F Treasure Room
+08e 3ac Gourmet Sub 3F Sword Robot Key Room
+08f 3ad Null
+090 3ae Gourmet Sub 3F Blaster Crab Room
+091 3af Gourmet Sub 1F-3F Entrance / Elevator
+092 3b0 Null
+093 3b1 Null
+094 3b2 Gourmet Sub 3F Sushi Belt Silver Key Room
+095 3b3 Gourmet Sub 3F Chain Pipe Lava Room
+096 3b4 Gourmet Sub 3F Chain Pipe Avoidance Room
+097 3b5 Gourmet Sub 3F Chain Pipe Ice Kunai Combination Room
+098 3b6 Gourmet Sub 2F-3F Ramen Soup Arrow Room
+099 3b7 Gourmet Sub 3F Floating Tofu Silver Lock Room
+09a 3b8 Null
+09b 3b9 Null
+09c 3ba Null
+09d 3bb Gourmet Sub 4F Thaisamba Boss Room
+0a8 3bc Musical Castle 1 Entrance
+0a9 3bd Musical Castle 1 Flame Dango Ryo Room
+0aa 3be Musical Castle 1 Tall Key & Lock Room
+0ab 3bf Musical Castle 1 Straight Slicer Room
+0ac 3c0 Musical Castle 1 Triple Slicer Room
+0ad 3c1 Musical Castle 1 Gold Key Fan Room
+0ae 3c2 Musical Castle 1 High Jump Gold Key Waves Room
+0af 3c3 Musical Castle 1 Drum Jump Waves Room
+0b0 3c4 Musical Castle 1 Gold Lock Fan Room
+0b1 3c5 Musical Castle 1 Waves Turret Connecting Room
+0b2 3c6 Musical Castle 1 Multi-Lock 3-Way Fork
+0b3 3c7 Musical Castle 1 B1F Hammer Thrower Room
+0b4 3c8 Musical Castle 1 B1F Rotating Cube Diamond Key Room
+0b5 3c9 Musical Castle 1 Mini Gold Key Big Wave Generator Room
+0b6 3ca Musical Castle 1 Big Aquarium Room
+0b7 3cb Sogen Hedge Maze
+0b8 3cc Musical Castle 2 Entrance
+0b9 3cd Musical Castle 2 Beyond Entrance Platforms Room
+0ba 3ce Musical Castle 2 Left Entrance Treadmill Room
+0bb 3cf Musical Castle 2 Metal Box Lava Room
+0bc 3d0 Musical Castle 2 Gold Cat Hallway
+0bd 3d1 Musical Castle 2 Diamond Key Platform Elevator
+0be 3d2 Musical Castle 2 Right Entrance Slope Room
+0bf 3d3 Musical Castle 2 B1F Descent
+0c0 3d4 Musical Castle 2 B1F Kaleidoscope Room
+0c1 3d5 Musical Castle 2 B1F Gorgeous Stage
+0c5 3d6
+12c 3d7 Kai Highway
+12d 3d8 Mt. Fuji
+12e 3d9 Mt. Fuji Interior (Base)
+12f 3da Mt. Fuji Interior (Summit)
+130 3db Musashi
+131 3dc Musashi-Iga Tunnel
+132 3dd Iga
+133 3de Yamato
+134 3df Yamato Shrine
+135 3e0 Yamato - Underwater Cave
+136 3e1 Yamato - Bamboo Forest
+137 3e2 Yamato - Turtle Rock
+138 3e3 Kii-Awaji Island
+139 3e4 Kii-Awaji - Husband and Wife Rocks
+13a 3e5 Tosa
+13b 3e6 Tosa - Vine Bridge
+13c 3e7 Kompira Mountain 1st Block
+13d 3e8 Kompira Mountain 2nd Block
+13e 3e9 Kompira Mountain 3rd Block
+13f 3ea Kompira Mountain 4th Block
+140 3eb Kompira Shrine
+141 3ec Iyo
+142 3ed Iyo - Hot Springs
+143 3ee Bizen
+144 3ef Aki - Nagato
+145 3f3 Hagi
+146 3f4 Akiyoshidai
+147 3f5 Shuhodo Tunnel to Festival Temple
+148 3f6 Izumo
+149 3f7 Izumo - Big Tree
+14a 3f8 Inaba
+14b 3f9 Mutsu - Mt. Fear
+14c 3fa Ugo - Stone Circle
+14d 3fb Mutsu - Shoreline
+14e 3fc Japan Sea - Underwater
+14f 3fd Northeast Tunnel to Festival Village 1
+150 3fe Northeast Tunnel to Festival Village 2
+151 3ff Mutsu - Path to Festival Village
+152 400 Mutsu - Uzen Tunnel
+153 401 Kanmonkyo Gateway Viewpoint
+154 402 Waterfall of Kegon
+155 403 Dragon Fight
+156 404
+157 405 Mermaid Waterfall - Unused
+158 406
+159 3f0
+15a 3f1 Kompira Shrine - Unused
+15b 3f2 Lake Tree - Unused
+15c 407
+15e 408 Oedo - Bridge to Musashi
+15f 409 Oedo Town (West)
+160 40a Oedo Town (North)
+161 40b Oedo Town (South)
+162 40c Oedo - Bridge to Oedo Castle
+163 40d Oedo Town (Northwest)
+164 40e Path to Oedo Castle (Chain Pipe)
+165 40f Stairway to Oedo Castle
+166 410 Outside Oedo Castle
+167 411 Zazen - Gate
+168 412 Zazen - Entrance Bridge
+169 413 Zazen Town (South)
+16a 414 Zazen - Kappa Pond
+16b 415 Zazen - Waterway
+16c 41a Zazen Town (North)
+16d 41b Zazen - Golden Temple
+16e 41c Zazen - Bridge to Bizen
+16f 41d Zazen - Path to Mt. Nyoigatake
+170 41e Zazen - Mt. Nyoigatake
+171 41f Zazen - Bridge to Yamato (Benkei)
+172 420 Zazen - Waterfall
+173 421 Zazen - Ushiwaka
+174 422 Null
+175 423 Folkypoke Village (East)
+176 424 Folkypoke Village (South)
+177 425 Folkypoke Village (West)
+178 426 Folkypoke Village (Northeast)
+179 427 Festival Village (West)
+17a 428 Festival Village (East)
+17b 429 Festival Village - Festival Square
+17c 42a Festival Village (Northwest)
+17d 42b Festival Village - Hidden Lake Area
+17e 416
+17f 42c
+180 417 Zazen Waterway - Unused
+181 42d
+182 418
+183 42e
+184 42f
+185 419
+190 430 Oedo - Restaurant
+191 431 Zazen - Restaurant
+192 432 Folkypoke - Restaurant
+193 433 Festival Village - Restaurant
+194 434 Sogen - Restaurant
+195 435 Unknown Town Restaurant - Unused
+196 436 Oedo - Riceball Shop
+197 437 Oedo - Armor Shop
+198 438 Zazen - Riceball Shop
+199 439 Zazen - Armor Shop
+19a 43a Folkypoke - Riceball Shop
+19b 43b Folkypoke - Armor Shop
+19c 43c Festival Village - Shop
+19d 43d Festival Village - Hidden Lake Shop
+19e 43e Sogen - Riceball Shop
+19f 43f Sogen - Armor Shop
+1a0 440 Unknown Town Shop - Unused
+1a1 441 Oedo - Inn
+1a2 442 Zazen - Inn
+1a3 443 Folkypoke - Inn
+1a4 444 Festival Village - Inn
+1a5 445 Sogen - Inn
+1a6 446 Unknown Town Inn - Unused
+1a7 447 Oedo - Plasma
+1a8 448 Zazen - Plasma
+1a9 449 Folkypoke - Plasma
+1aa 44a Festival Village - Plasma
+1ab 44b Unknown Town Plasma - Unused
+1ac 44c Unknown Town Plasma - Unused
+1ad 44d Oedo Guardhouse
+1ae 44e Zazen Guardhouse
+1af 44f Null
+1b0 450 Oedo - Omitsu's Teahouse
+1b1 451 Kai Highway Teahouse
+1b2 452 Awaji Island Coffee Shop - Unused
+1b3 453 Kii-Awaji Teahouse
+1b4 454 Kompira Teahouse
+1b5 455 Iyo Teahouse
+1b6 456 Izumo Teahouse
+1b7 457 Null
+1b8 458 Folkypoke Tourism Center
+1b9 459 Kii-Awaji Tourism Center
+1ba 45a Unknown Town Guardhouse - Unused
+1bb 45b West Oedo House (Drunk)
+1bc 45c North Oedo House (Boy)
+1bd 45d North Oedo House (Red Woman)
+1be 45e South Zazen House (Old Woman)
+1bf 45f Kompira Shrine House
+1c0 460 Unknown Town House - Unused
+1c1 461 South Oedo House (Old Woman)
+1c2 462 South Oedo House (Young Woman)
+1c3 463 South Oedo House (Man c3)
+1c4 464 South Oedo House (Muscle Training Gym, empty?)
+1c5 465 South Oedo House (Man c5)
+1c6 466 Folkypoke House (Boy)
+1c7 467 Folkypoke House (Old Woman)
+1c8 468 Folkypoke House (Drunk)
+1c9 469 Folkypoke House (Red Woman)
+1ca 46a East Festival House (Dog)
+1cb 46b East Festival House (Red Woman)
+1cc 46c East Festival House (Drunk)
+1cd 46d Northwest Festival House (Old Man)
+1ce 46e Unknown Training Gym - Unused
+1cf 46f South Oedo House (Muscle Training Gym, occupied?)
+1d0 470 Sasuke Jetpack Training
+1d1 471 South Oedo - Goemon's House
+1d2 472 Mt. Fuji - Pipe Maker's House
+1d3 473 Kompira Shrine Charm Shop
+1d4 474 Mt. Fear - Witch's House
+1d5 475
+1d6 476
+1d7 477
+1d8 478
+1d9 479
+1da 47a
+1db 47b
+1dc 47c
+1dd 47d
+1de 47e
+1e0 47f Goemon Impact Minigame
+1e1 480 Ebisumaru Sweets Minigame
+1e2 481 Sasuke High Jump Minigame
+1e3 482
