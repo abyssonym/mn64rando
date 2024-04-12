@@ -1,6 +1,6 @@
 ANCIENT CAVE STARRING GOEMON - RANDOMIZER MANUAL
-Version:    1.3
-Date:       March 7, 2024
+Version:    2.0
+Date:       April 12, 2024
 URL:        https://github.com/abyssonym/mn64rando/releases/latest/
 Contact:    https://twitter.com/abyssonym
             https://ko-fi.com/abyssonym
@@ -55,7 +55,7 @@ V.   Credits, References, & Special Thanks
     A: Almost none of the game's events have been modified. The randomizer's logic is routed around and through these cutscenes.
 
     Q: What has been modified?
-    A: The Pemo Pemo statue takes you directly to the final boss instead of the final dungeon. Additionally, the Fire Ryo is no longer required to charge the Karakuri Camera or other chargeable weapons.
+    A: The Pemo Pemo statue takes you directly to the final boss instead of the final dungeon. Additionally, the Fire Ryo is no longer required to charge the Karakuri Camera or other chargeable weapons. The default warp location is now Oedo Castle. Various small patches are used depending on the options selected.
 
     Q: What about locked doors?
     A: Generally, most locked doors have been removed. This is because the vanilla keys are not interchangeable; the keys are just cleverly placed to prevent you from ever encountering two keys or two locks of the same type at any time. This becomes very confusing if the rooms are shuffled, so the old locks are removed, and a new key and lock arrangement is generated instead. This means you may encounter keys and locks in places they would not normally appear.
@@ -73,16 +73,20 @@ V.   Credits, References, & Special Thanks
     A: The flute is safe to use; it won't place you outside of logic. However, some changes were implemented to make the warp flute intuitive and efficient. There are 11 unlockable warp locations: Goemon's House, the five town inns, and the five teahouses. The following warp screen locations were repurposed:
     Oedo Castle        -> Goemon's House
     Gourmet Sub Castle -> Sogen Inn
-To unlock a warp location, you MUST ENTER the building. That means going inside every inn and teahouse.
+To unlock a warp location, you MUST ENTER the building. That means going inside every inn and teahouse. If the location of the teahouse or inn was changed, the associated warp point will be outside of the building at the new location.
 
     Q: How do I randomize enemies?
     A: There is a `randomize_enemies` option in the config file. Note that this option may carry a small risk of game crashes. It only happened to me twice, and I patched the instances that I encountered, but I can't guarantee that it won't happen in some other edge case.
 
     Q: Is there a way to make a "plandomizer" or a custom mod?
-    A: You can export a text dump of all of the game's rooms and actors using the `export` code on the command line. Then, you can modify this dump and import it using the `import` code. Use the `norandom` code to disable randomization. This gives you complete freedom to modify the game, including adding, removing, or changing actors that are not affected by the randomizer. If you only wish to make a plando, though, there is no easy way to do that, but feel free to experiment and edit any of the source files.
+    A: You can export text dumps of all of the game's actors and event scripts using the `export` code on the command line. Then, you can modify these dumps and import them using the `import` code. Use the `norandom` code to disable randomization. This gives you complete freedom to modify the game, including adding, removing, or changing actors that are not affected by the randomizer. If you only wish to make a plando, though, there is no easy way to do that, but feel free to experiment and edit any of the source files.
 
     Q: What about custom game modes?
-    A: See "CONFIG FILE OPTIONS" below for more comprehensive information about your options. Currently, there are game modes that start you with Camera, Chibi-Ebisu, Miracle Snow, or the Flute. However, make note that using Ebisumaru Slide is not incorporated into the randomizer logic, and doing so may place you out of logic.
+    A: See "CONFIG FILE OPTIONS" below for more comprehensive information about your options. Currently, there are game modes that start you with Camera, Chibi-Ebisu, Mermaid magic, Miracle Snow, or the Flute. However, make note that using Ebisumaru Slide is not incorporated into the randomizer logic, and doing so may place you out of logic.
+    There are also separate game modes for starting as either Sasuke/Yae or Goemon/Ebisumaru. By default, you will start as Sasuke/Yae.
+
+    Q: My submarine disappeared even though I have `fix_bad_maps` enabled. What gives?
+    A: My somewhat-hacky solution for this was to to tie the submarine's appearance to the "money handling flag", which should always be off unless you interrupt a shopping sequence using the debug menu. So, you should be able to fix this issue by visiting a shop and completing the dialogue normally.
 
     Q: Any tips?
     A: Take notes. Remember landmarks and waypoints to important locations, especially relative to dragon warp points. This randomizer will test your navigation skills even with all of the "easy" settings enabled.
@@ -92,6 +96,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     all_warps               Value: True or False (default False)
     Guarantees that every warp point (inns or teahouses) is accessible. This can impact generation performance, so it is off by default.
 
+    automash                Value: True or False (default False)
+    Makes certain long cutscenes progress automatically without player input. The affected cutscenes are any that include a character portrait. This turns cutscenes into ideal moments for short breaks, but beware that your input will still be required to respond to choices such as save prompts.
+
     avoid_softlocks         Value: True or False (default True)
     Creates a maze where you can't get stuck (for example, by falling off a ledge into an area where you can't get back up). This option is computationally slow but highly recommended. If you choose not to use it, it is recommended that you play with `enable_debug` enabled.
 
@@ -99,7 +106,7 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     Attempts to connect rooms that share a BGM, if the original exit also connected rooms that share a BGM. This option makes the maze somewhat easier to navigate and a great deal easier to listen to.
 
     completionist           Value: True or False (default False)
-    When enabled, ensures that all key items are accessible in the maze, even if they are not required to reach the goal. This includes weapon upgrades, each character's weapons and magic, the super pass, the triton shell, the achilles heel, the special key, and the cucumber. Note that it does NOT guarantee all silver cat dolls; check the randomizer output for a warning that the cat dolls could not be allocated. This setting is disabled by default because it somewhat increases seed generation times.
+    When enabled, ensures that all key items are accessible in the maze, even if they are not required to reach the goal. This includes weapon upgrades, each character's weapons and magic, the super pass, the triton shell, the achilles heel, the special key, and the cucumber. Note that it does NOT guarantee all silver cat dolls, but it does guarantee that the Turtle Rock cat doll can be obtained. Check the randomizer output for a warning that the cat dolls could not be allocated if you care about that. This setting is disabled by default because it greatly increases seed generation times.
 
     enable_debug            Value: True or False (default True)
     Enables the use of Mystical Ninja Starring Goemon's native debug menu by pressing `L` at any time. This will allow you to get out of various softlocks and is recommended while the randomizer is still in its experimental stage. However, it may cause the ending credits to be interrupted.
@@ -108,7 +115,13 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     This setting is used purely to optimize maze generation. The default value 10000 is a sane limit; any benefit from increasing or decreasing this value will be negligible or negative.
 
     fix_bad_maps            Value: True or False (default True)
-    Changes two maps that are prone to softlocks and difficult to route around. The two maps are the entrance to Ghost Toys Castle (requires chain pipe) and the long invisible path in the Gourmet Sub. Enabling this option improves seed generation speeds.
+    Changes various maps and events that are prone to softlocks and difficult to route around. These include:
+    - Entrance to Ghost Toys Castle (requires chain pipe)
+    - Invisible path in Gourmet Sub (requires camera)
+    - Disappearing submarine in Japan Sea
+    - Missable chain pipe
+    - Missable Benkei quest
+    Enabling this option greatly improves seed generation speeds, and is basically required for any large maze with complex conditions.
 
     fixed_singletons        Value: 0 to 1 (default 1)
     Connects singleton rooms to their vanilla exits at the specified rate, i.e. a rate of 0.5 will connect roughly 50% of singleton rooms this way. A singleton room is a room with only one exit, for example, a shop or someone's house. Excluding these rooms from the randomization makes the maze MUCH easier to navigate and it is recommended to set this setting to the MAXIMUM value, unless you are specifically looking for a painful experience.
@@ -116,8 +129,11 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     flute_anywhere          Value: True or False (default True)
     Allows the flute to be used in any room, including in castles and shops. If `start_flute` is enabled, this will slightly improve seed generation times. If `start_flute` is disabled, it will greatly increase seed generation times. It is recommended to enable both `start_flute` and `flute_anywhere` together.
 
-    goal_based_missables    Value: True or False (default False)
-    This determines how the randomizer handles skippable events. If True, it will only force the player's path through those events if they are required to reach the goal. However, this is computationally expensive during the lock randomization phase, where the conditions for reaching the goal can change. Therefore, it is recommended to leave this setting off.
+    goal_based_missables    Value: True or False (default True)
+    This determines how the randomizer handles skippable events. If True, it will only force the player's path through those events if they are required to reach the goal. Previously, it was recommended to turn this option off to optimize key/lock randomization; however, this is no longer recommended, because the potential performance boost is minor compared to optimizing the maze generation phase.
+
+    hard_mode               Value: True or False (default False)
+    Quadruples the damage taken from all sources. As a result, most enemies will do a full 2 hearts of damage, meaning you will be able to survive 2 hits with the starting five hearts. This gives the many restaurants, shops, and cat dolls scattered throughout the maze more of a purpose. Note that helmets and armor will still negate the full damage of a hit, making them much more valuable. A side effect of this option is that any damage taken during the Sweets Minigame is a one-hit kill.
 
     ice_kunai_logic         Value: True or False (default True)
     When this setting is enabled, the maze generator will assume that the player cannot cross hot platforms without the ice kunai. It is recommended for inexperienced players to leave this setting enabled.
@@ -160,6 +176,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     When this setting is enabled, the maze generator will assume that the player is capable of using Ryo Hover to cross large gaps. This logic is still experimental, so it may not be correct for all cases where Ryo Hover might be used. Furthermore, some of the Ryo Hover checks are quite precise, so it is recommended for inexperienced players to leave this setting disabled.
     Specifically, this setting adds the path to Oedo Castle to logic, which is technically reachable via Ryo Hover but is also reachable using easier tricks. This setting does NOT add the Gourmet Sub Camera Room Ryo Hover to logic, because of inconsistent lag in this room and because I wasn't able to pull it off even once on the English version in an emulator.
 
+    sasuke_mode             Value: True or False (default True)
+    Begin the game as Sasuke and Yae instead of as Goemon and Ebisumaru, with the maze logic updated accordingly. None of the cutscenes have been altered, but you can recruit Ebisumaru by viewing Yae's cutscene and Goemon by viewing Sasuke's. This option is enabled by default to give Sasuke some time in the spotlight.
+
     skip_complex_nodes      Value: 0 to 1 (default 0.5)
     Removes complex nodes from the maze generation pool at the specified rate (in other words, a value of 0.5 will remove a random 50% of complex nodes from the pool). Complex nodes are nodes that have strict requirements on how they can be reached, i.e. must be reached from a specific direction or while holding a specific item to prevent softlocks. Increasing this value will speed up maze generaton on average, but will result in certain rooms being excluded from seeds at a high rate.
 
@@ -170,6 +189,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     Begin the game with Yae already recruited and Yae's flute already in your possession, with the maze logic updated accordingly. This option is recommended because there can be a frustrating degree of backtracking in many seeds, and the flute is not guaranteed to be obtainable otherwise. Note that Castles are no longer warp locations; you can only warp to Goemon's house, the teahouses, and the inns.
     This setting drastically improves seed generation times, so it is highly recommended to leave this enabled for large or complex maze settings.
 
+    start_mermaid           Value: True or False (default False)
+    Begin the game with Yae already recruited and the Mermaid Magic already learned, with the maze logic updated accordingly. Not much to say about this option, I just added it to test stuff.
+
     start_minimaru          Value: True or False (default False)
     Begin the game with Ebisumaru's Chibi-Ebisu magic already learned, with the maze logic updated accordingly. Note that the maze logic does NOT reflect the use of the Ebisumaru Slide, so using it may result in sequence breaks or softlocks, but the option is there if you want it.
 
@@ -178,9 +200,6 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
 
     time_limit              Value: 0 or more (default 240)
     This is a hard limit, in seconds, on how long to spend trying to make a particular seed work. Four minutes is usually long enough for reasonable seeds to complete, but if your machine is slower than mine, you may need to increase this limit.
-
-    trap_doors              Value: 0 to 1 (default 0)
-    This option allows for the possibility one-way doors that take you to an earlier part of the maze. The rate can be adjusted from 0 (never) to 1 (common). These trap doors can be extremely frustrating, so if you don't want that, it is recommended to leave this value at 0.
 
 # IV. FLAGS AND COMMAND LINE OPTIONS
 
@@ -199,9 +218,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
 
     enemizer - Has the same effect as `randomize_enemies` in the config file. Allows enemy randomization even when not generating a randomized maze.
 
-    export - Export a complete dump of every map and its actors after randomization. The output filename will be in the format `<ROM_FILENAME>.export.txt`. If there are no other modifications to the ROM via `enemizer`, `import`, or by generating a randomized maze, then the dump will be clean with all of the original pointers intact. This dump can then be modified and used with the `import` option.
+    export - Export two text dumps after randomization: first, a dump of all the actors on every map. Second, a dump of all the event scripts. The output filename will be in the format `<ROM_FILENAME>.export.txt`. If there are no other modifications to the ROM via `enemizer`, `import`, or by generating a randomized maze, then the dump will be clean with all of the original pointers intact. This dump can then be modified and used with the `import` option.
 
-    import - Modify the input ROM by importing a text dump in the format produced by `export`, updating each room and its actors according to the specifications in the dump. These modifications take place before randomization, if randomization is enabled.
+    import - Modify the input ROM by importing text dumps in the format produced by `export`, updating the actors and event scripts according to the specifications in the dumps. These modifications take place before randomization, if randomization is enabled.
 
     norandom - Do not generate a randomized maze. When using this code, the config file is ignored and doors are not randomized.
 
@@ -225,6 +244,7 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     twitch.tv/claude
         - Concept
         - Background noise
+        - Playtesting
 
     twitch.tv/Stingchameleon
         - Uploaded a youtube video 10 years ago with some useful RAM addresses
