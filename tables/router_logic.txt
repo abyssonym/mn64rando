@@ -39,7 +39,7 @@
 .def golden_temple              16d-002
 .def iyo_teahouse               1b5-001
 .def mini_ebisu                 ebisumaru&16d-x02
-.def camera                     ebisumaru&031-003
+.def camera                     ebisumaru&031-x03
 .def darumanyo                  049-x01
 .def bizen_opened               darumanyo
 .def big_tree_battery           149-x02
@@ -211,6 +211,7 @@
 031-003>031-005
 031-00c=031-003                         # key
 031-00d=031-003                         # cat
+031-001=031-x03 031-003
 
 # 032 Ghost Toys 1F Spike Room
 032-001=032-003
