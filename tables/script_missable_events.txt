@@ -1,3 +1,132 @@
+# MESSAGE 157: 061-6c44.6c44
+@6c44
+  6c44. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  6c58. 22:27,08,@6c440  # If Flag 027, Jump To @6c440
+  6c64. 22:26,08,@7208   # If Flag 026, Jump To @7208
+  6c70. 22:24,08,@6d10   # If Flag 024, Jump To @6d10
+  0000. 0a:08,@6c440     # Jump To @6c440
+ f0000. 08:              # End Event
+
+@6c440
+  6c4c. 22:20,08,@71d4   # If Flag 020, Jump To @71d4
+  6c58. 22:27,08,@7198   # If Flag 027, Jump To @7198
+  6c64. 22:26,08,@7208   # If Flag 026, Jump To @7208
+  6c70. 22:24,08,@6d10   # If Flag 024, Jump To @6d10
+  6c7c. 22:31,08,@6cdc   # If Flag 031, Jump To @6cdc
+  6c88. 10:08,001f84     # Print Text
+    text: |{0012}{0019}{003f}{0010}{0127}{0017}{0035}{003d}{00d4}{newline}{endline}|
+  6c90. 10:08,001f9c     # Print Text
+    text: |{000d}{000d}{000d}{000d}{000d}{001d}{0050}{0026}{0134}{0031}{00d4}{button}{endline}|
+  6c98. 10:08,00003c     # Print Text
+    text: |{newwindow}{endline}|
+  6ca0. 10:08,001fb8     # Print Text
+    text: |{001b}{003c}{0013}{0015}{0128}{newline}{endline}|
+  6ca8. 10:08,001fc8     # Print Text
+    text: |{0017}{0026}{em-yellow}{0137}{0064}{0084}{011f}{0102}{0014}{003b}{0064}{0084}{0046}{0103}{/em}{0144}{001d}{0022}{0034}{newline}{endline}|
+  6cb0. 10:08,001ff4     # Print Text
+    text: |{0039}{0019}{0026}{006b}{008c}{0064}{008f}{0060}{003a}{0151}{000f}{0020}{012e}{0013}{003b}{0013}{00e0}{button}{endline}|
+  6cb8. 10:08,00003c     # Print Text
+    text: |{newwindow}{endline}|
+  6cc0. 10:08,00201c     # Print Text
+    text: |{0039}{0019}{0026}{0127}{em-yellow}{0010}{001d}{/em}{0129}{0021}{0127}{em-yellow}{0068}{005f}{008b}{0013}{000f}{/em}{0129}{0030}{newline}{endline}|
+  6cc8. 10:08,002048     # Print Text
+    text: |{000e}{0036}{0049}{0033}{00d4}{endline}|
+  6cd0. 10:08,00079c     # Print Text
+    text: |{waitinput}{end}{endline}|
+  6cd8. 08:              # End Event
+
+# MESSAGE 162: 061-90a0.979c
+@979c
+  970c. 20:37            # Set Flag 037
+  9714. 20:22            # Set Flag 022
+  979c. 04:801ccea0      # Write to RAM 801ccea0 (Unknown)
+  97a4. 09:1             # Store Value: 1
+  97ac. 10:08,00567c     # Print Text
+    text: |{0064}{0077}{006e}{0127}{0010}{0028}{003f}{00d4}{newline}{endline}|
+  97b4. 10:08,005690     # Print Text
+    text: |{000d}{000d}{000d}{000d}{001c}{0037}{004a}{003c}{00a4}{00d4}{00d4}{0129}{button}{end}{endline}|
+  97bc. 04:801cce88      # Write to RAM 801cce88 (Unknown)
+  97c4. 09:20            # Store Value: 20
+  97cc. 04:801cce8c      # Write to RAM 801cce8c (Unknown)
+  97d4. 09:48            # Store Value: 48
+  97dc. 04:801cce98      # Write to RAM 801cce98 (Unknown)
+  97e4. 09:7             # Store Value: 7
+  97ec. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  97f4. 04:801ccea0      # Write to RAM 801ccea0 (Unknown)
+  97fc. 09:1             # Store Value: 1
+  9804. 04:801cce70      # Write to RAM 801cce70 (Unknown)
+  980c. 09:26c           # Store Value: 26c
+  9814. 0b:8003f274      # Execute Code: 8003f274 (Unknown)
+  981c. 10:08,0056b0     # Print Text
+    text: |{0094}{0061}{0080}{008b}{001d}{001e}{0027}{0128}{em-yellow}{0017}{0010}{0014}{003e}{0010}{0064}{008e}{0060}{0085}{/em}{0021}{newline}{endline}|
+  9824. 10:08,0056dc     # Print Text
+    text: |{0064}{0077}{006e}{0026}{0124}{em-yellow}{007d}{0084}{0065}{0086}{005e}{005f}{0070}{007e}{/em}{0125}{0021}{003a}{newline}{endline}|
+  982c. 10:08,005704     # Print Text
+    text: |{0017}{0010}{0013}{003b}{0019}{001d}{0026}{004d}{000e}{003c}{001d}{00d4}{button}{end}{endline}|
+  9834. 04:801cce88      # Write to RAM 801cce88 (Unknown)
+  983c. 09:20            # Store Value: 20
+  9844. 04:801cce8c      # Write to RAM 801cce8c (Unknown)
+  984c. 09:20            # Store Value: 20
+  9854. 04:801cce98      # Write to RAM 801cce98 (Unknown)
+  985c. 09:7             # Store Value: 7
+  9864. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  986c. 04:801ccea0      # Write to RAM 801ccea0 (Unknown)
+  9874. 09:1             # Store Value: 1
+  987c. 10:08,00003c     # Print Text
+    text: |{newwindow}{endline}|
+  9884. 04:801cce70      # Write to RAM 801cce70 (Unknown)
+  988c. 09:14            # Store Value: 14
+  9894. 0b:8003f274      # Execute Code: 8003f274 (Unknown)
+  989c. 10:08,00067c     # Print Text
+    text: |{000d}{newline}{endline}|
+  98a4. 10:08,005724     # Print Text
+    text: |{0082}{0064}{0026}{0013}{001d}{001e}{003a}{0019}{001d}{newline}{endline}|
+  98ac. 10:08,00573c     # Print Text
+    text: |{000d}{000d}{em-yellow}{0124}{007d}{0084}{0065}{0086}{006a}{0076}{00af}{0125}{/em}{003a}{0138}{0023}{0130}{0037}{001d}{00e2}{endline}|
+  98b4. 04:801cce70      # Write to RAM 801cce70 (Unknown)
+  98bc. 09:96            # Store Value: 96
+  98c4. 0b:8003f0cc      # Execute Code: 8003f0cc (Unknown)
+  98cc. 10:08,0000a0     # Print Text
+    text: |{end}{endline}|
+  98d4. 04:80162054      # Write to RAM 80162054 (Unknown)
+  98dc. 09:1             # Store Value: 1
+  98e4. 20:35            # Set Flag 035
+  98ec. 04:801cce88      # Write to RAM 801cce88 (Unknown)
+  98f4. 09:20            # Store Value: 20
+  98fc. 04:801cce8c      # Write to RAM 801cce8c (Unknown)
+  9904. 09:20            # Store Value: 20
+  990c. 04:801cce98      # Write to RAM 801cce98 (Unknown)
+  9914. 09:1             # Store Value: 1
+  991c. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  9924. 04:801ccea0      # Write to RAM 801ccea0 (Unknown)
+  992c. 09:1             # Store Value: 1
+  9934. 10:08,00003c     # Print Text
+    text: |{newwindow}{endline}|
+  993c. 10:08,005768     # Print Text
+    text: |{0064}{0077}{006e}{0127}{003b}{0046}{003d}{00d4}{0129}{endline}|
+  9944. 10:08,005520     # Print Text
+    text: |{button}{end}{endline}|
+  994c. 08:              # End Event
+
+# MESSAGE 162: 061-90a0.9950
+@9950
+  26c4. 20:24            # Set Flag 024
+  9950. 10:08,00577c     # Print Text
+    text: |{0064}{0077}{006e}{0127}{0123}{0159}{015a}{0026}{0012}{0015}{0035}{013b}{003a}{00f5}{0022}{0040}{0034}{0026}{newline}{endline}|
+  9958. 10:08,0057a4     # Print Text
+    text: |{000d}{000d}{000d}{000d}{0064}{008e}{0060}{0085}{00e8}{00e8}{00e8}{00e8}{00e8}{00e8}{button}{endline}|
+  9960. 10:08,00003c     # Print Text
+    text: |{newwindow}{endline}|
+  9968. 10:08,0057c4     # Print Text
+    text: |{0064}{0077}{006e}{0127}{001d}{002c}{0034}{003b}{003c}{001a}{00e8}{00e8}{00e8}{00e8}{00e8}{00e8}{0129}{endline}|
+  9970. 10:08,00079c     # Print Text
+    text: |{waitinput}{end}{endline}|
+  9978. 08:              # End Event
+
 ! MESSAGE 1ea: 066-3e00.3e00
 @3e00
   3e00. 10:08,000000     # Print Text

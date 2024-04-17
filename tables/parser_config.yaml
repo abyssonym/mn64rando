@@ -165,6 +165,9 @@ prettify:
     -1:    "Unknown"
   address:
     0x8007d28c: "Dialogue Portrait Character"
+    0x80161dd0: "Maximum Health"
+    0x80161dd4: "Current Health"
+    0x80161dd8: "Current Ryo"
     -1:         "Unknown"
 
 instructions:

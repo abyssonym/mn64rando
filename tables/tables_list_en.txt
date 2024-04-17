@@ -15,6 +15,7 @@ $expected_data_end          fc8211
 $free_space_start           fc9000
 $free_space_end             ff7fff
 $seed_info_address          ff8000
+$current_ryo                8015c5e8
 $have_goemon                8015c69c
 $have_ebisumaru             8015c6a0
 $have_sasuke                8015c6a4
@@ -23,6 +24,7 @@ $have_bomb                  8015c6c4
 $have_flute                 8015c6c8
 $have_camera                8015c6d0
 $have_minimaru              8015c6f0
+$have_super_jump            8015c6f4
 $have_mermaid               8015c6f8
 $have_snow                  8015c864
 $have_oedo_town_warp        8015c8ac

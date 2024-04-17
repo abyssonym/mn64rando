@@ -2881,6 +2881,14 @@ def do_permanent_sub():
     patch_file('patch_permanent_sub_01e.txt', CODE_FILE_INDEX)
 
 
+def do_money_code():
+    GOEMON_TENEMENTS_SIGN_INDEX = 0x13a
+    mpo = MessagePointerObject.get(GOEMON_TENEMENTS_SIGN_INDEX)
+    mpo.root.prepend_instruction('09:%x' % 9999)
+    mpo.root.prepend_instruction(f'04:{addresses.current_ryo:x}')
+    mpo.root.parser.updated = True
+
+
 def setup_save_warps(dr):
     WARP_DICT = {
         1:   0x15f,
@@ -3999,6 +4007,7 @@ if __name__ == '__main__':
         codes = {
             'export': ['export'],
             'import': ['import'],
+            'money': ['money'],
             'norandom': ['norandom'],
             'enemizer': ['enemizer'],
             'debugmenu': ['debugmenu'],
@@ -4057,6 +4066,9 @@ if __name__ == '__main__':
         if 'debugmenu' in get_activated_codes():
             patch_filename = infer_lang_name('patch_debug_menu.txt')
             write_patch(get_outfile(), patch_filename)
+
+        if 'money' in get_activated_codes():
+            do_money_code()
 
         decouple_fire_ryo()
         modified = ('import' in get_activated_codes() or

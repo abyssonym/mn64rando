@@ -1,3 +1,139 @@
+# Golden Priest will give you special key even if you already got Super Jump
+! MESSAGE 157: 061-a930.a930
+# MACHI 15 - Zazen - Golden Temple - Priest (Golden Temple)
+@a930
+  a930. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  a944. 22:27,08,@a9300  # If Flag 027 (Obtained Key to Training from Priest), Jump To @a9300
+  a950. 22:26,08,@af24   # If Flag 026 (Rejected Priest's Training Offer), Jump To @af24
+  a95c. 22:24,08,@a9fc   # If Flag 024 (Learned Kihachi's Favorite Food), Jump To @a9fc
+  0000. 0a:08,@a9300     # Jump To @a9300
+ f0000. 08:              # End Event
+
+@a9300
+  a938. 22:20,08,@aef0   # If Flag 020 (Obtained Super Jump Magic), Jump To @aef0
+  a944. 22:27,08,@aeac   # If Flag 027 (Obtained Key to Training from Priest), Jump To @aeac
+  a950. 22:26,08,@af24   # If Flag 026 (Rejected Priest's Training Offer), Jump To @af24
+  a95c. 22:24,08,@a9fc   # If Flag 024 (Learned Kihachi's Favorite Food), Jump To @a9fc
+  a968. 22:31,08,@a9c8   # If Flag 031 (Obtained Mini-Ebisu Magic), Jump To @a9c8
+  a974. 10:08,0033b0     # Print Text
+    text: |Priest:Hey you!{newline}{endline}|
+  a97c. 10:08,0033d4     # Print Text
+    text: |       Traveller!{button}{endline}|
+  a984. 10:08,000034     # Print Text
+    text: |{newwindow}{endline}|
+  a98c. 10:08,0033fc     # Print Text
+    text: |You were lead to this{newline}{endline}|
+  a994. 10:08,00342c     # Print Text
+    text: |{em-yellow}Golden Temple{/em}, why not listen to{newline}{endline}|
+  a99c. 10:08,003474     # Print Text
+    text: |my sermon while you're here.{button}{endline}|
+  a9a4. 10:08,000034     # Print Text
+    text: |{newwindow}{endline}|
+  a9ac. 10:08,0034b0     # Print Text
+    text: |I'll also include a [{em-yellow}Song{/em}] and{newline}{endline}|
+  a9b4. 10:08,0034f4     # Print Text
+    text: |[{em-yellow}Autograph Session{/em}]!{endline}|
+  a9bc. 10:08,000cb0     # Print Text
+    text: |{waitinput}{end}{endline}|
+  a9c4. 08:              # End Event
+
+# Kihachi quest activated even if you show up with cucumber already in hand
+! MESSAGE 162: 061-cd8c.d490
+@d490
+  d400. 20:37            # Set Flag 037 (Kihachi Will Give Favorite Food Hint)
+  d408. 20:22            # Set Flag 022 (Looking for Kihachi's Favorite Food)
+  d490. 04:801c7770      # Write to RAM 801c7770 (Unknown)
+  d498. 09:1             # Store Value: 1
+  d4a0. 10:08,009120     # Print Text
+    text: |Kihachi:Yes! That's it!{button}{end}{endline}|
+  d4a8. 04:801c7758      # Write to RAM 801c7758 (Unknown)
+  d4b0. 09:20            # Store Value: 20
+  d4b8. 04:801c775c      # Write to RAM 801c775c (Dialogue Portrait Y Pos)
+  d4c0. 09:48            # Store Value: 48
+  d4c8. 04:801c7768      # Write to RAM 801c7768 (Unknown)
+  d4d0. 09:7             # Store Value: 7
+  d4d8. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  d4e0. 04:801c7770      # Write to RAM 801c7770 (Unknown)
+  d4e8. 09:1             # Store Value: 1
+  d4f0. 04:801c7740      # Write to RAM 801c7740 (Scratch)
+  d4f8. 09:26c           # Store Value: 26c
+  d500. 0b:8003f608      # Execute Code: 8003f608 (Unknown)
+  d508. 10:08,009154     # Print Text
+    text: |Goemon and allies trade their{newline}{endline}|
+  d510. 10:08,009194     # Print Text
+    text: |{em-yellow}quality cucumber{/em} with{newline}{endline}|
+  d518. 10:08,0091c8     # Print Text
+    text: |Kihachi's [{em-yellow}Miracle Item{/em}].{button}{end}{endline}|
+  d520. 04:801c7758      # Write to RAM 801c7758 (Unknown)
+  d528. 09:20            # Store Value: 20
+  d530. 04:801c775c      # Write to RAM 801c775c (Dialogue Portrait Y Pos)
+  d538. 09:20            # Store Value: 20
+  d540. 04:801c7768      # Write to RAM 801c7768 (Unknown)
+  d548. 09:7             # Store Value: 7
+  d550. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  d558. 04:801c7770      # Write to RAM 801c7770 (Unknown)
+  d560. 09:1             # Store Value: 1
+  d568. 10:08,000034     # Print Text
+    text: |{newwindow}{endline}|
+  d570. 04:801c7740      # Write to RAM 801c7740 (Scratch)
+  d578. 09:14            # Store Value: 14
+  d580. 0b:8003f608      # Execute Code: 8003f608 (Unknown)
+  d588. 10:08,005e8c     # Print Text
+    text: | Goemon and allies{newline}{endline}|
+  d590. 10:08,009204     # Print Text
+    text: |  receive the [{em-yellow}Miracle Snow{/em}], {newline}{endline}|
+  d598. 10:08,009248     # Print Text
+    text: |     shaped like a snow flake.{endline}|
+  d5a0. 04:801c7740      # Write to RAM 801c7740 (Scratch)
+  d5a8. 09:96            # Store Value: 96
+  d5b0. 0b:8003f460      # Execute Code: 8003f460 (Wait For Timer)
+  d5b8. 10:08,0000b0     # Print Text
+    text: |{end}{endline}|
+  d5c0. 04:8015c864      # Write to RAM 8015c864 (Obtained Miracle Snow)
+  d5c8. 09:1             # Store Value: 1
+  d5d0. 20:35            # Set Flag 035 (Obtained Miracle Snow)
+  d5d8. 04:801c7758      # Write to RAM 801c7758 (Unknown)
+  d5e0. 09:20            # Store Value: 20
+  d5e8. 04:801c775c      # Write to RAM 801c775c (Dialogue Portrait Y Pos)
+  d5f0. 09:20            # Store Value: 20
+  d5f8. 04:801c7768      # Write to RAM 801c7768 (Unknown)
+  d600. 09:1             # Store Value: 1
+  d608. 10:08,000000     # Print Text
+    text: |{begin}{endline}|
+  d610. 04:801c7770      # Write to RAM 801c7770 (Unknown)
+  d618. 09:1             # Store Value: 1
+  d620. 10:08,000034     # Print Text
+    text: |{newwindow}{endline}|
+  d628. 10:08,009058     # Print Text
+    text: |Kihachi:Farewell!{endline}|
+  d630. 10:08,008ee8     # Print Text
+    text: |{button}{end}{endline}|
+  d638. 08:              # End Event
+
+# Learn Kihachi's favorite food even after completing his quest
+! MESSAGE 162: 061-cd8c.d63c
+@d63c
+  3bbc. 20:24            # Set Flag 024 (Learned Kihachi's Favorite Food)
+  d63c. 10:08,009288     # Print Text
+    text: |Kihachi:Eating cucumber{newline}{endline}|
+  d644. 10:08,0092bc     # Print Text
+    text: |      while watching{newline}{endline}|
+  d64c. 10:08,0092e8     # Print Text
+    text: |      the Big Sacred Fire...{button}{endline}|
+  d654. 10:08,000034     # Print Text
+    text: |{newwindow}{endline}|
+  d65c. 10:08,009324     # Print Text
+    text: |Kihachi:Nothing could match{newline}{endline}|
+  d664. 10:08,009360     # Print Text
+    text: |      this...{endline}|
+  d66c. 10:08,000cb0     # Print Text
+    text: |{waitinput}{end}{endline}|
+  d674. 08:              # End Event
+
+# Mokubei will give chain pipe even if you already spoke to his brother
 ! MESSAGE 1ea: 066-63fc.63fc
 @63fc
   63fc. 10:08,000000     # Print Text
@@ -37,6 +173,7 @@
     text: |{end}{endline}|
   6488. 08:              # End Event
 
+# Benkei will introduce himself and fight you even after Thaisamba
 ! MESSAGE 30c: 079-1cd8.1cd8
 @1cd8
   1cd8. 21:7a            # Unset Flag: 07a

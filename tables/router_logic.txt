@@ -1272,7 +1272,7 @@
 # 16A Zazen - Kappa Pond
 16a-002=16a-004
 16a-002=16a-x02 benkei_after_thaisamba
-16a-002=16a-xx2 cucumber
+16a-002=16a-xx2 benkei_after_thaisamba&cucumber
 
 # 16B Zazen - Waterway
 16b-002=16b-003
@@ -1330,7 +1330,7 @@
 .missable iyo_teahouse missable_benkei
 .or ushiwaka_at_golden_temple
 +ushiwaka_at_golden_temple .missable iyo_teahouse beyond_benkei
-+ushiwaka_at_golden_temple .require beyond_benkei golden_temple
++ushiwaka_at_golden_temple .require beyond_benkei mini_ebisu
 #171-002=>171-004 achilles_heel
 171-002=171-x04
 171-002=171-xx4 thaisamba
