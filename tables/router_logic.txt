@@ -1309,6 +1309,9 @@
 16c-00c=16c-00f
 16c-00e=16c-00f
 
+.or ushiwaka_at_golden_temple2
++ushiwaka_at_golden_temple2 .missable iyo_teahouse special_key
++ushiwaka_at_golden_temple2 .require special_key mini_ebisu
 # 16D Zazen - Golden Temple
 16d-002=16d-x02 ebisumaru&ushiwaka&iyo_teahouse
 16d-002=16d-xx2 kappa
@@ -1328,9 +1331,9 @@
 # 171 Zazen - Bridge to Yamato (Benkei)
 .guarantee  171-004 achilles_heel&171-x04
 .missable iyo_teahouse missable_benkei
-.or ushiwaka_at_golden_temple
-+ushiwaka_at_golden_temple .missable iyo_teahouse beyond_benkei
-+ushiwaka_at_golden_temple .require beyond_benkei mini_ebisu
+.or ushiwaka_at_golden_temple1
++ushiwaka_at_golden_temple1 .missable iyo_teahouse beyond_benkei
++ushiwaka_at_golden_temple1 .require beyond_benkei mini_ebisu
 #171-002=>171-004 achilles_heel
 171-002=171-x04
 171-002=171-xx4 thaisamba
