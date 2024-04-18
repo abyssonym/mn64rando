@@ -33,6 +33,8 @@ DEBUG_MODE = False
 VERBOSE = False
 VISUALIZE = DEBUG_MODE
 
+GOAL_LABELS = {'miracle_moon', 'miracle_flower', 'miracle_star',
+               'miracle_snow', 'pemopemo_god'}
 
 def hexify(s):
     result = []
@@ -3349,6 +3351,13 @@ def randomize_doors():
             if e.is_gold_cat:
                 gold_cats.add(e.get_property_value('flag'))
 
+    progress_nodes = set()
+    for label in GOAL_LABELS:
+        nodesets = dr.label_sets_to_nodes(dr.definitions[label])
+        for nodeset in nodesets:
+            if nodeset and all(isinstance(n, dr.Node) for n in nodeset):
+                progress_nodes |= nodeset
+
     key_assignments = {}
     num_key_trials = int(dr.config['randomize_keys'])
     if num_key_trials:
@@ -3363,14 +3372,20 @@ def randomize_doors():
             random.seed(dr.seed+counter)
             try:
                 trial_key = f'lock{counter}'
-                trials[trial_key], trial_types[trial_key] = generate_locks(dr)
+                trials[trial_key], trial_types[trial_key] = \
+                        generate_locks(dr, progress_nodes)
                 key_assignments = trials[trial_key]
                 keys_and_locks = key_assignments.keys() | \
                         key_assignments.values()
-                goal_guaranteed = {n for g in dr.goal_nodes
-                                   for n in g.guaranteed}
-                goal_trial = goal_guaranteed & keys_and_locks
-                score = len(goal_trial)
+                full_progress_nodes = set(progress_nodes)
+                while True:
+                    old = set(full_progress_nodes)
+                    for n in old:
+                        full_progress_nodes |= n.guaranteed
+                        full_progress_nodes |= n.dependencies
+                    if full_progress_nodes == old:
+                        break
+                score = len(full_progress_nodes & keys_and_locks)
                 trial_scores[trial_key] = score
                 dr.commit(trial_key)
             except DoorRouterException:
@@ -3556,7 +3571,7 @@ def randomize_doors():
                 ignore_edges=ignore_edges)
 
 
-def generate_locks(dr):
+def generate_locks(dr, progress_nodes):
     BANNED_DOORS = {'15e-002', '1b8-001', '1b9-001',
                     '028-001', '049-001', '071-001', '09d-001',
                     '137-002', '138-002', '139-002',
@@ -3630,6 +3645,16 @@ def generate_locks(dr):
         bad_starters = set()
         key_chain = []
         keyable_dict = {}
+
+        full_progress_nodes = set(progress_nodes)
+        while True:
+            old = set(full_progress_nodes)
+            for n in old:
+                full_progress_nodes |= n.guaranteed
+                full_progress_nodes |= n.dependencies
+            if full_progress_nodes == old:
+                break
+
         while True:
             valid_edges = valid_edges - bad_starters
             starters = {e for e in lockable & valid_edges
@@ -3646,7 +3671,7 @@ def generate_locks(dr):
                 starters &= good_starters
             orphan_pool = sorted(o for s in starters
                                  for o in s.get_guaranteed_orphanable())
-            goal_pool = dr.goal_nodes & set(orphan_pool)
+            goal_pool = full_progress_nodes & set(orphan_pool)
             keyable_pool = set(orphan_pool) & \
                     (preliminary_keyable | dr.conditional_nodes)
             if goal_pool and key_type in ['Gold', 'Diamond']:
