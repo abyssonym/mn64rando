@@ -4010,6 +4010,35 @@ def do_automash():
                     i.parser.updated = True
 
 
+def do_texter():
+    START_INDEX = 0x180
+    numbers = "０１２３４５６７８９ＡＢＣＤＥＦ"
+    space = "　"
+    mpo = MessagePointerObject.get(0x137)
+    s = str(mpo.root)
+    a, x = s.split('7914. ')
+    a = a.strip()
+    b, c = x.split('|\n', 1)
+    c = c.rstrip()
+    b = ''
+    for y in range(4):
+        words = []
+        for x in range(4):
+            index = START_INDEX + (y*4) + x
+            ones = numbers[index & 0xf]
+            tens = numbers[(index >> 4) & 0xf]
+            codepoint = f'{index:0>4x}'
+            word = '%s%s{%s}' % (tens, ones, codepoint)
+            words.append(word)
+        line = space.join(words)
+        line = '%s{newline}{endline}' % line
+        b += f'  0000. 10:08,ffffff\n    text: |{line}|\n'
+    b = b.rstrip()
+    script = f'{a}\n{b}\n{c}'
+    mpo.parser.import_script(script)
+    mpo.parser.updated = True
+
+
 def write_abridged_metadata():
     timestamp = datetime.strftime(datetime.now(), '%Y%m%d%H')
     header = (f'MN64 Randomizer v{VERSION}\n'

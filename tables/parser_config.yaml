@@ -6,6 +6,61 @@ terminators:                [0x8008]
 text_terminators:           [0xffff]
 text_char_size:             2
 text_decode_table:
+  0x00d4:
+    expansion: "！\"#'*+,—./:="
+    increment: 1
+  0x00e0:
+    expansion: "？@。゛゜旅日記・決定×両必要数"
+    increment: 1
+  0x00f0:
+    expansion: "作成中削除見異常直一度最初始保存"
+    increment: 1
+  0x0100:
+    expansion: "本体（）込接続修復場合内消全電源"
+    increment: 1
+  0x0110:
+    expansion: "術江戸城町村山階視点切替北西東寺"
+    increment: 1
+  0x0120:
+    expansion: "連戦巨大【】前「、」下止［］行〜"
+    increment: 1
+  0x0130:
+    expansion: "入口水海人銀力金手花星火丸目時間"
+    increment: 1
+  0x0140:
+    expansion: "茶店方思来外子男♪国地九州女出社"
+    increment: 1
+  0x0150:
+    expansion: "員聞語卍長屋話家四文字川小池ヶ上"
+    increment: 1
+  0x0160:
+    expansion: "流回落石◯氷犬神名警告発生島木客"
+    increment: 1
+  0x0170:
+    expansion: "桜先向調艦愛夢仁王良早oingw"
+    increment: 1
+  0x0180:
+    expansion: "akehc野表示破損現犯"
+    increment: 1
+  0x0000:
+    #expansion: "0123456789-!?"
+    expansion: "０１２３４５６７８９-!?"
+    increment: 1
+  0x000d: "　"
+  0x000e:
+    expansion: "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをんっゃゅょがぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽぁぃぅぇぉ"
+    increment: 1
+  0x005e:
+    expansion: "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲンッャュョガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポァィゥェォヴー"
+    increment: 1
+  0x00b0:
+    #expansion: "０１２３４５６７８９"
+    expansion: "0123456789"
+    increment: 1
+  0x00ba:
+    #expansion: "ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
+    expansion: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    increment: 1
   0xffb9: "{end}"
   0xffba: "{begin}"
   0xffc1: "{newwindow}"
