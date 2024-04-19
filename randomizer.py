@@ -323,7 +323,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
     ENEMY_FILES = {0x20, 0x21, 0x23, 0x24, 0x25, 0x26, 0x27}
     RESTRICTED_ENEMIES = {
         0x106, 0x10c, 0x133, 0x13a, 0x13c, 0x13d, 0x13e, 0x144}
-    RESTRICTED_ENEMY_ROOMS = {0}
+    RESTRICTED_ENEMY_ROOMS = {0, 0x87}
 
     JP_EN_NODE_MAPPING = {
         '13b-00e': '13b-00c',
