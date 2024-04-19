@@ -1,6 +1,6 @@
 ANCIENT CAVE STARRING GOEMON - RANDOMIZER MANUAL
-Version:    2.0
-Date:       April 12, 2024
+Version:    2.1
+Date:       April 19, 2024
 URL:        https://github.com/abyssonym/mn64rando/releases/latest/
 Contact:    https://twitter.com/abyssonym
             https://ko-fi.com/abyssonym
@@ -119,8 +119,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     - Entrance to Ghost Toys Castle (requires chain pipe)
     - Invisible path in Gourmet Sub (requires camera)
     - Disappearing submarine in Japan Sea
-    - Missable chain pipe
+    - Missable Chain Pipe
     - Missable Benkei quest
+    - Missable Kihachi quest and Special Key
     Enabling this option greatly improves seed generation speeds, and is basically required for any large maze with complex conditions.
 
     fixed_singletons        Value: 0 to 1 (default 1)
@@ -153,6 +154,9 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     map_strictness          Value: 0 to 1 (default 0.75)
     This option determines variance in the number of connected rooms, based on the value set in `map_size`. In other words, `map_size` establishes a rough upper limit, and `map_strictness` is a rough lower limit. If `map_strictness` is 100%, and `map_size` is 75%, then all of the 75% will be connected. But if `map_strictness` is 50%, then somewhere between 50% and 100% of the 75% will be connected. In practice, the result is almost always closer to 100% than 50%, but it is recommended to set this value a little bit below 100% for some flexibility. But it does not make much of a difference, so it is probably best just to ignore it and use the default value.
 
+    no_logic                Value: True or False (default False)
+    Generate a "no logic" seed that does not consider progression in any way, and is unlikely to be completable. This setting is used to quickly generate seeds for testing, and is off by default for obvious reasons.
+
     nodes_filename          Default value: router_nodes.txt
     This is the name of the file that contains the names of all of the nodes used in `logic_filename`. There are two types of nodes in this file; the basic node is an exit such as a door that can be connected to other doors. Nodes prefixed by `+` are noteworthy locations such as item pickups.
 
@@ -166,7 +170,7 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     randomize_pickups       Value: True or False (default True)
     Randomizes "valuable" pickups including keys, gold dangos, cat dolls, surprise packs, Elly Fants, Mr. Arrows, and item pots. Except for item pots, these are also potential locations for newly generated keys mentioned in the `randomize_keys` section. This option will attempt allocate enough cat dolls to reach 100% completion, but if this is not possible, the randomizer will print a warning.
 
-    retry_limit             Value: 0 or more (default 500)
+    retry_limit             Value: 0 or more (default 750)
     This option determines how long the randomizer should try to make a particular seed work before giving up. In general, you should rarely hit this limit unless you also increase `time_limit`. There should not be much reason to increase this limit unless you are trying to solve routing logic that is more complex than the default settings.
 
     retry_limit_close       Value: 0 or more (default 1000)
@@ -198,7 +202,7 @@ To unlock a warp location, you MUST ENTER the building. That means going inside 
     start_snow              Value: True or False (default True)
     Start with the item "Miracle Snow" already in your possession, with the maze logic updated accordingly. This can potentially skip a long fetch quest at the end of the game, which can be quite tedious while navigating a randomized maze. But if you want the "full" experience, feel free to turn this option off.
 
-    time_limit              Value: 0 or more (default 240)
+    time_limit              Value: 0 or more (default 600)
     This is a hard limit, in seconds, on how long to spend trying to make a particular seed work. Four minutes is usually long enough for reasonable seeds to complete, but if your machine is slower than mine, you may need to increase this limit.
 
 # IV. FLAGS AND COMMAND LINE OPTIONS

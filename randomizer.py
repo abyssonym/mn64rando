@@ -27,7 +27,7 @@ from decompress_mn64 import (
     checksum, decompress_from_file, decompress, recompress)
 
 
-VERSION = "2.0"
+VERSION = "2.1"
 ALL_OBJECTS = None
 DEBUG_MODE = False
 VERBOSE = False
@@ -1381,7 +1381,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
         filename = filename.strip()
         mmo = None
         previous_entity = None
-        with open(filename) as f:
+        with open(filename, encoding='utf8') as f:
             for line in f:
                 if '#' in line:
                     line = line.split('#')[0]
@@ -2735,7 +2735,7 @@ class MessagePointerObject(TableObject):
     def import_all_scripts(self, script):
         script = script.strip()
         if '\n' not in script:
-            with open(script) as f:
+            with open(script, encoding='utf8') as f:
                 script = f.read()
 
         import_lines = defaultdict(list)
@@ -2893,6 +2893,8 @@ def do_money_code():
 
 def free_event_space():
     # Removes Elly Fant and Mr. Arrow messages to make space
+    # This is probably not necessary as long as event script filesizes are
+    # correctly calculated, but it doesn't hurt.
     ELLY_FANT_INDEX = 0x6b
     MR_ARROW_INDEX = 0x6c
     for index in [ELLY_FANT_INDEX, MR_ARROW_INDEX]:
@@ -3133,7 +3135,7 @@ def randomize_doors():
         if not config_filename.strip():
             config_filename = DEFAULT_CONFIG
 
-    with open(config_filename) as f:
+    with open(config_filename, encoding='utf8') as f:
         config = yaml.safe_load(f.read())
 
     with open(BACKUP_CONFIG) as f:
@@ -3909,7 +3911,7 @@ def export_data():
     else:
         export_filename = f'{get_outfile()}.export.txt'
     print(f'EXPORTING actors to {export_filename}')
-    with open(export_filename, 'w+') as f:
+    with open(export_filename, mode='w+', encoding='utf8') as f:
         s =  (f'# Seed:   {get_seed()}\n')
         s += (f'# Flags:  {get_flags()}\n')
         done_codes = ','.join(get_activated_codes())
@@ -3953,7 +3955,7 @@ def export_data():
         header = '\n'.join(sorted(script_headers[s])).strip()
         dump = f'{dump}\n\n{header}\n{s}'
     dump = dump.strip()
-    with open(export_filename, 'w+') as f:
+    with open(export_filename, mode='w+', encoding='utf8') as f:
         f.write(dump)
 
 
