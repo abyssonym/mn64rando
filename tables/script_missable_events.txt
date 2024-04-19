@@ -1,4 +1,4 @@
-# MESSAGE 157: 061-6c44.6c44
+! MESSAGE 157: 061-6c44.6c44
 @6c44
   6c44. 10:08,000000     # Print Text
     text: |{begin}{endline}|
@@ -36,7 +36,7 @@
     text: |{waitinput}{end}{endline}|
   6cd8. 08:              # End Event
 
-# MESSAGE 162: 061-90a0.979c
+! MESSAGE 162: 061-90a0.979c
 @979c
   970c. 20:37            # Set Flag 037
   9714. 20:22            # Set Flag 022
@@ -112,7 +112,7 @@
     text: |{button}{end}{endline}|
   994c. 08:              # End Event
 
-# MESSAGE 162: 061-90a0.9950
+! MESSAGE 162: 061-90a0.9950
 @9950
   26c4. 20:24            # Set Flag 024
   9950. 10:08,00577c     # Print Text
