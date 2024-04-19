@@ -1980,7 +1980,7 @@ class MapMetaObject(TableObject, ConvertPointerMixin):
                 #          f'file {self.file_index+1:0>3x}.')
                 return self.force_write()
 
-        if self.data_has_changed and self.is_room:
+        if self.data_has_changed:
             old_length = self.metasize.metasize
             assert old_length == len(self._cached_decompressed)
             new_length = len(self.data)
