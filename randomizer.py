@@ -2859,12 +2859,12 @@ def do_sasuke_mode():
     mpo = MessagePointerObject.get(YAE_MESSAGE_INDEX)
     mpo.root.prepend_instruction('09:1')
     mpo.root.prepend_instruction(f'04:{addresses.have_ebisumaru:x}')
-    mpo.root.parser.updated = True
+    mpo.parser.updated = True
 
     mpo = MessagePointerObject.get(SASUKE_MESSAGE_INDEX)
     mpo.root.prepend_instruction('09:1')
     mpo.root.prepend_instruction(f'04:{addresses.have_goemon:x}')
-    mpo.root.parser.updated = True
+    mpo.parser.updated = True
 
 
 def do_permanent_sub():
@@ -2888,7 +2888,19 @@ def do_money_code():
     mpo = MessagePointerObject.get(GOEMON_TENEMENTS_SIGN_INDEX)
     mpo.root.prepend_instruction('09:%x' % 9999)
     mpo.root.prepend_instruction(f'04:{addresses.current_ryo:x}')
-    mpo.root.parser.updated = True
+    mpo.parser.updated = True
+
+
+def free_event_space():
+    # Removes Elly Fant and Mr. Arrow messages to make space
+    ELLY_FANT_INDEX = 0x6b
+    MR_ARROW_INDEX = 0x6c
+    for index in [ELLY_FANT_INDEX, MR_ARROW_INDEX]:
+        mpo = MessagePointerObject.get(index)
+        mpo.root.instructions = mpo.root.instructions[-1:]
+        assert len(mpo.root.instructions) == 1
+        assert mpo.root.instructions[0].opcode == 0x8008
+        mpo.parser.updated = True
 
 
 def setup_save_warps(dr):
@@ -2937,7 +2949,7 @@ def setup_dragon_warps(dr):
     mpo = MessagePointerObject.get(OEDO_TOWN_MESSAGE_INDEX)
     mpo.root.prepend_instruction('09:1')
     mpo.root.prepend_instruction(f'04:{addresses.have_oedo_town_warp:x}')
-    mpo.root.parser.updated = True
+    mpo.parser.updated = True
 
     for mmo in MapMetaObject.every:
         if not mmo.is_room:
@@ -3286,6 +3298,8 @@ def randomize_doors():
                     definition_overrides=definition_overrides)
     dr.build_graph()
     random.seed(dr.seed)
+
+    free_event_space()
     setup_save_warps(dr)
     setup_dragon_warps(dr)
     random.seed(dr.seed)
