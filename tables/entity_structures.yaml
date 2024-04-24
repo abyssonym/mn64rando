@@ -809,6 +809,8 @@
 
 0x308:
   name:       Fixed Camera Actor
+  zoom_width:
+    index:      [6, 7]
 
 0x309:
   name:       Inn Cutscene

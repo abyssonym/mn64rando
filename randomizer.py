@@ -2718,7 +2718,10 @@ class MessagePointerObject(TableObject):
             if script in roots:
                 mpo = MessagePointerObject.get(roots[script])
                 header = f'# {mpo.header}'
-                for npc in mpo.get_npcs():
+                npcs = mpo.get_npcs()
+                npcs = sorted(npcs, key=lambda n: (n.parent.debug_name,
+                                                   n.index))
+                for npc in npcs:
                     description = npc.structure['name']
                     description = f'{npc.parent.debug_name} - {description}'
                     header = f'{header}\n# NPC: {description}'
@@ -2772,7 +2775,23 @@ class MessagePointerObject(TableObject):
 
         for index, lines in sorted(import_lines.items()):
             mpo = MessagePointerObject.get(index)
-            mpo.parser.import_script('\n'.join(lines))
+            script_addresses = set(mpo.parser.scripts.keys())
+            script_text = '\n'.join(lines)
+            mpo.parser.import_script(script_text)
+            if mpo.message_pointer == 0:
+                assert mpo.misc & 8 == 0
+                new_addresses = mpo.parser.scripts.keys() - script_addresses
+                address = None
+                for line in lines:
+                    line = line.strip()
+                    if not line.startswith('@'):
+                        continue
+                    address = int(line[1:], 0x10)
+                    if address in new_addresses:
+                        break
+                assert address is not None
+                mpo.message_pointer = address
+                mpo.misc |= 8
             mpo.parser.updated = True
 
     def preprocess(self):
@@ -2783,6 +2802,7 @@ class MessagePointerObject(TableObject):
     def preclean(self):
         self.old_message_pointer = self.message_pointer
         if self.parser and self.parser.updated:
+            assert self.misc & 8
             mmo = MapMetaObject.get(self.file_index-1)
             mmo._data = self.parser.to_bytecode()
             self.parser.updated = False
@@ -2792,6 +2812,7 @@ class MessagePointerObject(TableObject):
             return
         mmo = MapMetaObject.get(self.file_index-1)
         if mmo.data_has_changed:
+            assert self.misc & 8
             script_pointer = self.message_pointer | \
                     self.parser.config['virtual_address']
             script = self.parser.scripts[script_pointer]
@@ -3940,7 +3961,7 @@ def export_data():
             for referenced in script.referenced_scripts:
                 pointer = referenced.pointer.converted
                 header = f'! {mpo.header}.{pointer:0>4x}'
-                for description in npcs[referenced]:
+                for description in sorted(npcs[referenced]):
                     header = f'{header}\n# {description}'
                 script_headers[referenced].add(header)
     for p in parsers:
