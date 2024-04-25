@@ -219,10 +219,59 @@ prettify:
     0x1c7: "Bought Doll from Cat Eyes"
     -1:    "Unknown"
   address:
+    0x8003f0cc: "Wait For Timer"
+    0x8003f200: "Load Current Character"
+    0x8003f274: "Play Sound"
     0x8007d28c: "Dialogue Portrait Character"
+    0x800cd4f0: "Using Controller Pak Status"
     0x80161dd0: "Maximum Health"
     0x80161dd4: "Current Health"
     0x80161dd8: "Current Ryo"
+    0x80161de0: "Current Rice Ball"
+    0x80161e8c: "Recruited Goemon"
+    0x80161e90: "Recruited Ebisumaru"
+    0x80161e94: "Recruited Sasuke"
+    0x80161e98: "Recruited Yae"
+    0x80161e9c: "Goemon Weapon Level"
+    0x80161ea0: "Ebisumaru Weapon Level"
+    0x80161ea4: "Sasuke Weapon Level"
+    0x80161ea8: "Yae Weapon Level"
+    0x80161eac: "Obtained Chain Pipe"
+    0x80161eb0: "Obtained Meatsaw Hammer"
+    0x80161eb4: "Obtained Firecracker Bomb"
+    0x80161eb8: "Obtained Flute"
+    0x80161ebc: "Obtained Normal Ryo Throw"
+    0x80161ec0: "Obtained Wind-Up Camera"
+    0x80161ec4: "Obtained Ice Kunai"
+    0x80161ec8: "Obtained Bazooka"
+    0x80161ecc: "Fire Ryo Chargeable?"
+    0x80161ed0: "Wind-Up Camera Chargeable?"
+    0x80161ed4: "Kunai Hail Beam Chargeable?"
+    0x80161ed8: "Lock on Bazooka Chargeable?"
+    0x80161edc: "Obtained Sudden Impact Magic"
+    0x80161ee0: "Obtained Mini-Ebisu Magic"
+    0x80161ee4: "Obtained Super Jump Magic"
+    0x80161ee8: "Obtained Mermaid Magic"
+    0x80161eec: "Obtained Triton Shell"
+    0x80161ef0: "Obtained Super Pass"
+    0x80161ef4: "Fortune Doll Progress"
+    0x80161ef8: "Total Fortune Dolls Obtained"
+    0x80161efc: "Obtained Achilles Heel"
+    0x80161f00: "Obtained Key to Training"
+    0x80161f04: "Obtained Quality Cucumber"
+    0x80161f08: "Total Red Fish Obtained"
+    0x80161f0c: "Total Yellow Fish Obtained"
+    0x80161f10: "Total Blue Fish Obtained"
+    0x80162054: "Obtained Miracle Snow"
+    0x801620a4: "Obtained Oedo Castle Warp Point"
+    0x801cce70: "Scratch"
+    0x801cce80: "Scratch"
+    0x801cce8c: "Dialogue Window Y Pos"
+    0x801cce98: "Dialogue Window Style"
+    0x801ccf08: "Text Speed"
+    0x80226d44: "Give/Take Ryo"
+    0x80226da4: "Load Current Ryo"
+    0x80226ed8: "Recover Health"
     -1:         "Unknown"
 
 instructions:
@@ -304,17 +353,17 @@ instructions:
       value:
         length:             4
   0x8020:
-    comment:                "Set Flag {flag:0>3x}"
+    comment:                "Set Flag {flag:0>3x} ({_pretty_flag})"
     parameters:
       flag:
         length:             4
   0x8021:
-    comment:                "Unset Flag {flag:0>3x}"
+    comment:                "Unset Flag {flag:0>3x} ({_pretty_flag})"
     parameters:
       flag:
         length:             4
   0x8022:
-    comment:                "If Flag {flag:0>3x}, Jump To {address:x}"
+    comment:                "If Flag {flag:0>3x} ({_pretty_flag}), Jump To {address:x}"
     parameter_order:        ['flag', 'prefix', 'address']
     parameters:
       flag:

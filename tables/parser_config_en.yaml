@@ -189,11 +189,13 @@ prettify:
   address:
     0x8003f460: "Wait For Timer"
     0x8003f594: "Load Current Character"
+    0x8003f608: "Play Sound"
     0x8007785c: "Dialogue Portrait Character"
     0x800c7d00: "Using Controller Pak Status"
     0x8015c5e0: "Maximum Health"
     0x8015c5e4: "Current Health"
     0x8015c5e8: "Current Ryo"
+    0x8015c5f0: "Current Rice Ball"
     0x8015c69c: "Recruited Goemon"
     0x8015c6a0: "Recruited Ebisumaru"
     0x8015c6a4: "Recruited Sasuke"
@@ -232,9 +234,12 @@ prettify:
     0x8015c8b4: "Obtained Oedo Castle Warp Point"
     0x801c7740: "Scratch"
     0x801c7750: "Scratch"
-    0x801c775c: "Dialogue Portrait Y Pos"
+    0x801c775c: "Dialogue Window Y Pos"
+    0x801c7768: "Dialogue Window Style"
+    0x801c77d8: "Text Speed"
     0x80221fd4: "Give/Take Ryo"
     0x80222034: "Load Current Ryo"
+    0x80222168: "Recover Health"
     -1:         "Unknown"
 
 instructions:
